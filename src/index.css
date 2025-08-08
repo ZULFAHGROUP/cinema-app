@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+.text-primary {
+  color: #7da851;
+}
+
+.bg-primary {
+  background-color: #7da851;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-menu .ant-menu-submenu {
+  background-color: inherit !important;
+}
+
+/* .custom-menu .ant-menu-item {
+  background-color: inherit !important; 
+} */
+
+.custom-menu .ant-menu-sub {
+  background-color: inherit !important;
+}

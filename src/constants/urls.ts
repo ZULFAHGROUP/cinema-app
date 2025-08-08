@@ -1,0 +1,27 @@
+const urls = {
+  login: "/admin/login",
+  createAccount: "/api/Customer/create-account",
+  adminAllClaims: "/admin/claims",
+  adminCreateClaim: "/admin/claim/report",
+  adminGetSingleCustomerClaim: "/admin/claims",
+  adminUpdateSingleCustomerClaim: "/admin/claim/update",
+  adminAllCustomers: "/admin/customers",
+  adminCreateCustomer: "/customer/create",
+  adminAllPolicies: "/admin/policies",
+  adminRoles: "/admin/roles",
+  adminCreateRole: "/admin/create-role",
+  adminCreateCategory: "/admin/category/create",
+  adminUpdateCategory: "/admin/category/update",
+  adminDeleteCategory: "/admin/category/delete",
+  adminCategories: "/admin/categories",
+  adminCreateUnderwriter: "/admin/underwriters/create",
+  adminUpdateUnderwriter: "/admin/underwriter/update",
+  adminDeleteUnderwriter: "/admin/underwriters/delete",
+  adminUnderwriters: "/admin/underwriters",
+  adminCreateProduct: "/admin/product/create",
+  adminUpdateProduct: "/admin/product/update",
+  adminDeleteProduct: "/admin/product/delete",
+  adminProducts: "/all-products",
+};
+
+export default urls;
