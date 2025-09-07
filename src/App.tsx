@@ -1,15 +1,21 @@
 import { Provider as StoreProvider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import store, { persistor } from "./store/store";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import AuthRoutes from "./routes/authRoute";
 import { ReactNotifications } from "react-notifications-component";
 import "react-notifications-component/dist/theme.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import AppLayout from "./components/Layout";
+import { allRoutes } from "./routes/allRoutes";
+import Dashboard from "./pages/Dashboard";
 
 const App = () => {
   return (
@@ -19,9 +25,11 @@ const App = () => {
           <main>
             <ReactNotifications />
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<Navigate to="/auth" />} />
               <Route path="/auth/*" element={<AuthRoutes />} />
-              <Route element={<AppLayout />}></Route>
+              <Route element={<AppLayout />}>
+                <Route path={allRoutes.dashboard} element={<Dashboard />} />
+              </Route>
 
               {/*  404 Catch-All Route */}
               <Route path="*" element={<NotFound />} />

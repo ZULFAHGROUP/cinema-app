@@ -1,11 +1,19 @@
 @import "tailwindcss";
 
 .text-primary {
-  color: #7da851;
+  color: #fff8ea;
+}
+
+.text-secondary {
+  color: #c77e3b;
 }
 
 .bg-primary {
-  background-color: #7da851;
+  background-color: #fff8ea;
+}
+
+.bg-secondary {
+  background-color: #c77e3b;
 }
 
 .hide-scrollbar::-webkit-scrollbar {

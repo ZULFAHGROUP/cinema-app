@@ -1743,6 +1743,7 @@ __metadata:
     eslint-plugin-react-refresh: "npm:^0.4.19"
     formik: "npm:^2.4.6"
     globals: "npm:^15.15.0"
+    lucide-react: "npm:^0.542.0"
     moment: "npm:^2.30.1"
     postcss: "npm:^8.5.3"
     react: "npm:^19.0.0"
@@ -1754,6 +1755,7 @@ __metadata:
     react-router-dom: "npm:^7.3.0"
     react-toastify: "npm:^11.0.5"
     redux-persist: "npm:^6.0.0"
+    tailwind-merge: "npm:^3.3.1"
     tailwindcss: "npm:^4.0.14"
     typescript: "npm:~5.7.2"
     typescript-eslint: "npm:^8.24.1"
@@ -3028,6 +3030,15 @@ __metadata:
   dependencies:
     yallist: "npm:^3.0.2"
   checksum: 10c0/89b2ef2ef45f543011e38737b8a8622a2f8998cddf0e5437174ef8f1f70a8b9d14a918ab3e232cb3ba343b7abddffa667f0b59075b2b80e6b4d63c3de6127482
+  languageName: node
+  linkType: hard
+
+"lucide-react@npm:^0.542.0":
+  version: 0.542.0
+  resolution: "lucide-react@npm:0.542.0"
+  peerDependencies:
+    react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/3ccdb898a480f0194f93abef0b6f0347bc2647db24051e65a17c1dbd22ca0d10a7636d9af68c92665b42b6c9e761567a0d65944fe8568fb0e30a7ea57281ccec
   languageName: node
   linkType: hard
 
@@ -4503,6 +4514,13 @@ __metadata:
   dependencies:
     has-flag: "npm:^4.0.0"
   checksum: 10c0/afb4c88521b8b136b5f5f95160c98dee7243dc79d5432db7efc27efb219385bbc7d9427398e43dd6cc730a0f87d5085ce1652af7efbe391327bc0a7d0f7fc124
+  languageName: node
+  linkType: hard
+
+"tailwind-merge@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "tailwind-merge@npm:3.3.1"
+  checksum: 10c0/b84c6a78d4669fa12bf5ab8f0cdc4400a3ce0a7c006511af4af4be70bb664a27466dbe13ee9e3b31f50ddf6c51d380e8192ce0ec9effce23ca729d71a9f63818
   languageName: node
   linkType: hard
 

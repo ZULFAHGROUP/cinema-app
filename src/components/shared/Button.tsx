@@ -32,8 +32,8 @@ const Button: React.FC<ButtonProps> = ({
       {
         "py-1 px-2 text-base font-light": size === "xs",
         "py-2 px-6 text-base font-normal": size === "sm",
-        "bg-[#7da851] text-white shadow": variant === "primary",
-        "bg-[#719948] text-white shadow": variant === "secondary",
+        "bg-[#c77e3b] text-white shadow": variant === "primary",
+        "bg-[#754f2c] text-white shadow": variant === "secondary",
         "bg-opacity-80 bg-[#cadbb7] text-white": variant === "disabled",
         "cursor-not-allowed": loading,
       },

@@ -19,6 +19,7 @@ interface SelectProps {
   className?: string;
   name?: string;
   id?: string;
+  mode?: "multiple" | "tags";
 }
 
 const ReusableSelect = ({
@@ -34,6 +35,7 @@ const ReusableSelect = ({
   defaultOption = "Select an option",
   error,
   conClassName = "",
+  mode,
 }: SelectProps) => {
   return (
     <div className={`flex flex-col ${conClassName}`}>
@@ -51,6 +53,7 @@ const ReusableSelect = ({
         onChange={onChange}
         className={`w-full ${className}`}
         disabled={disabled}
+        mode={mode}
       >
         <Select.Option value="">{defaultOption}</Select.Option>
         {options.map((option, index) => (

@@ -1,5 +1,11 @@
 import * as d3 from "d3-format";
 import moment from "moment";
+import classNames, { Argument } from "classnames";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: Argument[]) {
+  return twMerge(classNames(inputs));
+}
 
 // Format currency function
 export const formatCurrency = (amount: number = 0): string => {
