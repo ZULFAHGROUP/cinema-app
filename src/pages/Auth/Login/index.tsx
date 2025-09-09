@@ -21,7 +21,7 @@ const Login = () => {
     try {
       const response = await dispatch(login(values)).unwrap();
       if (response.status === true) {
-      navigate("/dashboard");
+        navigate("/dashboard");
       }
       resetForm();
     } catch (error) {
@@ -57,7 +57,7 @@ const Login = () => {
         <div className="flex-1 flex justify-center items-center">
           <div className="p-12 text-center space-y-2 w-full md:w-[30rem] shadow-lg rounded-lg border border-gray-200">
             <p className="font-medium text-lg md:text-3xl">Welcome Back!</p>
-            <p>Sign in to continue to your Admin duties.</p>
+            <p>Login to continue to see what is happening with your cinemas.</p>
             <Formik
               initialValues={initialValues}
               validationSchema={loginValidationSchema}

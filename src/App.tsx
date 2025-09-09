@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import AppLayout from "./components/Layout";
 import { allRoutes } from "./routes/allRoutes";
 import Dashboard from "./pages/Dashboard";
+import CinemaRoutes from "./routes/cinemaRoute";
 
 const App = () => {
   return (
@@ -25,10 +26,14 @@ const App = () => {
           <main>
             <ReactNotifications />
             <Routes>
-              <Route path="/" element={<Navigate to="/auth" />} />
+              <Route path="/" element={<Navigate to="/auth/login" />} />
               <Route path="/auth/*" element={<AuthRoutes />} />
               <Route element={<AppLayout />}>
                 <Route path={allRoutes.dashboard} element={<Dashboard />} />
+                <Route
+                  path={`${allRoutes.cinema}/*`}
+                  element={<CinemaRoutes />}
+                />
               </Route>
 
               {/*  404 Catch-All Route */}

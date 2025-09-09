@@ -36,3 +36,10 @@
 .custom-menu .ant-menu-sub {
   background-color: inherit !important;
 }
+
+.cinema-tabs :global(.ant-tabs-nav) {
+  margin-bottom: 0;
+}
+.cinema-tabs :global(.ant-tabs-content-holder) {
+  display: none;
+}

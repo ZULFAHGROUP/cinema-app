@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { IconType } from "react-icons";
 import { ReactNode } from "react";
+import { allRoutes } from "../routes/allRoutes";
 
 interface SidebarProps {
   title: string;
@@ -21,8 +22,13 @@ interface SidebarProps {
 }
 
 const navigationItems = [
-  { name: "Dashboard", icon: BarChart3, href: "/dashboard", active: true },
-  { name: "Cinema Setup", icon: Settings, href: "/cinema-setup" },
+  {
+    name: "Dashboard",
+    icon: BarChart3,
+    href: allRoutes.dashboard,
+    active: true,
+  },
+  { name: "Cinema Setup", icon: Settings, href: allRoutes.cinema },
   { name: "Movies", icon: Film, href: "/movies" },
   { name: "Tickets", icon: Ticket, href: "/tickets" },
   { name: "Staff", icon: Users, href: "/staff" },
