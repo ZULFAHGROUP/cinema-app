@@ -1,7 +1,7 @@
 import React, { ButtonHTMLAttributes, ReactNode } from "react";
 import classNames from "classnames";
 
-type ButtonVariant = "primary" | "secondary" | "disabled";
+type ButtonVariant = "primary" | "secondary" | "disabled" | "outline";
 type ButtonSize = "xs" | "sm";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -35,6 +35,8 @@ const Button: React.FC<ButtonProps> = ({
         "bg-[#c77e3b] text-white shadow": variant === "primary",
         "bg-[#754f2c] text-white shadow": variant === "secondary",
         "bg-opacity-80 bg-[#cadbb7] text-white": variant === "disabled",
+        "bg-transparent text-[#c77e3b] border border-[#c77e3b] hover:bg-[#c77e3b] hover:text-white transition-colors":
+          variant === "outline",
         "cursor-not-allowed": loading,
       },
       className

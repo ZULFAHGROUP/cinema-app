@@ -3,7 +3,7 @@ import { Modal, Button, Spin } from "antd";
 
 interface CustomModalProps {
   open: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   title?: string;
   children: React.ReactNode;
   onConfirm?: () => void;
@@ -23,13 +23,15 @@ const DisplayModal: React.FC<CustomModalProps> = ({
   return (
     <Modal
       open={open}
-      className="min-w-[60rem]"
+      className="md:min-w-[60rem]"
       onCancel={onClose}
       title={title}
       footer={[
-        <Button key="cancel" onClick={onClose}>
-          Cancel
-        </Button>,
+        onClose && (
+          <Button key="cancel" onClick={onClose}>
+            Cancel
+          </Button>
+        ),
         onConfirm && (
           <Button
             key="confirm"

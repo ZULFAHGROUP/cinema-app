@@ -17,6 +17,7 @@ import AppLayout from "./components/Layout";
 import { allRoutes } from "./routes/allRoutes";
 import Dashboard from "./pages/Dashboard";
 import CinemaRoutes from "./routes/cinemaRoute";
+import MoviesRoutes from "./routes/moviesRoute";
 
 const App = () => {
   return (
@@ -33,6 +34,10 @@ const App = () => {
                 <Route
                   path={`${allRoutes.cinema}/*`}
                   element={<CinemaRoutes />}
+                />
+                <Route
+                  path={`${allRoutes.movies}/*`}
+                  element={<MoviesRoutes />}
                 />
               </Route>
 

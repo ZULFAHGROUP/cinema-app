@@ -6,16 +6,11 @@ import {
   CardTitle,
 } from "../../components/shared/Cards";
 import Button from "../../components/shared/Button";
-import { Tabs, Tag } from "antd";
-import {
-  Building2,
-  Monitor,
-  Armchair,
-  Edit,
-  Settings,
-  Volume2,
-} from "lucide-react";
+import { Tabs } from "antd";
+import { Building2, Monitor, Armchair } from "lucide-react";
 import { useState } from "react";
+import Theater from "./components/Theater";
+import Screens from "./components/Screens";
 
 function CinemaSetup() {
   const [activeTab, setActiveTab] = useState("theaters");
@@ -86,54 +81,7 @@ function CinemaSetup() {
           <Building2 className="w-4 h-4" /> Theaters
         </span>
       ),
-      children: (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {cinemas.map((theater) => (
-            <Card
-              key={theater.id}
-              className="hover:shadow-md transition-shadow"
-            >
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="font-sans">{theater.name}</CardTitle>
-                  <Tag color={theater.status === "Active" ? "green" : "orange"}>
-                    {theater.status}
-                  </Tag>
-                </div>
-                <CardDescription className="font-serif">
-                  {theater.screens} screen • {theater.totalSeats} seats
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex flex-wrap gap-1">
-                    {theater.features.map((feature) => (
-                      <Tag key={feature} className="text-xs">
-                        {feature}
-                      </Tag>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      title="Edit"
-                      icon={<Edit className="w-3 h-3" />}
-                      className="flex-1 gap-2 bg-"
-                    />
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      className="gap-2 bg-"
-                      icon={<Settings className="w-3 h-3" />}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ),
+      children: <Theater cinemas={cinemas} />,
     },
     {
       key: "screens",
@@ -142,68 +90,7 @@ function CinemaSetup() {
           <Monitor className="w-4 h-4" /> Screens
         </span>
       ),
-      children: (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {screens.map((screen) => (
-              <Card key={screen.id}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="font-sans">{screen.name}</CardTitle>
-                    <Tag color="blue">{screen.status}</Tag>
-                  </div>
-                  <CardDescription className="font-serif">
-                    {screen.theater}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="font-serif text-muted-foreground">Size</p>
-                        <p className="font-sans font-medium">{screen.size}</p>
-                      </div>
-                      <div>
-                        <p className="font-serif text-muted-foreground">
-                          Resolution
-                        </p>
-                        <p className="font-sans font-medium">
-                          {screen.resolution}
-                        </p>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="font-serif text-muted-foreground text-sm">
-                        Sound System
-                      </p>
-                      <p className="font-sans font-medium">
-                        {screen.soundSystem}
-                      </p>
-                    </div>
-                    <div className="flex gap-2 pt-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="flex-1 gap-2 bg-transparent"
-                      >
-                        <Edit className="w-3 h-3" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        className="gap-2 bg-transparent"
-                      >
-                        <Volume2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      ),
+      children: <Screens screens={screens} />,
     },
     {
       key: "seating",
@@ -288,7 +175,7 @@ function CinemaSetup() {
   return (
     <div className="p-6">
       {/* Header with Tabs and Button in same line */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center flex-col md:flex-row justify-between mb-6">
         <div className="flex-1">
           <Tabs
             activeKey={activeTab}
@@ -304,20 +191,20 @@ function CinemaSetup() {
           {activeTab === "theaters" && (
             <Button
               title="Add Theater"
-              className="gap-2"
+              className="gap-2 rounded-md"
               icon={<Building2 className="w-4 h-4" />}
             />
           )}
           {activeTab === "screens" && (
             <Button
               title="Add Screen"
-              className="gap-2"
+              className="gap-2 rounded-md"
               icon={<Monitor className="w-4 h-4" />}
             />
           )}
           {activeTab === "seating" && (
             <Button
-              className="gap-2"
+              className="gap-2 rounded-md"
               icon={<Armchair className="w-4 h-4" />}
               title="Edit Seating Layout"
             />
@@ -326,7 +213,7 @@ function CinemaSetup() {
       </div>
 
       {/* Tab Content */}
-      <div className="tab-content">
+      <div className="tab-content min-h-screen">
         {tabItems.find((item) => item.key === activeTab)?.children}
       </div>
     </div>

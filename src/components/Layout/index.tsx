@@ -205,7 +205,7 @@ const AppLayout: React.FC = () => {
             <Header
               style={{
                 padding: "0 16px",
-                background: COLORS.header,
+                background: COLORS.primary,
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
