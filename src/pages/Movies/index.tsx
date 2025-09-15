@@ -167,7 +167,11 @@ function MoviesPage() {
       </div>
 
       {/* Add Movie Modal */}
-      <DisplayModal open={isAddMovieModalOpen} title="Add New Movie">
+      <DisplayModal
+        open={isAddMovieModalOpen}
+        onClose={() => setIsAddMovieModalOpen(false)}
+        title="Add New Movie"
+      >
         <AddMovieForm
           onSubmit={handleAddMovie}
           onCancel={() => setIsAddMovieModalOpen(false)}
@@ -175,7 +179,11 @@ function MoviesPage() {
       </DisplayModal>
 
       {/* Add Showtime Modal */}
-      <DisplayModal open={isAddShowtimeModalOpen} title="Add New Showtime">
+      <DisplayModal
+        open={isAddShowtimeModalOpen}
+        onClose={() => setIsAddShowtimeModalOpen(false)}
+        title="Add New Showtime"
+      >
         <AddShowtimeForm
           movies={movies}
           onSubmit={handleAddShowtime}

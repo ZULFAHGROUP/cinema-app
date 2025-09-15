@@ -11,9 +11,14 @@ import { Building2, Monitor, Armchair } from "lucide-react";
 import { useState } from "react";
 import Theater from "./components/Theater";
 import Screens from "./components/Screens";
+import DisplayModal from "../../components/shared/Modal/DisplayModal";
+import AddTheaterForm from "./components/AddTheaterForm";
+import AddScreensForm from "./components/AddScreensForm";
 
 function CinemaSetup() {
   const [activeTab, setActiveTab] = useState("theaters");
+  const [isAddTheaterModalOpen, setIsAddTheaterModalOpen] = useState(false);
+  const [isAddScreensModalOpen, setIsAddScreensModalOpen] = useState(false);
 
   const cinemas = [
     {
@@ -216,6 +221,31 @@ function CinemaSetup() {
       <div className="tab-content min-h-screen">
         {tabItems.find((item) => item.key === activeTab)?.children}
       </div>
+
+      {/* Add Movie Modal */}
+      <DisplayModal
+        open={isAddTheaterModalOpen}
+        onClose={() => setIsAddTheaterModalOpen(false)}
+        title="Add New Movie"
+      >
+        <AddTheaterForm
+        // onSubmit={handleAddMovie}
+        // onCancel={() => setIsAddTheaterModalOpen(false)}
+        />
+      </DisplayModal>
+
+      {/* Add Showtime Modal */}
+      <DisplayModal
+        open={isAddScreensModalOpen}
+        onClose={() => setIsAddScreensModalOpen(false)}
+        title="Add New Showtime"
+      >
+        <AddScreensForm
+        // movies={movies}
+        // onSubmit={handleAddShowtime}
+        // onCancel={() => setIsAddScreensModalOpen(false)}
+        />
+      </DisplayModal>
     </div>
   );
 }

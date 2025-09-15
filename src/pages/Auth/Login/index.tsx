@@ -33,7 +33,7 @@ const Login = () => {
     <div>
       <div className="flex min-h-screen p-6">
         <div className="bg-[url('/src/assets/background.jpg')] items-end font-bold text-6xl flex-1 hidden md:flex">
-          <Carousel autoplay className="text-[#7da851] max-w-xl p-10 h-full">
+          <Carousel autoplay className="text-[#c77e3b] max-w-xl p-10 h-full">
             <div className="">
               <h3 className="text-4xl font-bold">Welcome to Our Platform</h3>
               <p className="italic text-lg mt-2">
@@ -102,17 +102,17 @@ const Login = () => {
                       <Input
                         type="checkbox"
                         id="rememberMe"
-                        className="accent-[#7da851]"
+                        className="accent-[#c77e3b]"
                         // checked={}
                         onChange={handleChange}
                       />
                       <p className="text-xs font-semibold">Remember me</p>
                     </div>
-                    <span className="text-[#7da851] text-xs font-normal">
+                    <span className="text-[#c77e3b] text-xs font-normal">
                       Forgot Password?{" "}
                       <Link
                         to="/forget_password"
-                        className="text-[#7da851] font-semibold transition ease-in-out duration-300"
+                        className="text-[#c77e3b] font-semibold transition ease-in-out duration-300"
                       >
                         Reset
                       </Link>

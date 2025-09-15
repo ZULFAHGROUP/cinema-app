@@ -150,15 +150,19 @@ const AddShowtimeForm = ({ movies, onSubmit, onCancel }: AddShowTimeProps) => {
           </div>
 
           <div className="flex gap-2 pt-6 border-t mt-6">
-            <Button type="submit" className="flex-1" disabled={isSubmitting}>
-              {isSubmitting ? "Creating Showtime..." : "Create Showtime"}
-            </Button>
+            <Button
+              type="submit"
+              title={isSubmitting ? "Creating Showtime..." : "Create Showtime"}
+              className="flex-1 rounded-md"
+              disabled={isSubmitting}
+            />
             <Button
               type="button"
-              variant="primary"
+              variant="outline"
               onClick={onCancel}
               disabled={isSubmitting}
               title="Cancel"
+              className="rounded-md"
             />
           </div>
         </Form>

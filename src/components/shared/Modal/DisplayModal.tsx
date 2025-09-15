@@ -9,6 +9,7 @@ interface CustomModalProps {
   onConfirm?: () => void;
   confirmText?: string;
   isLoading?: boolean;
+  isCancelButton?: boolean;
 }
 
 const DisplayModal: React.FC<CustomModalProps> = ({
@@ -19,6 +20,7 @@ const DisplayModal: React.FC<CustomModalProps> = ({
   onConfirm,
   confirmText = "Confirm",
   isLoading = false,
+  isCancelButton = false,
 }) => {
   return (
     <Modal
@@ -27,7 +29,7 @@ const DisplayModal: React.FC<CustomModalProps> = ({
       onCancel={onClose}
       title={title}
       footer={[
-        onClose && (
+        isCancelButton && (
           <Button key="cancel" onClick={onClose}>
             Cancel
           </Button>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BarChart3,
   Settings,
@@ -10,15 +11,13 @@ import {
   Monitor,
   FileText,
 } from "lucide-react";
-import { IconType } from "react-icons";
-import { ReactNode } from "react";
 import { allRoutes } from "../routes/allRoutes";
 
 interface SidebarProps {
   title: string;
-  icon: IconType | ReactNode;
+  icon: any;
   key: string;
-  submenu?: SidebarProps[];
+  subMenu?: SidebarProps[];
 }
 
 const navigationItems = [
