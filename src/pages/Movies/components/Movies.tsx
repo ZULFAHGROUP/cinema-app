@@ -55,25 +55,27 @@ const Movies = ({ movies }: any) => {
                   {new Date(movie.releaseDate).toLocaleDateString()}
                 </span>
               </div>
-              {movie.showtimes.length > 0 && (
-                <div>
-                  <p className="text-sm font-serif text-muted-foreground mb-2">
-                    Today's Showtimes
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    {movie.showtimes.slice(0, 3).map((time: any) => (
-                      <Tag key={time} color="blue" className="text-xs">
-                        {time}
-                      </Tag>
-                    ))}
-                    {movie.showtimes.length > 3 && (
-                      <Tag color="blue" className="text-xs">
-                        +{movie.showtimes.length - 3} more
-                      </Tag>
-                    )}
+              <div className="h-20">
+                {movie.showtimes.length > 0 && (
+                  <div className="">
+                    <p className="text-sm font-serif text-muted-foreground mb-2">
+                      Today's Showtimes
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {movie.showtimes.slice(0, 3).map((time: any) => (
+                        <Tag key={time} color="blue" className="text-xs">
+                          {time}
+                        </Tag>
+                      ))}
+                      {movie.showtimes.length > 3 && (
+                        <Tag color="blue" className="text-xs">
+                          +{movie.showtimes.length - 3} more
+                        </Tag>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
               <div className="flex gap-2 pt-2">
                 <Button
                   variant="secondary"

@@ -18,6 +18,7 @@ import { allRoutes } from "./routes/allRoutes";
 import Dashboard from "./pages/Dashboard";
 import CinemaRoutes from "./routes/cinemaRoute";
 import MoviesRoutes from "./routes/moviesRoute";
+import ConcessionsRoutes from "./routes/concessionsRoute";
 
 const App = () => {
   return (
@@ -27,7 +28,7 @@ const App = () => {
           <main>
             <ReactNotifications />
             <Routes>
-              <Route path="/" element={<Navigate to="/auth/login" />} />
+              <Route path="/" element={<Navigate to={allRoutes.dashboard} />} />
               <Route path="/auth/*" element={<AuthRoutes />} />
               <Route element={<AppLayout />}>
                 <Route path={allRoutes.dashboard} element={<Dashboard />} />
@@ -38,6 +39,10 @@ const App = () => {
                 <Route
                   path={`${allRoutes.movies}/*`}
                   element={<MoviesRoutes />}
+                />
+                <Route
+                  path={`${allRoutes.concessions}/*`}
+                  element={<ConcessionsRoutes />}
                 />
               </Route>
 

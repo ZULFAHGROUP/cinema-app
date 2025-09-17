@@ -14,7 +14,7 @@ const NotFound = ({ route }: any) => {
           Sorry, the page you’re looking for doesn’t exist or has been moved.
         </p>
         <Link
-          to={route}
+          to={route ? route : "/"}
           className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-secondary text-white text-sm font-medium hover:bg-secondary transition-all"
         >
           <BsArrowLeftCircle className="w-5 h-5" />

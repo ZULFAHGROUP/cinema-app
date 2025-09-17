@@ -7,4 +7,5 @@ export const allRoutes = {
   create: "create",
   edit: "edit",
   details: "details",
+  concessions: "/concessions",
 };

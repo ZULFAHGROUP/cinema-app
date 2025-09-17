@@ -31,7 +31,7 @@ const navigationItems = [
   { name: "Movies", icon: Film, href: allRoutes.movies },
   { name: "Tickets", icon: Ticket, href: "/tickets" },
   { name: "Staff", icon: Users, href: "/staff" },
-  { name: "Concessions", icon: ShoppingCart, href: "/concessions" },
+  { name: "Concessions", icon: ShoppingCart, href: allRoutes.concessions },
   { name: "Customers", icon: Gift, href: "/loyalty" },
   { name: "Scheduling", icon: Calendar, href: "/scheduling" },
   { name: "Digital Signage", icon: Monitor, href: "/signage" },
