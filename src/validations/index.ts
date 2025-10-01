@@ -29,3 +29,17 @@ export const addMovieValidationSchema = Yup.object({
     .min(0, "Rating must be between 0 and 10")
     .max(10, "Rating must be between 0 and 10"),
 });
+
+export const showTimeValidationSchema = Yup.object({
+  movieTitle: Yup.string().required("Movie selection is required"),
+  theater: Yup.string().required("Theater selection is required"),
+  screen: Yup.string().required("Screen selection is required"),
+  date: Yup.date()
+    .required("Date is required")
+    .min(new Date(), "Date cannot be in the past"),
+  time: Yup.string().required("Time is required"),
+  price: Yup.number()
+    .required("Price is required")
+    .min(0.01, "Price must be greater than 0")
+    .max(100, "Price cannot exceed $100"),
+});

@@ -1,23 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Formik, Form } from "formik";
-import * as Yup from "yup";
 import Button from "../../../components/shared/Button";
 import Input from "../../../components/shared/Input";
 import ReusableSelect from "../../../components/shared/Select";
-
-const validationSchema = Yup.object({
-  movieTitle: Yup.string().required("Movie selection is required"),
-  theater: Yup.string().required("Theater selection is required"),
-  screen: Yup.string().required("Screen selection is required"),
-  date: Yup.date()
-    .required("Date is required")
-    .min(new Date(), "Date cannot be in the past"),
-  time: Yup.string().required("Time is required"),
-  price: Yup.number()
-    .required("Price is required")
-    .min(0.01, "Price must be greater than 0")
-    .max(100, "Price cannot exceed $100"),
-});
+import { showTimeValidationSchema } from "../../../validations";
 
 interface AddShowTimeProps {
   movies: any;
@@ -55,7 +41,7 @@ const AddShowtimeForm = ({ movies, onSubmit, onCancel }: AddShowTimeProps) => {
   return (
     <Formik
       initialValues={initialValues}
-      validationSchema={validationSchema}
+      validationSchema={showTimeValidationSchema}
       onSubmit={(values, { setSubmitting }) => {
         onSubmit(values);
         setSubmitting(false);
