@@ -19,6 +19,8 @@ import Dashboard from "./pages/Dashboard";
 import CinemaRoutes from "./routes/cinemaRoute";
 import MoviesRoutes from "./routes/moviesRoute";
 import ConcessionsRoutes from "./routes/concessionsRoute";
+import TicketsRoutes from "./routes/ticketsRoute";
+import StaffsRoutes from "./routes/staffRoutes";
 
 const App = () => {
   return (
@@ -39,6 +41,14 @@ const App = () => {
                 <Route
                   path={`${allRoutes.movies}/*`}
                   element={<MoviesRoutes />}
+                />
+                <Route
+                  path={`${allRoutes.tickets}/*`}
+                  element={<TicketsRoutes />}
+                />
+                <Route
+                  path={`${allRoutes.staffs}/*`}
+                  element={<StaffsRoutes />}
                 />
                 <Route
                   path={`${allRoutes.concessions}/*`}

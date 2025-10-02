@@ -8,4 +8,7 @@ export const allRoutes = {
   edit: "edit",
   details: "details",
   concessions: "/concessions",
+  tickets: "/tickets",
+  staffs: "/staffs",
+  customers: "/customers",
 };
