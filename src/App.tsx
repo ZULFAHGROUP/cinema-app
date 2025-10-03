@@ -23,6 +23,7 @@ import TicketsRoutes from "./routes/ticketsRoute";
 import StaffsRoutes from "./routes/staffRoutes";
 import CustomersRoutes from "./routes/customersRoutes";
 import SchedulingRoutes from "./routes/schedulingRoutes";
+import SignageRoutes from "./routes/signageRoute";
 
 const App = () => {
   return (
@@ -63,6 +64,10 @@ const App = () => {
                 <Route
                   path={`${allRoutes.scheduling}/*`}
                   element={<SchedulingRoutes />}
+                />
+                <Route
+                  path={`${allRoutes.signage}/*`}
+                  element={<SignageRoutes />}
                 />
               </Route>
 

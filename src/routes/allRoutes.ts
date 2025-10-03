@@ -12,4 +12,5 @@ export const allRoutes = {
   staffs: "/staffs",
   customers: "/customers",
   scheduling: "/scheduling",
+  signage: "/signage",
 };

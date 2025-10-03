@@ -34,7 +34,7 @@ const navigationItems = [
   { name: "Concessions", icon: ShoppingCart, href: allRoutes.concessions },
   { name: "Customers", icon: Gift, href: allRoutes.customers },
   { name: "Scheduling", icon: Calendar, href: allRoutes.scheduling },
-  { name: "Digital Signage", icon: Monitor, href: "/signage" },
+  { name: "Digital Signage", icon: Monitor, href: allRoutes.signage },
   { name: "Reports", icon: FileText, href: "/reports" },
 ];
 
