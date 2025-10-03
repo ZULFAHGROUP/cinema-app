@@ -127,7 +127,24 @@ const AppLayout: React.FC = () => {
     });
 
   return (
-    <ConfigProvider theme={{ token: { colorPrimary: COLORS.secondary } }}>
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: COLORS.secondary, // active color
+          // colorText: COLORS.secondary, // default text
+        },
+        components: {
+          Menu: {
+            itemBg: COLORS.primary, // default background
+            // itemColor: COLORS.secondary, // text color
+            itemHoverBg: "#5480c7", // 👈 hover background
+            itemHoverColor: "#fff", // 👈 hover text color
+            itemSelectedBg: COLORS.secondary, // selected bg
+            itemSelectedColor: "#fff", // selected text
+          },
+        },
+      }}
+    >
       <PrivateRoute>
         <Layout className="max-h-screen">
           <ScrollToTop />

@@ -8,12 +8,20 @@
   color: #c77e3b;
 }
 
+.text-extra {
+  background-color: #5480c7;
+}
+
 .bg-primary {
   background-color: #fff8ea;
 }
 
 .bg-secondary {
   background-color: #c77e3b;
+}
+
+.bg-extra {
+  background-color: #5480c7;
 }
 
 .hide-scrollbar::-webkit-scrollbar {

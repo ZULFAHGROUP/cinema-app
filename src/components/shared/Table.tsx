@@ -160,7 +160,7 @@ const ReusableTable = <T extends Record<string, any>>({
           pagination={paginationConfig}
           title={() => (
             <div
-              className="bg-primary"
+              className="bg-extra"
               style={{
                 fontSize: "16px",
                 fontWeight: "bold",

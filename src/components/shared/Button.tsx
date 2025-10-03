@@ -1,7 +1,13 @@
 import React, { ButtonHTMLAttributes, ReactNode } from "react";
 import classNames from "classnames";
 
-type ButtonVariant = "primary" | "secondary" | "disabled" | "outline";
+type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "disabled"
+  | "outline"
+  | "extra"
+  | "extra-outline";
 type ButtonSize = "xs" | "sm";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -33,10 +39,13 @@ const Button: React.FC<ButtonProps> = ({
         "py-1 px-2 text-base font-light": size === "xs",
         "py-2 px-6 text-base font-normal": size === "sm",
         "bg-[#c77e3b] text-white shadow": variant === "primary",
-        "bg-[#754f2c] text-white shadow": variant === "secondary",
+        "bg-[#754f2c] text-white shadow": variant === "secondary", //
+        "bg-[#5480c7] text-white shadow": variant === "extra",
         "bg-opacity-80 bg-[#cadbb7] text-white": variant === "disabled",
         "bg-transparent text-[#c77e3b] border border-[#c77e3b] hover:bg-[#c77e3b] hover:text-white transition-colors":
           variant === "outline",
+        "bg-transparent text-[#5480c7] border border-[#5480c7] hover:bg-[#5480c7] hover:text-white transition-colors":
+          variant === "extra-outline",
         "cursor-not-allowed": loading,
       },
       className
