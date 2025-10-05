@@ -35,7 +35,7 @@ const navigationItems = [
   { name: "Customers", icon: Gift, href: allRoutes.customers },
   { name: "Scheduling", icon: Calendar, href: allRoutes.scheduling },
   { name: "Digital Signage", icon: Monitor, href: allRoutes.signage },
-  { name: "Reports", icon: FileText, href: "/reports" },
+  { name: "Reports", icon: FileText, href: allRoutes.reports },
 ];
 
 const sideBarDetails: SidebarProps[] = navigationItems.map((item) => ({

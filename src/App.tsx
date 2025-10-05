@@ -24,6 +24,7 @@ import StaffsRoutes from "./routes/staffRoutes";
 import CustomersRoutes from "./routes/customersRoutes";
 import SchedulingRoutes from "./routes/schedulingRoutes";
 import SignageRoutes from "./routes/signageRoute";
+import ReportsRoutes from "./routes/reportsRoutes";
 
 const App = () => {
   return (
@@ -68,6 +69,10 @@ const App = () => {
                 <Route
                   path={`${allRoutes.signage}/*`}
                   element={<SignageRoutes />}
+                />
+                <Route
+                  path={`${allRoutes.reports}/*`}
+                  element={<ReportsRoutes />}
                 />
               </Route>
 
