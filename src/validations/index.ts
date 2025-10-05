@@ -43,3 +43,12 @@ export const showTimeValidationSchema = Yup.object({
     .min(0.01, "Price must be greater than 0")
     .max(100, "Price cannot exceed $100"),
 });
+
+export const theaterValidationSchema = Yup.object({
+  name: Yup.string()
+    .required("Theater name is required")
+    .min(2, "Name must be at least 2 characters"),
+  location: Yup.string()
+    .required("Location is required")
+    .min(3, "Location must be at least 3 characters"),
+});

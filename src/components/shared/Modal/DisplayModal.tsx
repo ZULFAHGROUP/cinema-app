@@ -25,7 +25,7 @@ const DisplayModal: React.FC<CustomModalProps> = ({
   return (
     <Modal
       open={open}
-      className="md:min-w-[60rem]"
+      className="md:" //min-w-[60rem]
       onCancel={onClose}
       title={title}
       footer={[

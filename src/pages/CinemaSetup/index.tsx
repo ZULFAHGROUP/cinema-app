@@ -196,6 +196,7 @@ function CinemaSetup() {
           {activeTab === "theaters" && (
             <Button
               title="Add Theater"
+              onClick={() => setIsAddTheaterModalOpen(true)}
               className="gap-2 rounded-md"
               icon={<Building2 className="w-4 h-4" />}
             />
@@ -203,6 +204,7 @@ function CinemaSetup() {
           {activeTab === "screens" && (
             <Button
               title="Add Screen"
+              onClick={() => setIsAddScreensModalOpen(true)}
               className="gap-2 rounded-md"
               icon={<Monitor className="w-4 h-4" />}
             />
@@ -228,10 +230,7 @@ function CinemaSetup() {
         onClose={() => setIsAddTheaterModalOpen(false)}
         title="Add New Movie"
       >
-        <AddTheaterForm
-        // onSubmit={handleAddMovie}
-        // onCancel={() => setIsAddTheaterModalOpen(false)}
-        />
+        <AddTheaterForm onCancel={() => setIsAddTheaterModalOpen(false)} />
       </DisplayModal>
 
       {/* Add Showtime Modal */}
