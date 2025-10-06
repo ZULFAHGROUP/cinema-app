@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import { Modal, Button } from "antd";
 import {
   ExclamationCircleOutlined,
@@ -12,14 +12,16 @@ interface ConfirmationModalProps {
   onCancel: () => void;
   title?: string;
   content?: string;
+  item?: ReactNode;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   open,
   onConfirm,
   onCancel,
+  item,
   title = "Confirm this ?",
-  content = "Are you sure that you want to delete this ?",
+  content = `Are you sure that you want to delete this ${item}?`,
 }) => {
   return (
     <Modal
@@ -51,7 +53,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             type="primary"
             onClick={onConfirm}
             icon={<LikeOutlined />}
-            className="bg-primary"
+            className="bg-secondary"
           >
             Yes!
           </Button>

@@ -8,44 +8,27 @@ import {
 import Button from "../../components/shared/Button";
 import { Tabs } from "antd";
 import { Building2, Monitor, Armchair } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Theater from "./components/Theater";
 import Screens from "./components/Screens";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
 import AddTheaterForm from "./components/AddTheaterForm";
 import AddScreensForm from "./components/AddScreensForm";
+import { useAppDispatch, useAppSelector } from "../../store/hook";
+import { getAllCinemas } from "../../store/slices/cinema";
 
 function CinemaSetup() {
   const [activeTab, setActiveTab] = useState("theaters");
   const [isAddTheaterModalOpen, setIsAddTheaterModalOpen] = useState(false);
   const [isAddScreensModalOpen, setIsAddScreensModalOpen] = useState(false);
 
-  const cinemas = [
-    {
-      id: 1,
-      name: "Theater 1",
-      screens: 1,
-      totalSeats: 150,
-      features: ["Dolby Atmos", "4K", "Reclining Seats"],
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Theater 2",
-      screens: 1,
-      totalSeats: 200,
-      features: ["IMAX", "3D", "Premium Sound"],
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "Theater 3",
-      screens: 1,
-      totalSeats: 120,
-      features: ["Standard", "AC"],
-      status: "Maintenance",
-    },
-  ];
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(getAllCinemas());
+  }, [dispatch]);
+
+  const { cinemaLoading, allCinemas } = useAppSelector((state) => state.cinema);
+  console.log("cinemas", allCinemas);
 
   const screens = [
     {
@@ -83,10 +66,10 @@ function CinemaSetup() {
       key: "theaters",
       label: (
         <span className="flex items-center gap-2">
-          <Building2 className="w-4 h-4" /> Theaters
+          <Building2 className="w-4 h-4" /> Cinemas
         </span>
       ),
-      children: <Theater cinemas={cinemas} />,
+      children: <Theater cinemas={allCinemas?.data} />,
     },
     {
       key: "screens",

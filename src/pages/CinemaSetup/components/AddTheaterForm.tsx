@@ -3,6 +3,9 @@ import { Formik, Form } from "formik";
 import Input from "../../../components/shared/Input";
 import Button from "../../../components/shared/Button";
 import { theaterValidationSchema } from "../../../validations";
+import { toast } from "react-toastify";
+import { useAppDispatch } from "../../../store/hook";
+import { createCinema, getAllCinemas } from "../../../store/slices/cinema";
 
 interface AddTheaterFormProps {
   // onSubmit: (values: any) => void;
@@ -10,22 +13,27 @@ interface AddTheaterFormProps {
 }
 
 const AddTheaterForm = ({ onCancel }: AddTheaterFormProps) => {
+  const dispatch = useAppDispatch();
+
   const initialValues = {
     name: "",
     location: "",
   };
 
-  function handleaddTheater(
+  async function handleaddTheater(
     values: any,
     { resetForm }: { resetForm: () => void }
   ) {
     try {
-      if (values) {
-        console.log(values);
-        resetForm();
+      const response = await dispatch(createCinema(values)).unwrap();
+      console.log("response is", response);
+      if (response.code === 201) {
+        toast.success(response.message);
+        await dispatch(getAllCinemas());
       }
-    } catch (e: any) {
-      console.log(e.message);
+      resetForm();
+    } catch (error) {
+      console.error("Error creating customer", error);
     }
   }
 
@@ -74,6 +82,7 @@ const AddTheaterForm = ({ onCancel }: AddTheaterFormProps) => {
               type="submit"
               className="flex-1 rounded-md"
               disabled={isSubmitting}
+              loading={isSubmitting}
               title={isSubmitting ? "Adding Theater..." : "Add Theater"}
             />
             <Button

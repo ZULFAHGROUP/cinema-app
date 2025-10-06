@@ -15,7 +15,7 @@ import rootReducer from "./reducer";
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["accounts"],
+  whitelist: ["accounts", "cinema"],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

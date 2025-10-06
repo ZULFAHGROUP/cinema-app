@@ -57,7 +57,8 @@ export interface AuthState {
 // Define the structure of the API response
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface ApiResponse<T = any> {
-  status: boolean;
+  status?: boolean;
+  code?: number;
   message?: string;
   data?: T;
 }
