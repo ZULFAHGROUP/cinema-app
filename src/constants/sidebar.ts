@@ -10,6 +10,7 @@ import {
   Calendar,
   Monitor,
   FileText,
+  Settings2,
 } from "lucide-react";
 import { allRoutes } from "../routes/allRoutes";
 
@@ -36,6 +37,7 @@ const navigationItems = [
   { name: "Scheduling", icon: Calendar, href: allRoutes.scheduling },
   { name: "Digital Signage", icon: Monitor, href: allRoutes.signage },
   { name: "Reports", icon: FileText, href: allRoutes.reports },
+  { name: "Settings", icon: Settings2, href: allRoutes.settings },
 ];
 
 const sideBarDetails: SidebarProps[] = navigationItems.map((item) => ({

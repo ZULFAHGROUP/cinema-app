@@ -25,6 +25,7 @@ import CustomersRoutes from "./routes/customersRoutes";
 import SchedulingRoutes from "./routes/schedulingRoutes";
 import SignageRoutes from "./routes/signageRoute";
 import ReportsRoutes from "./routes/reportsRoutes";
+import SettingsRoutes from "./routes/settingsRoutes";
 
 const App = () => {
   return (
@@ -73,6 +74,10 @@ const App = () => {
                 <Route
                   path={`${allRoutes.reports}/*`}
                   element={<ReportsRoutes />}
+                />
+                <Route
+                  path={`${allRoutes.settings}/*`}
+                  element={<SettingsRoutes />}
                 />
               </Route>
 

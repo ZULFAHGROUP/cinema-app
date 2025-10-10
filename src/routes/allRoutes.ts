@@ -14,4 +14,5 @@ export const allRoutes = {
   scheduling: "/scheduling",
   signage: "/signage",
   reports: "/reporting",
+  settings: "/settings",
 };
