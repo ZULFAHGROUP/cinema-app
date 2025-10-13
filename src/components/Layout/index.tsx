@@ -249,7 +249,7 @@ const AppLayout: React.FC = () => {
             </Header>
 
             <Content
-              className="hide-scrollbar p-5 rounded-lg overflow-y-auto"
+              className="hide-scrollbar min-h-screen p-5 rounded-lg overflow-y-auto"
               style={{ background: COLORS.primary }}
             >
               {canGoBack &&

@@ -52,3 +52,39 @@ export const theaterValidationSchema = Yup.object({
     .required("Location is required")
     .min(3, "Location must be at least 3 characters"),
 });
+
+export const movieClassificationSchema = Yup.object().shape({
+  name: Yup.string().required("Classification name is required"),
+});
+
+export const seatTypeValidationSchema = Yup.object().shape({
+  name: Yup.string().required("Name is required"),
+  description: Yup.string().required("Description is required"),
+  price: Yup.string().required("Price is required"),
+});
+
+export const showtimeStatusSchema = Yup.object().shape({
+  name: Yup.string().required("Status name is required"),
+});
+
+export const screenValidationSchema = Yup.object().shape({
+  cinema_id: Yup.string().required("Cinema is required"),
+  name: Yup.string().required("Screen Name is required"),
+  seat_layout: Yup.object().shape({
+    rows: Yup.array()
+      .of(
+        Yup.object().shape({
+          row: Yup.string()
+            .trim()
+            .required("Row label is required (e.g., A, B, C)"),
+          count: Yup.number()
+            .typeError("Seat count must be a number")
+            .min(1, "Each row must have at least 1 seat")
+            .required("Seat count is required"),
+          default_type: Yup.string().required("Default seat type is required"),
+        })
+      )
+      .min(1, "At least one row is required")
+      .required("Seat layout is required"),
+  }),
+});

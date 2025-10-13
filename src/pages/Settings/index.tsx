@@ -5,13 +5,13 @@ import SeatType from "./components/SeatType";
 import ShowtimeStatus from "./components/ShowtimeStatus";
 
 const Settings = () => {
-  type settingsNav = "movie-classification" | "seat-type" | "showtime-status";
-  const [currentScreen, setCurrentScreen] = useState<settingsNav>(
+  type SettingsNav = "movie-classification" | "seat-type" | "showtime-status";
+  const [currentScreen, setCurrentScreen] = useState<SettingsNav>(
     "movie-classification"
   );
   interface SettingsRouteProps {
     name: string;
-    url: settingsNav;
+    url: SettingsNav;
   }
   const settingsRoute: SettingsRouteProps[] = [
     { name: "Movie Classification", url: "movie-classification" },
@@ -19,7 +19,7 @@ const Settings = () => {
     { name: "Showtime Status", url: "showtime-status" },
   ];
   return (
-    <div className="flex flex-col md:flex-row gap-2">
+    <div className="min-h-screen flex flex-col md:flex-row gap-2">
       <div className="flex flex-row flex-wrap md:flex-col gap-4 w-full md:w-[20%]">
         {settingsRoute.map((routes) => (
           <Button
@@ -31,7 +31,7 @@ const Settings = () => {
           />
         ))}
       </div>
-      <div className="border-l border-l-[#5480c7] px-2 w-full md:w-[80%]">
+      <div className="md:border-l md:border-l-[#5480c7] md:px-2 w-full md:w-[80%]">
         {currentScreen === "movie-classification" ? (
           <MovieClassification />
         ) : currentScreen === "seat-type" ? (

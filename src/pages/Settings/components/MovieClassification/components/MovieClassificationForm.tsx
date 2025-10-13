@@ -1,32 +1,31 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Formik, Form } from "formik";
-import Input from "../../../components/shared/Input";
-import Button from "../../../components/shared/Button";
-import { theaterValidationSchema } from "../../../validations";
+import Input from "../../../../../components/shared/Input";
+import Button from "../../../../../components/shared/Button";
 import { toast } from "react-toastify";
-import { useAppDispatch } from "../../../store/hook";
+import { useAppDispatch } from "../../../../../store/hook";
 import {
-  createCinema,
-  getAllCinemas,
-  updateCinema,
-} from "../../../store/slices/cinema";
+  createClassification,
+  updateClassification,
+  getAllClassifications,
+} from "../../../../../store/slices/classification";
+import { movieClassificationSchema } from "../../../../../validations";
 
-interface TheaterFormProps {
+interface MovieClassificationFormProps {
   onCancel: () => void;
   editMode?: boolean;
-  cinemaData?: any;
+  classificationData?: any;
 }
 
-const TheaterForm = ({
+const MovieClassificationForm = ({
   onCancel,
   editMode = false,
-  cinemaData,
-}: TheaterFormProps) => {
+  classificationData,
+}: MovieClassificationFormProps) => {
   const dispatch = useAppDispatch();
 
   const initialValues = {
-    name: cinemaData?.name || "",
-    location: cinemaData?.location || "",
+    name: classificationData?.name || "",
   };
 
   async function handleSubmit(
@@ -35,22 +34,25 @@ const TheaterForm = ({
   ) {
     try {
       let response;
-      if (editMode && cinemaData?.cinema_id) {
+      if (editMode && classificationData?.movie_classification_id) {
         response = await dispatch(
-          updateCinema({ id: cinemaData.cinema_id, payload: values })
+          updateClassification({
+            id: classificationData.movie_classification_id,
+            payload: values,
+          })
         ).unwrap();
       } else {
-        response = await dispatch(createCinema(values)).unwrap();
+        response = await dispatch(createClassification(values)).unwrap();
       }
-
+      console.log("coming response", response);
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message);
-        await dispatch(getAllCinemas());
+        await dispatch(getAllClassifications());
         resetForm();
-        onCancel(); // close modal after success
+        onCancel();
       }
     } catch (error: any) {
-      console.error("Error submitting theater form", error);
+      console.error("Error submitting classification form", error);
       toast.error(error?.response?.message || "Something went wrong");
     }
   }
@@ -59,7 +61,7 @@ const TheaterForm = ({
     <Formik
       enableReinitialize
       initialValues={initialValues}
-      validationSchema={theaterValidationSchema}
+      validationSchema={movieClassificationSchema}
       onSubmit={handleSubmit}
     >
       {({
@@ -74,7 +76,7 @@ const TheaterForm = ({
         <Form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <Input
-              label="Theater Name"
+              label="Classification Name"
               name="name"
               value={values.name}
               onChange={handleChange}
@@ -84,22 +86,7 @@ const TheaterForm = ({
                   ? errors.name
                   : undefined
               }
-              placeholder="Silver bird"
-              required
-            />
-
-            <Input
-              label="Location"
-              name="location"
-              value={values.location}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={
-                touched.location && typeof errors.location === "string"
-                  ? errors.location
-                  : undefined
-              }
-              placeholder="Ikeja"
+              placeholder="PG-13"
               required
             />
           </div>
@@ -113,11 +100,11 @@ const TheaterForm = ({
               title={
                 isSubmitting
                   ? editMode
-                    ? "Updating Theater..."
-                    : "Adding Theater..."
+                    ? "Updating..."
+                    : "Adding..."
                   : editMode
-                  ? "Update Theater"
-                  : "Add Theater"
+                  ? "Update Classification"
+                  : "Add Classification"
               }
             />
             <Button
@@ -135,4 +122,4 @@ const TheaterForm = ({
   );
 };
 
-export default TheaterForm;
+export default MovieClassificationForm;

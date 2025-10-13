@@ -20,16 +20,31 @@ export const createCinema = createAsyncThunk(
   }
 );
 
+export const updateCinema = createAsyncThunk(
+  "cinema/updateCinema",
+  async (
+    { id, payload }: { id: string | number; payload: any },
+    { rejectWithValue }
+  ): Promise<ApiResponse> => {
+    try {
+      const response = await Cinema.updateCinema(id, payload);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.response?.data || error.message,
+      }) as any;
+    }
+  }
+);
+
 export const getAllCinemas = createAsyncThunk(
   "cinema/getAllCinemas",
   async (_, { rejectWithValue }) => {
     try {
       const response = await Cinema.allCinemas();
-      console.log("response from Api", response);
       return response.data;
     } catch (error: any) {
-      toast.error(error.message);
-      console.log("error is", error);
+      toast.error(error?.response?.data?.message);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
@@ -40,7 +55,7 @@ export const deleteCinema = createAsyncThunk(
   async (id: string, { rejectWithValue }): Promise<ApiResponse> => {
     try {
       const response = await Cinema.deleteCinema(id);
-      return response.data.data;
+      return response.data;
     } catch (error: any) {
       return rejectWithValue({
         message: error.response?.data || error.message,

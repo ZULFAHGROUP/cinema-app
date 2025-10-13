@@ -16,6 +16,7 @@ import AddTheaterForm from "./components/AddTheaterForm";
 import AddScreensForm from "./components/AddScreensForm";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { getAllCinemas } from "../../store/slices/cinema";
+import { getAllScreen } from "../../store/slices/screen";
 
 function CinemaSetup() {
   const [activeTab, setActiveTab] = useState("theaters");
@@ -25,31 +26,11 @@ function CinemaSetup() {
   const dispatch = useAppDispatch();
   useEffect(() => {
     dispatch(getAllCinemas());
+    dispatch(getAllScreen());
   }, [dispatch]);
 
   const { cinemaLoading, allCinemas } = useAppSelector((state) => state.cinema);
-  console.log("cinemas", allCinemas);
-
-  const screens = [
-    {
-      id: 1,
-      name: "Screen A",
-      theater: "Theater 1",
-      size: "Large",
-      resolution: "4K",
-      soundSystem: "Dolby Atmos",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Screen B",
-      theater: "Theater 2",
-      size: "IMAX",
-      resolution: "4K",
-      soundSystem: "IMAX Enhanced",
-      status: "Active",
-    },
-  ];
+  const { loading, screens } = useAppSelector((state) => state.screen);
 
   const seatLayout = Array.from({ length: 10 }, (_, row) =>
     Array.from({ length: 15 }, (_, seat) => ({
@@ -61,6 +42,7 @@ function CinemaSetup() {
     }))
   );
 
+  const cinemas = allCinemas?.data;
   const tabItems = [
     {
       key: "theaters",
@@ -69,7 +51,7 @@ function CinemaSetup() {
           <Building2 className="w-4 h-4" /> Cinemas
         </span>
       ),
-      children: <Theater cinemas={allCinemas?.data} />,
+      children: <Theater loading={cinemaLoading} cinemas={cinemas} />,
     },
     {
       key: "screens",
@@ -78,7 +60,7 @@ function CinemaSetup() {
           <Monitor className="w-4 h-4" /> Screens
         </span>
       ),
-      children: <Screens screens={screens} />,
+      children: <Screens loading={loading} screens={screens} />,
     },
     {
       key: "seating",
@@ -178,7 +160,7 @@ function CinemaSetup() {
         <div className="flex gap-2 ml-4">
           {activeTab === "theaters" && (
             <Button
-              title="Add Theater"
+              title="Add Cinema"
               onClick={() => setIsAddTheaterModalOpen(true)}
               className="gap-2 rounded-md"
               icon={<Building2 className="w-4 h-4" />}
@@ -223,9 +205,8 @@ function CinemaSetup() {
         title="Add New Showtime"
       >
         <AddScreensForm
-        // movies={movies}
-        // onSubmit={handleAddShowtime}
-        // onCancel={() => setIsAddScreensModalOpen(false)}
+          cinemas={cinemas}
+          onCancel={() => setIsAddScreensModalOpen(false)}
         />
       </DisplayModal>
     </div>
