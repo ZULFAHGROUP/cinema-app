@@ -2,9 +2,9 @@ const urls = {
   login: "/admin/login",
   cinema: "/cinema",
   movie_clas: "/movie-classification",
-  seat_types: "/seat-types",
-  showtime_status: "/showtime-statuses",
-  screen: "/screens",
+  seat_types: "/seat-type",
+  showtime_status: "/showtime-status",
+  screen: "/screen",
 };
 
 export default urls;
