@@ -25,7 +25,7 @@ const ShowtimeStatusForm = ({
   const dispatch = useAppDispatch();
   const initialValues = {
     name: statusData?.name || "",
-    description: statusData?.description || "",
+    // description: statusData?.description || "",
   };
 
   async function handleSubmit(
