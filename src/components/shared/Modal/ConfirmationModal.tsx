@@ -21,7 +21,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onCancel,
   item,
   title = "Confirm this ?",
-  content = `Are you sure that you want to delete this ${item}?`,
+  content = `Are you sure that you want to delete ${item}?`,
 }) => {
   return (
     <Modal

@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { ApiResponse } from "../../@types/common";
-import Screens from "../../services/network/screens";
+import Movie from "../../services/network/movie";
 
-export const getAllScreen = createAsyncThunk(
-  "screen/getAll",
+export const getAllMovies = createAsyncThunk(
+  "showtimeStatus/getAll",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await Screens.allScreens();
+      const response = await Movie.allMovies();
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
@@ -15,14 +15,31 @@ export const getAllScreen = createAsyncThunk(
   }
 );
 
-export const createScreen = createAsyncThunk(
-  "screen/create",
+export const createMovie = createAsyncThunk(
+  "movie/create",
   async (
     { id, data: payload }: { id: string; data: any },
     { rejectWithValue }
   ): Promise<ApiResponse> => {
     try {
-      const response = await Screens.createScreen(id, payload);
+      const response = await Movie.createMovie(id, payload);
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.response?.data || error.message,
+      }) as any;
+    }
+  }
+);
+
+export const updateMovie = createAsyncThunk(
+  "movie/update",
+  async (
+    { id, data: payload }: { id: string; data: any },
+    { rejectWithValue }
+  ): Promise<ApiResponse> => {
+    try {
+      const response = await Movie.updateMovie(id, payload);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
@@ -32,28 +49,11 @@ export const createScreen = createAsyncThunk(
   }
 );
 
-export const updateScreen = createAsyncThunk(
-  "screen/update",
-  async (
-    { id, data: payload }: { id: string; data: any },
-    { rejectWithValue }
-  ): Promise<ApiResponse> => {
-    try {
-      const response = await Screens.updateScreen(id, payload);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue({
-        message: error.response?.data || error.message,
-      }) as any;
-    }
-  }
-);
-
-export const deleteScreen = createAsyncThunk(
-  "screen/delete",
+export const deleteMovie = createAsyncThunk(
+  "movie/delete",
   async (id: string, { rejectWithValue }): Promise<ApiResponse> => {
     try {
-      const response = await Screens.deleteScreen(id);
+      const response = await Movie.deleteMovie(id);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
@@ -63,39 +63,39 @@ export const deleteScreen = createAsyncThunk(
   }
 );
 
-const screenSlice = createSlice({
-  name: "screen",
+const movieSlice = createSlice({
+  name: "movie",
   initialState: {
-    screens: [],
+    movies: [],
     loading: false,
     error: null,
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(getAllScreen.pending, (state) => {
+      .addCase(getAllMovies.pending, (state) => {
         state.loading = true;
       })
-      .addCase(getAllScreen.fulfilled, (state, action) => {
+      .addCase(getAllMovies.fulfilled, (state, action) => {
         state.loading = false;
-        state.screens = action.payload;
+        state.movies = action.payload || [];
       })
-      .addCase(getAllScreen.rejected, (state) => {
+      .addCase(getAllMovies.rejected, (state) => {
         state.loading = false;
       })
-      .addCase(createScreen.pending, (state) => {
+      .addCase(createMovie.pending, (state) => {
         state.loading = true;
       })
-      .addCase(createScreen.fulfilled, (state) => {
+      .addCase(createMovie.fulfilled, (state) => {
         state.loading = false;
       })
-      .addCase(updateScreen.fulfilled, (state) => {
+      .addCase(updateMovie.fulfilled, (state) => {
         state.loading = false;
       })
-      .addCase(deleteScreen.fulfilled, (state) => {
+      .addCase(deleteMovie.fulfilled, (state) => {
         state.loading = false;
       });
   },
 });
 
-export default screenSlice.reducer;
+export default movieSlice.reducer;

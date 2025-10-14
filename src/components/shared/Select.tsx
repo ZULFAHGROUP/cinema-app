@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Select } from "antd";
 
 interface Option {
@@ -15,6 +16,7 @@ interface SelectProps {
   value?: string | number;
   onChange?: (value: string | number) => void;
   disabled?: boolean;
+  onBlur?: any;
   required?: boolean;
   className?: string;
   name?: string;
@@ -30,6 +32,7 @@ const ReusableSelect = ({
   label = "",
   options = [],
   onChange,
+  onBlur,
   value,
   disabled = false,
   defaultOption = "Select an option",
@@ -51,6 +54,7 @@ const ReusableSelect = ({
         id={id}
         value={value}
         onChange={onChange}
+        onBlur={onBlur}
         className={`w-full ${className}`}
         disabled={disabled}
         mode={mode}

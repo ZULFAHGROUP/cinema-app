@@ -9,25 +9,57 @@ export const loginValidationSchema = Yup.object({
   password: Yup.string().required("Password is required"),
 });
 
+// export const addMovieValidationSchema = Yup.object({
+//   title: Yup.string()
+//     .required("Movie title is required")
+//     .min(2, "Title must be at least 2 characters"),
+//   genre: Yup.string().required("Genre is required"),
+//   duration: Yup.number()
+//     .required("Duration is required")
+//     .min(1, "Duration must be at least 1 minute")
+//     .max(500, "Duration cannot exceed 500 minutes"),
+//   rating: Yup.string().required("Rating is required"),
+//   releaseDate: Yup.date().required("Release date is required"),
+//   description: Yup.string()
+//     .required("Description is required")
+//     .min(10, "Description must be at least 10 characters")
+//     .max(1000, "Description cannot exceed 1000 characters"),
+//   status: Yup.string().required("Status is required"),
+//   imdbRating: Yup.number()
+//     .min(0, "Rating must be between 0 and 10")
+//     .max(10, "Rating must be between 0 and 10"),
+// });
+
 export const addMovieValidationSchema = Yup.object({
   title: Yup.string()
     .required("Movie title is required")
     .min(2, "Title must be at least 2 characters"),
+  director: Yup.string()
+    .required("Director is required")
+    .min(2, "Director name must be at least 2 characters"),
   genre: Yup.string().required("Genre is required"),
   duration: Yup.number()
     .required("Duration is required")
     .min(1, "Duration must be at least 1 minute")
     .max(500, "Duration cannot exceed 500 minutes"),
-  rating: Yup.string().required("Rating is required"),
-  releaseDate: Yup.date().required("Release date is required"),
+  rating: Yup.string()
+    .required("Rating is required")
+    .matches(/^\d+(\.\d+)?\/10$/, "Rating must be in format: X.X/10"),
+  release_date: Yup.date().required("Release date is required"),
   description: Yup.string()
     .required("Description is required")
     .min(10, "Description must be at least 10 characters")
     .max(1000, "Description cannot exceed 1000 characters"),
-  status: Yup.string().required("Status is required"),
-  imdbRating: Yup.number()
-    .min(0, "Rating must be between 0 and 10")
-    .max(10, "Rating must be between 0 and 10"),
+  cast: Yup.array()
+    .of(Yup.string().min(2, "Actor name must be at least 2 characters"))
+    .min(1, "At least one cast member is required")
+    .required("Cast is required"),
+  poster_url: Yup.string()
+    // .required("Poster URL is required")
+    .url("Must be a valid URL"),
+  trailer_url: Yup.string().url("Must be a valid URL"),
+  language: Yup.string().required("Language is required"),
+  movie_classification_id: Yup.string().required("Classification is required"),
 });
 
 export const showTimeValidationSchema = Yup.object({
@@ -59,8 +91,8 @@ export const movieClassificationSchema = Yup.object().shape({
 
 export const seatTypeValidationSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
-  description: Yup.string().required("Description is required"),
-  price: Yup.string().required("Price is required"),
+  // description: Yup.string().required("Description is required"),
+  // price: Yup.string().required("Price is required"),
 });
 
 export const showtimeStatusSchema = Yup.object().shape({

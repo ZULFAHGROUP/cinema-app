@@ -33,7 +33,7 @@ export const createSeatType = createAsyncThunk(
   async (payload: any, { rejectWithValue }): Promise<ApiResponse> => {
     try {
       const response = await SeatTypes.createSeatType(payload);
-      return response.data.data;
+      return response.data;
     } catch (error: any) {
       return rejectWithValue({
         message: error.response?.data || error.message,
@@ -51,7 +51,7 @@ export const updateSeatType = createAsyncThunk(
   ): Promise<ApiResponse> => {
     try {
       const response = await SeatTypes.updateSeatType(id, payload);
-      return response.data.data;
+      return response.data;
     } catch (error: any) {
       return rejectWithValue({
         message: error.response?.data || error.message,
@@ -66,7 +66,7 @@ export const deleteSeatType = createAsyncThunk(
   async (id: string | number, { rejectWithValue }): Promise<ApiResponse> => {
     try {
       const response = await SeatTypes.deleteSeatType(id);
-      return response.data.data;
+      return response.data;
     } catch (error: any) {
       return rejectWithValue({
         message: error.response?.data || error.message,

@@ -26,8 +26,8 @@ const SeatTypeForm = ({
 
   const initialValues = {
     name: seatTypeData?.name || "",
-    description: seatTypeData?.description || "",
-    price: seatTypeData?.price || "",
+    // description: seatTypeData?.description || "",
+    // price: seatTypeData?.price || "",
   };
 
   const handleSubmit = async (
@@ -90,7 +90,7 @@ const SeatTypeForm = ({
             required
           />
 
-          <Input
+          {/*<Input
             label="Description"
             name="description"
             value={values.description}
@@ -119,7 +119,7 @@ const SeatTypeForm = ({
             }
             placeholder="5000"
             required
-          />
+          />*/}
 
           <div className="flex gap-2 pt-6 border-t mt-6">
             <Button

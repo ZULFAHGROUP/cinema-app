@@ -21,6 +21,7 @@ const persistConfig = {
     "classification",
     "seatType",
     "showtimeStatus",
+    "movie",
   ],
 };
 

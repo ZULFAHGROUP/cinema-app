@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Formik, Form, FieldArray } from "formik";
+import { Formik, Form, FieldArray, FormikTouched } from "formik";
 import Input from "../../../components/shared/Input";
-import Select from "../../../components/shared/Select";
 import Button from "../../../components/shared/Button";
 import { toast } from "react-toastify";
-import { useAppDispatch } from "../../../store/hook";
+import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import {
   createScreen,
   getAllScreen,
@@ -27,16 +26,17 @@ const AddScreensForm = ({
   cinemas,
 }: AddScreensFormProps) => {
   const dispatch = useAppDispatch();
+  const { seatTypes } = useAppSelector((state) => state.seatType);
 
   const initialValues = {
-    cinema_id: screenData?.cinema_id || "",
+    cinema_id: screenData?.cinema.name || "",
     name: screenData?.name || "",
     seat_layout: {
       rows: screenData?.seat_layout?.rows || [
         {
           row: "",
           count: 0,
-          default_type: "Regular",
+          default_type: "",
         },
       ],
     },
@@ -49,11 +49,16 @@ const AddScreensForm = ({
     try {
       let response;
       if (editMode && screenData?.screen_id) {
+        const payload = { ...values };
+        delete payload.cinema_id;
         response = await dispatch(
-          updateScreen({ id: screenData.screen_id, data: values })
+          updateScreen({ id: screenData.screen_id, data: payload })
         ).unwrap();
       } else {
-        response = await dispatch(createScreen(values)).unwrap();
+        const { cinema_id, ...restData } = values;
+        response = await dispatch(
+          createScreen({ id: cinema_id, data: restData })
+        ).unwrap();
       }
 
       if (response.code === 200 || response.code === 201) {
@@ -73,6 +78,13 @@ const AddScreensForm = ({
     .map((cinema: { cinema_id: string; name: string }) => ({
       label: cinema.name,
       value: cinema.cinema_id,
+    }));
+
+  const allSeat = [...(seatTypes || [])]
+    .sort((a: any, b: any) => a.name.localeCompare(b.name))
+    .map((seats: { name: string }) => ({
+      label: seats.name,
+      value: seats.name,
     }));
 
   return (
@@ -107,6 +119,7 @@ const AddScreensForm = ({
                   : undefined
               }
               required
+              disabled={editMode}
             />{" "}
             <Input
               label="Screen Name"
@@ -140,10 +153,14 @@ const AddScreensForm = ({
                             onChange={handleChange}
                             onBlur={handleBlur}
                             error={
-                              touched.seat_layout?.rows?.[index]?.row &&
-                              typeof errors.seat_layout?.rows?.[index]?.row ===
-                                "string"
-                                ? (errors.seat_layout.rows[index] as any).row
+                              (
+                                touched.seat_layout?.rows as
+                                  | FormikTouched<any>[]
+                                  | undefined
+                              )?.[index]?.row &&
+                              typeof (errors.seat_layout?.rows as any)?.[index]
+                                ?.row === "string"
+                                ? (errors.seat_layout?.rows as any)[index].row
                                 : undefined
                             }
                             placeholder="A"
@@ -157,26 +174,31 @@ const AddScreensForm = ({
                             onChange={handleChange}
                             onBlur={handleBlur}
                             error={
-                              touched.seat_layout?.rows?.[index]?.count &&
-                              typeof errors.seat_layout?.rows?.[index]
+                              (
+                                touched.seat_layout?.rows as
+                                  | FormikTouched<any>[]
+                                  | undefined
+                              )?.[index]?.count &&
+                              typeof (errors.seat_layout?.rows as any)?.[index]
                                 ?.count === "string"
-                                ? (errors.seat_layout.rows[index] as any).count
+                                ? (errors.seat_layout?.rows as any)[index].count
                                 : undefined
                             }
                             placeholder="10"
                           />
 
-                          <Select
+                          <ReusableSelect
                             label="Default Type"
                             name={`seat_layout.rows.${index}.default_type`}
                             value={row.default_type}
-                            onChange={handleChange}
+                            onChange={(value) =>
+                              setFieldValue(
+                                `seat_layout.rows.${index}.default_type`,
+                                value
+                              )
+                            }
                             onBlur={handleBlur}
-                            options={[
-                              { label: "Regular", value: "Regular" },
-                              { label: "Premium", value: "Premium" },
-                              { label: "VIP", value: "VIP" },
-                            ]}
+                            options={allSeat}
                           />
                         </div>
 
@@ -200,9 +222,10 @@ const AddScreensForm = ({
                         push({
                           row: "",
                           count: 0,
-                          default_type: "Regular",
+                          default_type: "",
                         })
                       }
+                      className="rounded-md"
                     />
                   </div>
                 )}

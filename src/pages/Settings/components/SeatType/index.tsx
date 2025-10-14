@@ -58,11 +58,10 @@ const SeatType = () => {
       title: "Actions",
       key: "actions",
       render: (_: any, record: any) => (
-        <div className="flex gap-2 justify-center">
+        <div className="flex gap-2 justify-">
           <Button
             variant="secondary"
             size="sm"
-            title="Edit"
             icon={<Edit className="w-3 h-3" />}
             className="rounded-md"
             onClick={() => {
@@ -74,7 +73,6 @@ const SeatType = () => {
           <Button
             variant="primary"
             size="sm"
-            title="Delete"
             icon={<Trash2 className="w-3 h-3" />}
             className="rounded-md"
             onClick={() => {

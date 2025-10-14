@@ -5,6 +5,7 @@ import classificationReducer from "./slices/classification";
 import seatTypeReducer from "./slices/seatType";
 import showtimeStatusReducer from "./slices/showtimeStatus";
 import screenReducer from "./slices/screen";
+import movieReduer from "./slices/movie";
 
 export default combineReducers({
   accounts: accountReducer,
@@ -13,4 +14,5 @@ export default combineReducers({
   seatType: seatTypeReducer,
   showtimeStatus: showtimeStatusReducer,
   screen: screenReducer,
+  movie: movieReduer,
 });

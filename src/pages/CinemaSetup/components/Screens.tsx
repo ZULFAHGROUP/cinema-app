@@ -8,9 +8,38 @@ import {
 } from "../../../components/shared/Cards";
 import Button from "../../../components/shared/Button";
 import { Tag } from "antd";
-import { Edit, Volume2 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { useAppDispatch } from "../../../store/hook";
+import { deleteScreen, getAllScreen } from "../../../store/slices/screen";
+import { toast } from "react-toastify";
+import DisplayModal from "../../../components/shared/Modal/DisplayModal";
+import ConfirmationModal from "../../../components/shared/Modal/ConfirmationModal";
+import AddScreensForm from "./AddScreensForm";
 
 const Screens = ({ screens, loading }: any) => {
+  const [selectedScreen, setSelectedScreen] = useState<any>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const dispatch = useAppDispatch();
+
+  const handleDelete = async () => {
+    if (!selectedScreen) return;
+
+    try {
+      const response = await dispatch(
+        deleteScreen(selectedScreen?.screen_id)
+      ).unwrap();
+      if (response.code === 200) {
+        await dispatch(getAllScreen());
+        setShowDeleteModal(false);
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.message);
+      setShowDeleteModal(false);
+    }
+  };
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -25,7 +54,8 @@ const Screens = ({ screens, loading }: any) => {
                   <Tag color="blue">{screen.status}</Tag>
                 </div>
                 <CardDescription className="font-serif">
-                  {screen.theater}
+                  {screen.cinema.name}
+                  <p>{screen.cinema.location}</p>
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -59,12 +89,20 @@ const Screens = ({ screens, loading }: any) => {
                       className="flex-1 gap-2 bg- rounded-md"
                       icon={<Edit className="w-3 h-3" />}
                       title="Edit"
+                      onClick={() => {
+                        setSelectedScreen(screen);
+                        setShowEditModal(true);
+                      }}
                     />
                     <Button
                       variant="primary"
                       size="sm"
                       className="gap-2 bg- rounded-md"
-                      icon={<Volume2 className="w-3 h-3" />}
+                      icon={<Trash2 className="w-3 h-3" />}
+                      onClick={() => {
+                        setSelectedScreen(screen);
+                        setShowDeleteModal(true);
+                      }}
                     />
                   </div>
                 </div>
@@ -73,6 +111,26 @@ const Screens = ({ screens, loading }: any) => {
           ))
         )}
       </div>
+      {/* Delete Confirmation */}
+      <ConfirmationModal
+        open={showDeleteModal}
+        onCancel={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        item={selectedScreen?.name}
+      />
+
+      {/* Edit Modal */}
+      <DisplayModal
+        open={showEditModal}
+        title={`Edit ${selectedScreen?.name}`}
+        onClose={() => setShowEditModal(false)}
+      >
+        <AddScreensForm
+          onCancel={() => setShowEditModal(false)}
+          editMode
+          screenData={selectedScreen}
+        />
+      </DisplayModal>
     </div>
   );
 };
