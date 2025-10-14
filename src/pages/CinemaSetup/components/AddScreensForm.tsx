@@ -11,6 +11,8 @@ import {
 } from "../../../store/slices/screen";
 import { screenValidationSchema } from "../../../validations";
 import ReusableSelect from "../../../components/shared/Select";
+import { useEffect } from "react";
+import { getAllSeatTypes } from "../../../store/slices/seatType";
 
 interface AddScreensFormProps {
   onCancel: () => void;
@@ -26,6 +28,9 @@ const AddScreensForm = ({
   cinemas,
 }: AddScreensFormProps) => {
   const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(getAllSeatTypes());
+  }, [dispatch]);
   const { seatTypes } = useAppSelector((state) => state.seatType);
 
   const initialValues = {

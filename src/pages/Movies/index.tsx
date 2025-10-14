@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Tabs } from "antd";
 import Button from "../../components/shared/Button";
 import { Film, Calendar } from "lucide-react";
@@ -8,11 +8,18 @@ import Showtimes from "./components/Showtimes";
 import AddMovieForm from "./components/AddMovieForm";
 import AddShowtimeForm from "./components/AddShowtimeForm";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
+import { getAllClassifications } from "../../store/slices/classification";
+import { useAppDispatch } from "../../store/hook";
 
 function MoviesPage() {
   const [activeTab, setActiveTab] = useState("movies");
   const [isAddMovieModalOpen, setIsAddMovieModalOpen] = useState(false);
   const [isAddShowtimeModalOpen, setIsAddShowtimeModalOpen] = useState(false);
+
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(getAllClassifications());
+  }, [dispatch, isAddMovieModalOpen]);
 
   const [movies, setMovies] = useState([
     {

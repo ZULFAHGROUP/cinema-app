@@ -257,8 +257,8 @@ interface AddMovieProps {
 }
 
 const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
-  const { classifications } = useAppSelector((state) => state.classification);
   const dispatch = useAppDispatch();
+  const { classifications } = useAppSelector((state) => state.classification);
 
   const allClassification = [...(classifications || [])]
     .sort((a: any, b: any) => a.name.localeCompare(b.name))
@@ -420,7 +420,7 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   error={touched.rating && errors.rating ? errors.rating : ""}
-                  placeholder="8.8/10"
+                  placeholder="8.8"
                   required
                 />
               </div>

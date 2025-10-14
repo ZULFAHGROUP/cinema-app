@@ -42,9 +42,7 @@ export const addMovieValidationSchema = Yup.object({
     .required("Duration is required")
     .min(1, "Duration must be at least 1 minute")
     .max(500, "Duration cannot exceed 500 minutes"),
-  rating: Yup.string()
-    .required("Rating is required")
-    .matches(/^\d+(\.\d+)?\/10$/, "Rating must be in format: X.X/10"),
+  rating: Yup.number().required("Rating is required"),
   release_date: Yup.date().required("Release date is required"),
   description: Yup.string()
     .required("Description is required")
