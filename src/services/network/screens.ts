@@ -7,8 +7,8 @@ const Screens = {
     return Axios.get(urls.screen);
   },
 
-  createScreen: (cinema_id: string | number, data: any) => {
-    return Axios.post(`${urls.screen}/${cinema_id}`, data);
+  createScreen: (data: any) => {
+    return Axios.post(urls.screen, data);
   },
 
   updateScreen: (id: string | number, data: any) => {

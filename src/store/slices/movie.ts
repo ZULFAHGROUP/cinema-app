@@ -17,13 +17,10 @@ export const getAllMovies = createAsyncThunk(
 
 export const createMovie = createAsyncThunk(
   "movie/create",
-  async (
-    { id, data: payload }: { id: string; data: any },
-    { rejectWithValue }
-  ): Promise<ApiResponse> => {
+  async (payload: any, { rejectWithValue }): Promise<ApiResponse> => {
     try {
-      const response = await Movie.createMovie(id, payload);
-      return response.data.data;
+      const response = await Movie.createMovie(payload);
+      return response.data;
     } catch (error: any) {
       return rejectWithValue({
         message: error.response?.data || error.message,

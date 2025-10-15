@@ -37,7 +37,10 @@ export const addMovieValidationSchema = Yup.object({
   director: Yup.string()
     .required("Director is required")
     .min(2, "Director name must be at least 2 characters"),
-  genre: Yup.string().required("Genre is required"),
+  genres: Yup.array()
+    .of(Yup.string().min(2, "Genre must be at least 2 characters"))
+    .min(1, "At least one genre is required")
+    .required("Cast is required"),
   duration: Yup.number()
     .required("Duration is required")
     .min(1, "Duration must be at least 1 minute")

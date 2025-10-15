@@ -60,10 +60,7 @@ const AddScreensForm = ({
           updateScreen({ id: screenData.screen_id, data: payload })
         ).unwrap();
       } else {
-        const { cinema_id, ...restData } = values;
-        response = await dispatch(
-          createScreen({ id: cinema_id, data: restData })
-        ).unwrap();
+        response = await dispatch(createScreen(values)).unwrap();
       }
 
       if (response.code === 200 || response.code === 201) {

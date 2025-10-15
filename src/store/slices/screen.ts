@@ -17,12 +17,9 @@ export const getAllScreen = createAsyncThunk(
 
 export const createScreen = createAsyncThunk(
   "screen/create",
-  async (
-    { id, data: payload }: { id: string; data: any },
-    { rejectWithValue }
-  ): Promise<ApiResponse> => {
+  async (payload: any, { rejectWithValue }): Promise<ApiResponse> => {
     try {
-      const response = await Screens.createScreen(id, payload);
+      const response = await Screens.createScreen(payload);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({

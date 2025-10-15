@@ -9,7 +9,8 @@ import AddMovieForm from "./components/AddMovieForm";
 import AddShowtimeForm from "./components/AddShowtimeForm";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
 import { getAllClassifications } from "../../store/slices/classification";
-import { useAppDispatch } from "../../store/hook";
+import { useAppDispatch, useAppSelector } from "../../store/hook";
+import { getAllMovies } from "../../store/slices/movie";
 
 function MoviesPage() {
   const [activeTab, setActiveTab] = useState("movies");
@@ -18,53 +19,10 @@ function MoviesPage() {
 
   const dispatch = useAppDispatch();
   useEffect(() => {
+    dispatch(getAllMovies());
     dispatch(getAllClassifications());
-  }, [dispatch, isAddMovieModalOpen]);
-
-  const [movies, setMovies] = useState([
-    {
-      id: 1,
-      title: "Spider-Man: No Way Home",
-      genre: "Action/Adventure",
-      duration: 148,
-      rating: "PG-13",
-      imdbRating: 8.4,
-      releaseDate: "2021-12-17",
-      status: "Now Playing",
-      poster: "/spider-man-movie-poster.png",
-      showtimes: ["10:00 AM", "1:30 PM", "5:00 PM", "8:30 PM"],
-      description:
-        "Spider-Man's identity is revealed, causing chaos in his life.",
-    },
-    {
-      id: 2,
-      title: "Dune: Part Two",
-      genre: "Sci-Fi/Drama",
-      duration: 166,
-      rating: "PG-13",
-      imdbRating: 8.8,
-      releaseDate: "2024-03-01",
-      status: "Now Playing",
-      poster: "/dune-part-two-poster.png",
-      showtimes: ["11:00 AM", "2:30 PM", "6:00 PM", "9:30 PM"],
-      description:
-        "Paul Atreides unites with Chani and the Fremen while seeking revenge.",
-    },
-    {
-      id: 3,
-      title: "The Batman",
-      genre: "Action/Crime",
-      duration: 176,
-      rating: "PG-13",
-      imdbRating: 7.8,
-      releaseDate: "2022-03-04",
-      status: "Coming Soon",
-      poster: "/images/posters/the-batman-poster.png",
-      showtimes: [],
-      description:
-        "Batman ventures into Gotham City's underworld when a sadistic killer leaves a trail of cryptic clues.",
-    },
-  ]);
+  }, [dispatch]);
+  const { movies } = useAppSelector((state) => state.movie);
 
   const [showtimes, setShowtimes] = useState([
     {
@@ -90,16 +48,6 @@ function MoviesPage() {
       price: 15.99,
     },
   ]);
-
-  const handleAddMovie = (movieData: any) => {
-    const newMovie = {
-      id: movies.length + 1,
-      ...movieData,
-      showtimes: [],
-    };
-    setMovies([...movies, newMovie]);
-    setIsAddMovieModalOpen(false);
-  };
 
   const handleAddShowtime = (showtimeData: any) => {
     const newShowtime = {
@@ -179,10 +127,7 @@ function MoviesPage() {
         onClose={() => setIsAddMovieModalOpen(false)}
         title="Add New Movie"
       >
-        <AddMovieForm
-          onSubmit={handleAddMovie}
-          onCancel={() => setIsAddMovieModalOpen(false)}
-        />
+        <AddMovieForm onCancel={() => setIsAddMovieModalOpen(false)} />
       </DisplayModal>
 
       {/* Add Showtime Modal */}

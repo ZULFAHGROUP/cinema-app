@@ -7,8 +7,8 @@ const Movie = {
     return Axios.get(urls.movie);
   },
 
-  createMovie: (classification_id: string | number, data: any) => {
-    return Axios.post(`${urls.movie}/${classification_id}`, data);
+  createMovie: (data: any) => {
+    return Axios.post(urls.movie, data);
   },
 
   updateMovie: (id: string | number, data: any) => {
