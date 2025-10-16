@@ -4,48 +4,106 @@ import Button from "../../../components/shared/Button";
 import Input from "../../../components/shared/Input";
 import ReusableSelect from "../../../components/shared/Select";
 import { showTimeValidationSchema } from "../../../validations";
+import { useAppDispatch, useAppSelector } from "../../../store/hook";
+import {
+  createShowtime,
+  getAllShowtimes,
+  updateShowtime,
+} from "../../../store/slices/showtime";
+import { toast } from "react-toastify";
 
 interface AddShowTimeProps {
   movies: any;
-  onSubmit: () => void;
   onCancel: () => void;
+  editMode?: boolean;
+  showTimeData?: any;
 }
 
-const AddShowtimeForm = ({ movies, onSubmit, onCancel }: AddShowTimeProps) => {
+const AddShowtimeForm = ({
+  movies,
+  onCancel,
+  editMode,
+  showTimeData,
+}: AddShowTimeProps) => {
+  const dispatch = useAppDispatch();
+  const { allCinemas } = useAppSelector((state) => state.cinema);
+  const { screens } = useAppSelector((state) => state.screen);
+
   const movieOptions = movies.map((movie: any) => ({
-    value: movie.title,
+    value: movie.movie_id,
     label: movie.title,
   }));
 
-  const theaterOptions = [
-    { value: "Theater 1", label: "Theater 1" },
-    { value: "Theater 2", label: "Theater 2" },
-    { value: "Theater 3", label: "Theater 3" },
-  ];
+  const cinemaOptions = [...(allCinemas || [])]
+    .sort((a: any, b: any) => a.name.localeCompare(b.name))
+    .map((cinema: { cinema_id: string; name: string }) => ({
+      label: cinema.name,
+      value: cinema.cinema_id,
+    }));
 
-  const screenOptions = [
-    { value: "Screen A", label: "Screen A" },
-    { value: "Screen B", label: "Screen B" },
-    { value: "Screen C", label: "Screen C" },
-  ];
+  const screenOptions = [...(screens || [])]
+    .sort((a: any, b: any) => a.name.localeCompare(b.name))
+    .map((cinema: { cinema_id: string; name: string }) => ({
+      label: cinema.name,
+      value: cinema.cinema_id,
+    }));
 
   const initialValues = {
-    movieTitle: "",
+    movie_id: showTimeData?.movie?.name || "",
     theater: "",
-    screen: "",
+    screen_id: showTimeData?.screen?.name || "",
     date: "",
-    time: "",
+    start_time: "",
     price: "",
   };
+
+  async function handleSubmit(
+    values: any,
+    { resetForm }: { resetForm: () => void }
+  ) {
+    try {
+      let response;
+      const formattedValues = {
+        ...values,
+        duration: parseInt(values.duration),
+        rating: parseInt(values.rating),
+        cast: values.cast.filter((actor: any) => actor.trim() !== ""),
+      };
+      if (editMode && showTimeData?.showtime_id) {
+        delete formattedValues.movie_classification_id;
+        response = await dispatch(
+          updateShowtime({
+            id: showTimeData.showtime_id,
+            data: formattedValues,
+          })
+        ).unwrap();
+      } else {
+        const formattedValues = {
+          ...values,
+          duration: parseInt(values.duration),
+          rating: values.rating ? parseFloat(values.rating) : 0,
+          cast: values.cast.filter((actor: any) => actor.trim() !== ""),
+        };
+        response = await dispatch(createShowtime(formattedValues)).unwrap();
+      }
+
+      if (response.code === 200 || response.code === 201) {
+        toast.success(response.message);
+        await dispatch(getAllShowtimes());
+        resetForm();
+        onCancel();
+      }
+    } catch (error: any) {
+      console.error("Error submitting screen form", error);
+      toast.error(error?.response?.message || "Something went wrong");
+    }
+  }
 
   return (
     <Formik
       initialValues={initialValues}
       validationSchema={showTimeValidationSchema}
-      onSubmit={(values, { setSubmitting }) => {
-        onSubmit(values);
-        setSubmitting(false);
-      }}
+      onSubmit={handleSubmit}
     >
       {({
         values,
@@ -61,12 +119,14 @@ const AddShowtimeForm = ({ movies, onSubmit, onCancel }: AddShowTimeProps) => {
             <ReusableSelect
               label="Movie"
               name="movieTitle"
-              value={values.movieTitle}
-              onChange={(value) => setFieldValue("movieTitle", value)}
+              value={values.movie_id}
+              onChange={(value) => setFieldValue("movie_id", value)}
               options={movieOptions}
               defaultOption="Select movie"
               error={
-                touched.movieTitle && errors.movieTitle ? errors.movieTitle : ""
+                touched.movie_id && typeof errors.movie_id === "string"
+                  ? errors.movie_id
+                  : undefined
               }
               required
             />
@@ -77,7 +137,7 @@ const AddShowtimeForm = ({ movies, onSubmit, onCancel }: AddShowTimeProps) => {
                 name="theater"
                 value={values.theater}
                 onChange={(value) => setFieldValue("theater", value)}
-                options={theaterOptions}
+                options={cinemaOptions}
                 defaultOption="Select theater"
                 error={touched.theater && errors.theater ? errors.theater : ""}
                 required
@@ -86,11 +146,15 @@ const AddShowtimeForm = ({ movies, onSubmit, onCancel }: AddShowTimeProps) => {
               <ReusableSelect
                 label="Screen"
                 name="screen"
-                value={values.screen}
-                onChange={(value) => setFieldValue("screen", value)}
+                value={values.screen_id}
+                onChange={(value) => setFieldValue("screen_id", value)}
                 options={screenOptions}
                 defaultOption="Select screen"
-                error={touched.screen && errors.screen ? errors.screen : ""}
+                error={
+                  touched.screen_id && typeof errors.screen_id === "string"
+                    ? errors.screen_id
+                    : ""
+                }
                 required
               />
             </div>
@@ -112,10 +176,14 @@ const AddShowtimeForm = ({ movies, onSubmit, onCancel }: AddShowTimeProps) => {
                 label="Time"
                 name="time"
                 type="time"
-                value={values.time}
+                value={values.start_time}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                error={touched.time && errors.time ? errors.time : ""}
+                error={
+                  touched.start_time && typeof errors.start_time === "string"
+                    ? errors.start_time
+                    : undefined
+                }
                 required
               />
             </div>

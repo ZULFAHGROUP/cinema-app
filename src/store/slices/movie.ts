@@ -4,7 +4,7 @@ import { ApiResponse } from "../../@types/common";
 import Movie from "../../services/network/movie";
 
 export const getAllMovies = createAsyncThunk(
-  "showtimeStatus/getAll",
+  "movie/getAll",
   async (_, { rejectWithValue }) => {
     try {
       const response = await Movie.allMovies();
@@ -64,33 +64,33 @@ const movieSlice = createSlice({
   name: "movie",
   initialState: {
     movies: [],
-    loading: false,
+    moviesLoading: false,
     error: null,
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(getAllMovies.pending, (state) => {
-        state.loading = true;
+        state.moviesLoading = true;
       })
       .addCase(getAllMovies.fulfilled, (state, action) => {
-        state.loading = false;
+        state.moviesLoading = false;
         state.movies = action.payload || [];
       })
       .addCase(getAllMovies.rejected, (state) => {
-        state.loading = false;
+        state.moviesLoading = false;
       })
       .addCase(createMovie.pending, (state) => {
-        state.loading = true;
+        state.moviesLoading = true;
       })
       .addCase(createMovie.fulfilled, (state) => {
-        state.loading = false;
+        state.moviesLoading = false;
       })
       .addCase(updateMovie.fulfilled, (state) => {
-        state.loading = false;
+        state.moviesLoading = false;
       })
       .addCase(deleteMovie.fulfilled, (state) => {
-        state.loading = false;
+        state.moviesLoading = false;
       });
   },
 });

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { Tabs } from "antd";
 import Button from "../../components/shared/Button";
@@ -11,6 +10,9 @@ import DisplayModal from "../../components/shared/Modal/DisplayModal";
 import { getAllClassifications } from "../../store/slices/classification";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { getAllMovies } from "../../store/slices/movie";
+import { getAllShowtimes } from "../../store/slices/showtime";
+import { getAllCinemas } from "../../store/slices/cinema";
+import { getAllScreen } from "../../store/slices/screen";
 
 function MoviesPage() {
   const [activeTab, setActiveTab] = useState("movies");
@@ -21,44 +23,14 @@ function MoviesPage() {
   useEffect(() => {
     dispatch(getAllMovies());
     dispatch(getAllClassifications());
+    dispatch(getAllShowtimes());
+    dispatch(getAllCinemas());
+    dispatch(getAllScreen());
   }, [dispatch]);
-  const { movies } = useAppSelector((state) => state.movie);
-
-  const [showtimes, setShowtimes] = useState([
-    {
-      id: 1,
-      movieTitle: "Spider-Man: No Way Home",
-      theater: "Theater 1",
-      screen: "Screen A",
-      time: "10:00 AM",
-      date: "2024-01-15",
-      availableSeats: 120,
-      totalSeats: 150,
-      price: 12.99,
-    },
-    {
-      id: 2,
-      movieTitle: "Dune: Part Two",
-      theater: "Theater 2",
-      screen: "Screen B",
-      time: "2:30 PM",
-      date: "2024-01-15",
-      availableSeats: 180,
-      totalSeats: 200,
-      price: 15.99,
-    },
-  ]);
-
-  const handleAddShowtime = (showtimeData: any) => {
-    const newShowtime = {
-      id: showtimes.length + 1,
-      ...showtimeData,
-      availableSeats: 150, // Default total seats
-      totalSeats: 150,
-    };
-    setShowtimes([...showtimes, newShowtime]);
-    setIsAddShowtimeModalOpen(false);
-  };
+  const { movies, moviesLoading } = useAppSelector((state) => state.movie);
+  const { showtimes, showtimeLoading } = useAppSelector(
+    (state) => state.showtime
+  );
 
   const tabItems = [
     {
@@ -68,7 +40,7 @@ function MoviesPage() {
           <Film className="w-4 h-4" /> Movies
         </span>
       ),
-      children: <Movies movies={movies} />,
+      children: <Movies loading={moviesLoading} movies={movies} />,
     },
     {
       key: "showtimes",
@@ -77,7 +49,7 @@ function MoviesPage() {
           <Calendar className="w-4 h-4" /> Showtimes
         </span>
       ),
-      children: <Showtimes showtimes={showtimes} />,
+      children: <Showtimes loading={showtimeLoading} showtimes={showtimes} />,
     },
   ];
 
@@ -126,6 +98,7 @@ function MoviesPage() {
         open={isAddMovieModalOpen}
         onClose={() => setIsAddMovieModalOpen(false)}
         title="Add New Movie"
+        width={900}
       >
         <AddMovieForm onCancel={() => setIsAddMovieModalOpen(false)} />
       </DisplayModal>
@@ -138,7 +111,6 @@ function MoviesPage() {
       >
         <AddShowtimeForm
           movies={movies}
-          onSubmit={handleAddShowtime}
           onCancel={() => setIsAddShowtimeModalOpen(false)}
         />
       </DisplayModal>

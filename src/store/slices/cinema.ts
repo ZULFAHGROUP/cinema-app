@@ -42,7 +42,7 @@ export const getAllCinemas = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await Cinema.allCinemas();
-      return response.data;
+      return response.data.data;
     } catch (error: any) {
       toast.error(error?.response?.data?.message);
       return rejectWithValue(error.response?.data || error.message);

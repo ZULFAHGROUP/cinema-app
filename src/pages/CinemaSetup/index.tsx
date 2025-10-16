@@ -42,7 +42,6 @@ function CinemaSetup() {
     }))
   );
 
-  const cinemas = allCinemas?.data;
   const tabItems = [
     {
       key: "theaters",
@@ -51,7 +50,7 @@ function CinemaSetup() {
           <Building2 className="w-4 h-4" /> Cinemas
         </span>
       ),
-      children: <Theater loading={cinemaLoading} cinemas={cinemas} />,
+      children: <Theater loading={cinemaLoading} cinemas={allCinemas} />,
     },
     {
       key: "screens",
@@ -205,7 +204,7 @@ function CinemaSetup() {
         title="Add New Showtime"
       >
         <AddScreensForm
-          cinemas={cinemas}
+          cinemas={allCinemas}
           onCancel={() => setIsAddScreensModalOpen(false)}
         />
       </DisplayModal>

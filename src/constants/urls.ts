@@ -6,6 +6,7 @@ const urls = {
   showtime_status: "/showtime-status",
   screen: "/screen",
   movie: "/movie",
+  showtime: "/showtime",
 };
 
 export default urls;

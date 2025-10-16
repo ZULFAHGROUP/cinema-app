@@ -47,7 +47,9 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
     duration: movieData?.duration || "",
     genres: movieData?.genres || [""],
     rating: movieData?.rating || "",
-    release_date: movieData?.release_date || "",
+    release_date: movieData?.release_date
+      ? new Date(movieData.release_date).toISOString().split("T")[0]
+      : "",
     director: movieData?.director || "",
     cast: movieData?.cast || [""],
     poster_url: movieData?.poster_url || "",
@@ -90,7 +92,7 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
         toast.success(response.message);
         await dispatch(getAllMovies());
         resetForm();
-        onCancel(); // close modal after success
+        onCancel();
       }
     } catch (error: any) {
       console.error("Error submitting screen form", error);
@@ -123,7 +125,7 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
                 value={values.title}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                error={touched.title && errors.title ? errors.title : ""}
+                error={touched.title && errors.title === "" ? errors.title : ""}
                 placeholder="Enter movie title"
                 required
               />
@@ -135,7 +137,9 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={
-                  touched.director && errors.director ? errors.director : ""
+                  touched.director && errors.director === "string"
+                    ? errors.director
+                    : ""
                 }
                 placeholder="e.g., Christopher Nolan"
                 required
@@ -181,23 +185,12 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
                   title="+ Add Genre"
                   className="mt-2"
                 />
-                {touched.genres && errors.genres && (
+                {touched.genres && typeof errors.genres === "string" && (
                   <p className="text-sm text-red-500 italic mt-1">
                     {errors.genres}
                   </p>
                 )}
               </div>
-
-              {/*<Input
-                label="Genre"
-                name="genre"
-                value={values.genre}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.genre && errors.genre ? errors.genre : ""}
-                placeholder="e.g., Sci-Fi"
-                required
-              />*/}
 
               <div className="grid grid-cols-2 gap-4">
                 <Input
@@ -322,7 +315,7 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
                   title="+ Add Actor"
                   className="mt-2"
                 />
-                {touched.cast && errors.cast && (
+                {touched.cast && typeof errors.cast === "string" && (
                   <p className="text-sm text-red-500 italic mt-1">
                     {errors.cast}
                   </p>
@@ -380,7 +373,7 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={
-                  touched.poster_url && typeof errors.poster_url
+                  touched.poster_url && typeof errors.poster_url === "string"
                     ? errors.poster_url
                     : undefined
                 }
