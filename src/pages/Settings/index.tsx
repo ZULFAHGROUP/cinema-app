@@ -24,7 +24,7 @@ const Settings = () => {
         {settingsRoute.map((routes) => (
           <Button
             key={routes.url}
-            className="rounded-full"
+            className="rounded-"
             variant={currentScreen === routes.url ? "extra" : "extra-outline"}
             onClick={() => setCurrentScreen(routes.url)}
             title={routes.name}

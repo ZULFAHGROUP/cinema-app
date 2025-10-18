@@ -23,7 +23,7 @@ const Movies = ({ movies, loading }: any) => {
       ) : (
         movies.map((movie: any) => (
           <Card
-            key={movie.id}
+            key={movie.movie_id}
             className="overflow-hidden hover:shadow-md transition-shadow"
           >
             <div className="aspect-[2/3] relative">
@@ -116,9 +116,20 @@ const Movies = ({ movies, loading }: any) => {
                         Showtimes
                       </p>
                       <div className="flex flex-wrap gap-1">
-                        {movie.showtimes.slice(0, 3).map((time: any) => (
-                          <Tag key={time} color="blue" className="text-xs">
-                            {time}
+                        {movie.showtimes.slice(0, 3).map((showtime: any) => (
+                          <Tag
+                            key={showtime.showtime_id}
+                            color="blue"
+                            className="text-xs"
+                          >
+                            {showtime.start_time
+                              ? new Date(
+                                  showtime.start_time
+                                ).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : "N/A"}
                           </Tag>
                         ))}
                         {movie.showtimes.length > 3 && (

@@ -3,23 +3,23 @@ import { Card, CardContent } from "../../../components/shared/Cards";
 import Button from "../../../components/shared/Button";
 import { Edit, Trash2, Users } from "lucide-react";
 
-const Showtimes = ({ showtimes,loading }: any) => {
+const Showtimes = ({ showtimes, loading }: any) => {
   return (
     <div className="space-y-4">
       {loading ? (
         <p>Loading...</p>
       ) : (
         showtimes.map((showtime: any) => (
-          <Card key={showtime.id}>
+          <Card key={showtime.showtime_id}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <h3 className="font-sans font-semibold text-lg">
-                    {showtime.movieTitle}
+                    {showtime.movie.title}
                   </h3>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="font-serif">
-                      {showtime.theater} • {showtime.screen}
+                      {showtime.screen.cinema_id} • {showtime.screen.name}
                     </span>
                     <span className="font-serif">
                       {showtime.date} at {showtime.time}

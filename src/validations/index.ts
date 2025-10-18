@@ -64,17 +64,15 @@ export const addMovieValidationSchema = Yup.object({
 });
 
 export const showTimeValidationSchema = Yup.object({
-  movieTitle: Yup.string().required("Movie selection is required"),
-  theater: Yup.string().required("Theater selection is required"),
-  screen: Yup.string().required("Screen selection is required"),
-  date: Yup.date()
-    .required("Date is required")
-    .min(new Date(), "Date cannot be in the past"),
-  time: Yup.string().required("Time is required"),
-  price: Yup.number()
-    .required("Price is required")
-    .min(0.01, "Price must be greater than 0")
-    .max(100, "Price cannot exceed $100"),
+  movie_id: Yup.string().required("Movie selection is required"),
+  screen_id: Yup.string().required("Screen selection is required"),
+  show_date: Yup.string().required("Show date is required"),
+  show_time: Yup.string().required("Show start time is required"),
+  showtime_status_id: Yup.string().required("Showtime status is required"),
+  // price: Yup.number()
+  //   .required("Price is required")
+  //   .min(0.01, "Price must be greater than 0")
+  //   .max(100, "Price cannot exceed $100"),
 });
 
 export const theaterValidationSchema = Yup.object({

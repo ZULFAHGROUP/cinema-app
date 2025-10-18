@@ -13,6 +13,7 @@ import { getAllMovies } from "../../store/slices/movie";
 import { getAllShowtimes } from "../../store/slices/showtime";
 import { getAllCinemas } from "../../store/slices/cinema";
 import { getAllScreen } from "../../store/slices/screen";
+import { getAllShowtimeStatuses } from "../../store/slices/showtimeStatus";
 
 function MoviesPage() {
   const [activeTab, setActiveTab] = useState("movies");
@@ -24,6 +25,7 @@ function MoviesPage() {
     dispatch(getAllMovies());
     dispatch(getAllClassifications());
     dispatch(getAllShowtimes());
+    dispatch(getAllShowtimeStatuses());
     dispatch(getAllCinemas());
     dispatch(getAllScreen());
   }, [dispatch]);
