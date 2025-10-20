@@ -17,6 +17,7 @@ import AddScreensForm from "./components/AddScreensForm";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { getAllCinemas } from "../../store/slices/cinema";
 import { getAllScreen } from "../../store/slices/screen";
+import { getAllSeats } from "../../store/slices/seat";
 
 function CinemaSetup() {
   const [activeTab, setActiveTab] = useState("theaters");
@@ -27,10 +28,12 @@ function CinemaSetup() {
   useEffect(() => {
     dispatch(getAllCinemas());
     dispatch(getAllScreen());
+    dispatch(getAllSeats());
   }, [dispatch]);
 
   const { cinemaLoading, allCinemas } = useAppSelector((state) => state.cinema);
   const { loading, screens } = useAppSelector((state) => state.screen);
+  const { seatLoading, seats } = useAppSelector((state) => state.seat);
 
   const seatLayout = Array.from({ length: 10 }, (_, row) =>
     Array.from({ length: 15 }, (_, seat) => ({

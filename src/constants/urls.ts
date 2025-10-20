@@ -3,6 +3,7 @@ const urls = {
   cinema: "/cinema",
   movie_clas: "/movie-classification",
   seat_types: "/seat-type",
+  seat: "/seat",
   showtime_status: "/showtime-status",
   screen: "/screen",
   movie: "/movie",

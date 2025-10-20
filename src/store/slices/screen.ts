@@ -81,7 +81,7 @@ const screenSlice = createSlice({
         state.loading = false;
       })
       .addCase(createScreen.pending, (state) => {
-        state.loading = true;
+        state.loading = false;
       })
       .addCase(createScreen.fulfilled, (state) => {
         state.loading = false;

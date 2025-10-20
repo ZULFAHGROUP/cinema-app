@@ -71,7 +71,7 @@ const cinemaSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(createCinema.pending, (state) => {
-        state.cinemaLoading = true;
+        // state.cinemaLoading = true;
         state.cinemaError = null;
       })
       .addCase(createCinema.fulfilled, (state, action: PayloadAction<any>) => {
@@ -85,33 +85,33 @@ const cinemaSlice = createSlice({
         state.cinemaError = action.error.message || String(action.error);
       })
       .addCase(getAllCinemas.pending, (state) => {
-        state.loading = true;
+        state.cinemaLoading = true;
         state.error = null;
       })
       .addCase(getAllCinemas.fulfilled, (state, action: PayloadAction<any>) => {
         state.allCinemas = action.payload;
-        state.loading = false;
+        state.cinemaLoading = false;
         state.error = null;
       })
       .addCase(getAllCinemas.rejected, (state, action) => {
         state.allCinemas = initialState.allCinemas;
-        state.loading = false;
-        state.error = action.error.message || String(action.error);
-      })
-      .addCase(deleteCinema.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(deleteCinema.fulfilled, (state, action: PayloadAction<any>) => {
-        state.deleteCinema = action.payload;
-        state.loading = false;
-        state.error = null;
-      })
-      .addCase(deleteCinema.rejected, (state, action) => {
-        state.deleteCinema = initialState.deleteCinema;
-        state.loading = false;
+        state.cinemaLoading = false;
         state.error = action.error.message || String(action.error);
       });
+    // .addCase(deleteCinema.pending, (state) => {
+    //   state.cinemaLoading = true;
+    //   state.error = null;
+    // })
+    // .addCase(deleteCinema.fulfilled, (state, action: PayloadAction<any>) => {
+    //   state.deleteCinema = action.payload;
+    //   state.cinemaLoading = false;
+    //   state.error = null;
+    // })
+    // .addCase(deleteCinema.rejected, (state, action) => {
+    //   state.deleteCinema = initialState.deleteCinema;
+    //   state.cinemaLoading = false;
+    //   state.error = action.error.message || String(action.error);
+    // });
   },
 });
 

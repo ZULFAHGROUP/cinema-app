@@ -47,6 +47,7 @@ const Theater = ({ cinemas, loading }: any) => {
         {loading ? (
           <p>Loading...</p>
         ) : (
+          cinemas?.length > 0 &&
           cinemas?.map((theater: any) => (
             <Card
               key={theater.id}
