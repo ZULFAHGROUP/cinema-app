@@ -1,5 +1,5 @@
 const urls = {
-  login: "/admin/login",
+  login: "/auth/login",
   cinema: "/cinema",
   movie_clas: "/movie-classification",
   seat_types: "/seat-type",

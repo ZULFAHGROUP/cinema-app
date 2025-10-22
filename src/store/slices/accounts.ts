@@ -58,29 +58,29 @@ export const resumeSession = createAsyncThunk(
   }
 );
 
-export const resetPassword = createAsyncThunk(
-  "account/resetPassword",
-  async (payload) => {
-    const response = await Accounts.resetPassword(payload);
-    return response.data.data;
-  }
-);
+// export const resetPassword = createAsyncThunk(
+//   "account/resetPassword",
+//   async (payload) => {
+//     const response = await Accounts.resetPassword(payload);
+//     return response.data.data;
+//   }
+// );
 
-export const updateProfile = createAsyncThunk(
-  "account/updateProfile",
-  async (payload) => {
-    const response = await Accounts.updateProfile(payload);
-    return response.data.data;
-  }
-);
+// export const updateProfile = createAsyncThunk(
+//   "account/updateProfile",
+//   async (payload) => {
+//     const response = await Accounts.updateProfile(payload);
+//     return response.data.data;
+//   }
+// );
 
-export const changePassword = createAsyncThunk(
-  "account/changePassword",
-  async (payload) => {
-    const response = await Accounts.changePassword(payload);
-    return response.data.data;
-  }
-);
+// export const changePassword = createAsyncThunk(
+//   "account/changePassword",
+//   async (payload) => {
+//     const response = await Accounts.changePassword(payload);
+//     return response.data.data;
+//   }
+// );
 
 const accountSlice = createSlice({
   name: "account",
@@ -112,14 +112,14 @@ const accountSlice = createSlice({
       })
       .addCase(resumeSession.fulfilled, (state, action: PayloadAction<any>) => {
         state.data = action.payload;
-      })
-      .addCase(updateProfile.fulfilled, (state, action: PayloadAction<any>) => {
-        console.log(action.payload);
-        state.data.customerDetails = {
-          ...state.data.customerDetails,
-          ...action.payload,
-        };
       });
+    // .addCase(updateProfile.fulfilled, (state, action: PayloadAction<any>) => {
+    //   console.log(action.payload);
+    //   state.data.customerDetails = {
+    //     ...state.data.customerDetails,
+    //     ...action.payload,
+    //   };
+    // });
   },
 });
 

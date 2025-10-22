@@ -8,21 +8,21 @@ const Accounts = {
     return Axios.post(urls.login, data);
   },
 
-  createUser: (data: any) => {
-    return Axios.post(urls.createAccount, data);
-  },
+  // createUser: (data: any) => {
+  //   return Axios.post(urls.createAccount, data);
+  // },
 
-  resetPassword: (data: any) => {
-    return Axios.post(urls.createAccount, data);
-  },
+  // resetPassword: (data: any) => {
+  //   return Axios.post(urls.createAccount, data);
+  // },
 
-  updateProfile: (data: any) => {
-    return Axios.post(urls.createAccount, data);
-  },
+  // updateProfile: (data: any) => {
+  //   return Axios.post(urls.createAccount, data);
+  // },
 
-  changePassword: (data: any) => {
-    return Axios.post(urls.createAccount, data);
-  },
+  // changePassword: (data: any) => {
+  //   return Axios.post(urls.createAccount, data);
+  // },
 };
 
 export default Accounts;

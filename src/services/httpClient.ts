@@ -34,7 +34,7 @@ const Axios: AxiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
     "X-Requested-With": "XMLHttpRequest",
-    "Access-Control-Allow-Origin": "*",
+    // "Access-Control-Allow-Origin": "*",
   },
   transformResponse: [(data) => transformResponse(data)],
 });
