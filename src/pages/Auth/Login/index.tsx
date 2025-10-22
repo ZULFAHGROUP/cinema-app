@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Formik, Form } from "formik";
 import Input from "../../../components/shared/Input";
 import Button from "../../../components/shared/Button";

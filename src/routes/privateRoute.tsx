@@ -7,13 +7,13 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
-  // const location = useLocation();
-  // const account = useSelector((state: RootState) => state.accounts.data);
+  const location = useLocation();
+  const account = useSelector((state: RootState) => state.accounts.data);
 
   // Redirect to login if user is not authenticated
-  // if (!account?.jwtToken || account?.sessionTimedOut) {
-  //   return <Navigate to="/auth/login" state={{ from: location }} replace />;
-  // }
+  if (!account?.jwtToken || account?.sessionTimedOut) {
+    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+  }
 
   return <>{children}</>;
 };
