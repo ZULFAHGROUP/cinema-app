@@ -45,11 +45,11 @@ Axios.interceptors.request.use(
     const { jwtToken } = state.accounts.data;
 
     if (jwtToken) {
-      config.headers["Admin-Key-Token"] = jwtToken;
-      //   config.headers = {
-      //     ...config.headers,
-      //     Authorization: `Bearer ${jwtToken}`,
-      //   };
+      // config.headers = {
+      //   ...config.headers,
+      //   Authorization: `Bearer ${jwtToken}`,
+      // };
+      config.headers?.set("Authorization", `Bearer ${jwtToken}`);
     }
 
     return config;
