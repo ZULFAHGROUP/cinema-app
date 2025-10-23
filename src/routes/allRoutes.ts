@@ -1,6 +1,8 @@
 export const allRoutes = {
   home: "/",
   auth: "/auth",
+  forgetPassword: "/auth/forgot-password",
+  resetPassword: "/auth/reset-password",
   dashboard: "/dashboard",
   cinema: "/cinema-setup",
   movies: "/movies",
@@ -15,4 +17,5 @@ export const allRoutes = {
   signage: "/signage",
   reports: "/reporting",
   settings: "/settings",
+  audit: "/audit",
 };

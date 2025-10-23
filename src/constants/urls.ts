@@ -8,6 +8,8 @@ const urls = {
   screen: "/screen",
   movie: "/movie",
   showtime: "/showtime",
+  role: "/role",
+  audit: "/audit-trail",
 };
 
 export default urls;

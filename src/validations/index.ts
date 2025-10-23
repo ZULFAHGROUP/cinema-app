@@ -119,3 +119,8 @@ export const screenValidationSchema = Yup.object().shape({
       .required("Seat layout is required"),
   }),
 });
+
+export const roleSchema = Yup.object().shape({
+  role_name: Yup.string().required("Role name is required"),
+  description: Yup.string().required("Role description is required"),
+});

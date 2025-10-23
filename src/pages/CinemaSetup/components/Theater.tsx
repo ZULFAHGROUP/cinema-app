@@ -50,19 +50,22 @@ const Theater = ({ cinemas, loading }: any) => {
           cinemas?.length > 0 &&
           cinemas?.map((theater: any) => (
             <Card
-              key={theater.id}
+              key={theater?.id}
               className="hover:shadow-md transition-shadow"
             >
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="font-sans">{theater.name}</CardTitle>
-                  <Tag color={theater.status === "Active" ? "green" : "orange"}>
-                    {theater.status}
+                  <CardTitle className="font-sans">{theater?.name}</CardTitle>
+                  <Tag
+                    color={theater?.status === "Active" ? "green" : "orange"}
+                  >
+                    {theater?.status}
                   </Tag>
                 </div>
                 <CardDescription className="font-serif">
-                  <p>{theater.location}</p>
-                  {theater.screens.length} screen • {theater.totalSeats} seats
+                  <p>{theater?.location}</p>
+                  {theater?.screens?.length} screen • {theater?.totalSeats}{" "}
+                  seats
                 </CardDescription>
               </CardHeader>
               <CardContent>

@@ -12,28 +12,27 @@ import Button from "../../../../components/shared/Button";
 import DisplayModal from "../../../../components/shared/Modal/DisplayModal";
 import ConfirmationModal from "../../../../components/shared/Modal/ConfirmationModal";
 import ReusableTable from "../../../../components/shared/Table";
-import MovieClassificationForm from "./components/MovieClassificationForm";
+import RolesForm from "./components/RolesForm";
+import { getAllRoles } from "../../../../store/slices/roles";
 
-const MovieClassification = () => {
+const Roles = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
   const dispatch = useAppDispatch();
-  const { classifications, loading } = useAppSelector(
-    (state) => state.classification
-  );
+  const { roles, roleLoading } = useAppSelector((state) => state.role);
 
   useEffect(() => {
-    dispatch(getAllClassifications());
+    dispatch(getAllRoles());
   }, [dispatch]);
 
   const handleDelete = async () => {
     if (!selectedItem) return;
     try {
       const response = await dispatch(
-        deleteClassification(selectedItem?.movie_classification_id)
+        deleteClassification(selectedItem?.role_id)
       ).unwrap();
       if (response.code === 200) {
         toast.success(response.message);
@@ -49,10 +48,14 @@ const MovieClassification = () => {
   const columns = [
     {
       title: "Name",
-      dataIndex: "name",
-      key: "name",
+      dataIndex: "role_name",
+      key: "role_name",
     },
-
+    {
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+    },
     {
       title: "Actions",
       key: "actions",
@@ -89,7 +92,7 @@ const MovieClassification = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-semibold">Movie Classifications</h2>
+        <h2 className="text-lg font-semibold">Roles Settings</h2>
         <Button
           className="rounded-md"
           icon={<Plus className="w-4 h-4" />}
@@ -102,13 +105,13 @@ const MovieClassification = () => {
         />
       </div>
 
-      {loading ? (
+      {roleLoading ? (
         <p>Loading...</p>
       ) : (
         <ReusableTable
-          data={classifications || []}
+          data={roles || []}
           columns={columns}
-          title="Movie Classifications"
+          title="Roles"
           searchField={["name"]}
         />
       )}
@@ -116,13 +119,13 @@ const MovieClassification = () => {
       {/* Add / Edit Modal */}
       <DisplayModal
         open={showFormModal}
-        title={editMode ? "Edit Classification" : "Add Classification"}
+        title={editMode ? "Edit Role" : "Add Role"}
         onClose={() => setShowFormModal(false)}
       >
-        <MovieClassificationForm
+        <RolesForm
           onCancel={() => setShowFormModal(false)}
           editMode={editMode}
-          classificationData={selectedItem}
+          roleData={selectedItem}
         />
       </DisplayModal>
 
@@ -137,4 +140,4 @@ const MovieClassification = () => {
   );
 };
 
-export default MovieClassification;
+export default Roles;

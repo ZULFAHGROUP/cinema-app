@@ -20,6 +20,8 @@ import ScrollToTop from "../../utils/ScrollToTop";
 import { IoIosArrowBack } from "react-icons/io";
 import sideBarDetails from "../../constants/sidebar";
 import PrivateRoute from "../../routes/privateRoute";
+import { logout } from "../../store/slices/accounts";
+import { useAppDispatch } from "../../store/hook";
 
 const { Header, Sider, Content } = Layout;
 
@@ -38,6 +40,7 @@ const AppLayout: React.FC = () => {
   const location = useLocation();
   const [canGoBack, setCanGoBack] = useState(false);
   const [openKeys, setOpenKeys] = useState<string[]>([]);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     setCanGoBack(window.history.length > 1);
@@ -59,6 +62,7 @@ const AppLayout: React.FC = () => {
       ]}
       onClick={(e) => {
         if (e.key === "logout") {
+          dispatch(logout());
           navigate("/");
         } else {
           navigate(e.key);

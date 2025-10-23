@@ -93,6 +93,7 @@ const accountSlice = createSlice({
     },
     logout: (state) => {
       state.data = initialState.data;
+      sessionStorage.removeItem("persist:root");
     },
   },
   extraReducers: (builder) => {

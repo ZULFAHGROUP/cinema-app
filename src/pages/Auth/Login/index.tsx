@@ -3,11 +3,12 @@ import { Formik, Form } from "formik";
 import Input from "../../../components/shared/Input";
 import Button from "../../../components/shared/Button";
 import { Link, useNavigate } from "react-router-dom";
-import { Carousel } from "antd";
 import { useDispatch } from "react-redux";
 import { login } from "../../../store/slices/accounts";
 import { AppDispatch } from "../../../store/store";
 import { loginValidationSchema } from "../../../validations";
+import { allRoutes } from "../../../routes/allRoutes";
+import AuthLayout from "../../../components/shared/AuthLayout";
 
 const initialValues = { email: "", password: "" };
 
@@ -31,111 +32,85 @@ const Login = () => {
   }
 
   return (
-    <div>
-      <div className="flex min-h-screen p-6">
-        <div className="bg-[url('/src/assets/background.jpg')] items-end font-bold text-6xl flex-1 hidden md:flex">
-          <Carousel autoplay className="text-[#c77e3b] max-w-xl p-10 h-full">
-            <div className="">
-              <h3 className="text-4xl font-bold">Welcome to Our Platform</h3>
-              <p className="italic text-lg mt-2">
-                Explore a world of opportunities tailored just for you.
-              </p>
-            </div>
-            <div className="">
-              <h3 className="text-4xl font-bold">Join Our Community</h3>
-              <p className="italic text-lg mt-2">
-                Connect with like-minded individuals and grow together.
-              </p>
-            </div>
-            <div className="">
-              <h3 className="text-4xl font-bold">Achieve Your Goals</h3>
-              <p className="italic text-lg mt-2">
-                Your success is our priority—start your journey today.
-              </p>
-            </div>
-          </Carousel>
-        </div>
-        <div className="flex-1 flex justify-center items-center">
-          <div className="p-12 text-center space-y-2 w-full md:w-[30rem] shadow-lg rounded-lg border border-gray-200">
-            <p className="font-medium text-lg md:text-3xl">Welcome Back!</p>
-            <p>Login to continue to see what is happening with your cinemas.</p>
-            <Formik
-              initialValues={initialValues}
-              validationSchema={loginValidationSchema}
-              onSubmit={handleLogin}
+    <AuthLayout>
+      <div className="p-12 text-center space-y-2 w-full md:w-[30rem] shadow-lg rounded-lg border border-gray-200">
+        <p className="font-medium text-lg md:text-3xl">Welcome Back!</p>
+        <p>Login to continue to see what is happening with your cinemas.</p>
+        <Formik
+          initialValues={initialValues}
+          validationSchema={loginValidationSchema}
+          onSubmit={handleLogin}
+        >
+          {({
+            handleChange,
+            values,
+            errors,
+            handleSubmit,
+            isValid,
+            dirty,
+            isSubmitting,
+          }) => (
+            <Form
+              className="flex-1 space-y-4 text-start my-6"
+              onSubmit={handleSubmit}
             >
-              {({
-                handleChange,
-                values,
-                errors,
-                handleSubmit,
-                isValid,
-                dirty,
-                isSubmitting,
-              }) => (
-                <Form
-                  className="flex-1 space-y-4 text-start my-6"
-                  onSubmit={handleSubmit}
-                >
+              <Input
+                label="Email"
+                type="email"
+                name="email"
+                value={values.email}
+                onChange={handleChange}
+                error={errors.email}
+                className=""
+                placeholder="example@example.com"
+              />
+
+              <Input
+                label="Password"
+                type="password"
+                name="password"
+                value={values.password}
+                onChange={handleChange}
+                error={errors.password}
+                placeholder="********"
+              />
+
+              <div className="flex items-center justify-between">
+                <div className="flex gap-2 items-center">
                   <Input
-                    label="Email"
-                    type="email"
-                    name="email"
-                    value={values.email}
+                    type="checkbox"
+                    id="rememberMe"
+                    className="accent-[#c77e3b]"
+                    // checked={}
                     onChange={handleChange}
-                    error={errors.email}
-                    className=""
-                    placeholder="example@example.com"
                   />
+                  <p className="text-xs font-semibold">Remember me</p>
+                </div>
+                <span className="text-[#c77e3b] text-xs font-normal">
+                  Forgot Password?{" "}
+                  <Link
+                    to={allRoutes.forgetPassword}
+                    className="text-[#c77e3b] font-semibold transition ease-in-out duration-300"
+                  >
+                    Reset
+                  </Link>
+                </span>
+              </div>
 
-                  <Input
-                    label="Password"
-                    type="password"
-                    name="password"
-                    value={values.password}
-                    onChange={handleChange}
-                    error={errors.password}
-                    placeholder="********"
-                  />
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex gap-2 items-center">
-                      <Input
-                        type="checkbox"
-                        id="rememberMe"
-                        className="accent-[#c77e3b]"
-                        // checked={}
-                        onChange={handleChange}
-                      />
-                      <p className="text-xs font-semibold">Remember me</p>
-                    </div>
-                    <span className="text-[#c77e3b] text-xs font-normal">
-                      Forgot Password?{" "}
-                      <Link
-                        to="/forget_password"
-                        className="text-[#c77e3b] font-semibold transition ease-in-out duration-300"
-                      >
-                        Reset
-                      </Link>
-                    </span>
-                  </div>
-
-                  <div className="flex justify-center">
-                    <Button
-                      title="Login"
-                      variant="secondary"
-                      className="rounded-md w-full"
-                      loading={isSubmitting}
-                      disabled={!isValid || !dirty || isSubmitting}
-                    />
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </div>
+              <div className="flex justify-center">
+                <Button
+                  title="Login"
+                  variant="secondary"
+                  className="rounded-md w-full"
+                  loading={isSubmitting}
+                  disabled={!isValid || !dirty || isSubmitting}
+                />
+              </div>
+            </Form>
+          )}
+        </Formik>
       </div>
-    </div>
+    </AuthLayout>
   );
 };
 

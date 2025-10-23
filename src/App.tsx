@@ -26,6 +26,7 @@ import SchedulingRoutes from "./routes/schedulingRoutes";
 import SignageRoutes from "./routes/signageRoute";
 import ReportsRoutes from "./routes/reportsRoutes";
 import SettingsRoutes from "./routes/settingsRoutes";
+import AuditTrail from "./pages/AuditTrail";
 
 const App = () => {
   return (
@@ -79,6 +80,7 @@ const App = () => {
                   path={`${allRoutes.settings}/*`}
                   element={<SettingsRoutes />}
                 />
+                <Route path={`${allRoutes.audit}/*`} element={<AuditTrail />} />
               </Route>
 
               {/*  404 Catch-All Route */}

@@ -8,6 +8,8 @@ import screenReducer from "./slices/screen";
 import movieReduer from "./slices/movie";
 import showtimeReducer from "./slices/showtime";
 import seatReducer from "./slices/seat";
+import roleReducer from "./slices/roles";
+import extraReducer from "./slices/extras";
 
 export default combineReducers({
   accounts: accountReducer,
@@ -19,4 +21,6 @@ export default combineReducers({
   movie: movieReduer,
   showtime: showtimeReducer,
   seat: seatReducer,
+  role: roleReducer,
+  extras: extraReducer,
 });

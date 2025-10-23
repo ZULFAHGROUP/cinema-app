@@ -11,6 +11,7 @@ import {
   Monitor,
   FileText,
   Settings2,
+  File,
 } from "lucide-react";
 import { allRoutes } from "../routes/allRoutes";
 
@@ -38,6 +39,7 @@ const navigationItems = [
   { name: "Digital Signage", icon: Monitor, href: allRoutes.signage },
   { name: "Reports", icon: FileText, href: allRoutes.reports },
   { name: "Settings", icon: Settings2, href: allRoutes.settings },
+  { name: "Audit Trail", icon: File, href: allRoutes.audit },
 ];
 
 const sideBarDetails: SidebarProps[] = navigationItems.map((item) => ({

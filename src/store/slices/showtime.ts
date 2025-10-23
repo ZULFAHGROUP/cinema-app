@@ -16,7 +16,7 @@ export const getAllShowtimes = createAsyncThunk(
 );
 
 export const createShowtime = createAsyncThunk(
-  "movie/create",
+  "showtime/create",
   async (payload: any, { rejectWithValue }): Promise<ApiResponse> => {
     try {
       const response = await ShowTime.createShowtime(payload);

@@ -24,6 +24,8 @@ const persistConfig = {
     "movie",
     "showtime",
     "seat",
+    "role",
+    "extras",
   ],
 };
 
