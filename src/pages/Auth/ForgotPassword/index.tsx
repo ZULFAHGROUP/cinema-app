@@ -3,10 +3,19 @@ import Input from "../../../components/shared/Input";
 import Button from "../../../components/shared/Button";
 import { forgotPasswordValidationSchema } from "../../../validations";
 import AuthLayout from "../../../components/shared/AuthLayout";
+import { useNavigate } from "react-router-dom";
+import { allRoutes } from "../../../routes/allRoutes";
 const ForgotPassword = () => {
   const initialValues = { email: "" };
-
-  async function handleForgotPassword() {}
+  const navigate = useNavigate();
+  async function handleForgotPassword() {
+    try {
+      // localStorage.setItem('recoveryEmail', values.email)
+      navigate(allRoutes.resetPassword);
+    } catch (e) {
+      console.log("error is", e);
+    }
+  }
 
   return (
     <AuthLayout>
@@ -20,7 +29,14 @@ const ForgotPassword = () => {
           validationSchema={forgotPasswordValidationSchema}
           onSubmit={handleForgotPassword}
         >
-          {({ handleChange, values, errors, handleSubmit, isValid }) => (
+          {({
+            handleChange,
+            values,
+            errors,
+            handleSubmit,
+            isValid,
+            isSubmitting,
+          }) => (
             <Form
               className="flex-1 space-y-4 text-start my-6"
               onSubmit={handleSubmit}
@@ -38,10 +54,11 @@ const ForgotPassword = () => {
 
               <div className="flex justify-center">
                 <Button
-                  title="Start Recovery"
+                  title={isSubmitting ? "Sending Otp..." : "Start Recovery"}
                   variant="secondary"
+                  type="submit"
                   className="rounded-md w-full"
-                  disabled={isValid}
+                  disabled={!isValid}
                 />
               </div>
             </Form>

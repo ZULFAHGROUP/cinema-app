@@ -124,3 +124,10 @@ export const roleSchema = Yup.object().shape({
   role_name: Yup.string().required("Role name is required"),
   description: Yup.string().required("Role description is required"),
 });
+
+export const resetPasswordValidationSchema = Yup.object().shape({
+  password: Yup.string().min(6).required("Password is required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password")], "Passwords must match")
+    .required("Confirm Password is required"),
+});
