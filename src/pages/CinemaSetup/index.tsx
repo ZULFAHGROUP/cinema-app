@@ -33,7 +33,7 @@ function CinemaSetup() {
 
   const { cinemaLoading, allCinemas } = useAppSelector((state) => state.cinema);
   const { loading, screens } = useAppSelector((state) => state.screen);
-  const { seatLoading, seats } = useAppSelector((state) => state.seat);
+  // const { seatLoading, seats } = useAppSelector((state) => state.seat);
 
   const seatLayout = Array.from({ length: 10 }, (_, row) =>
     Array.from({ length: 15 }, (_, seat) => ({
@@ -50,7 +50,7 @@ function CinemaSetup() {
       key: "theaters",
       label: (
         <span className="flex items-center gap-2">
-          <Building2 className="w-4 h-4" /> Cinemas
+          <Building2 className="w-4 h-4" /> Cinemas Location
         </span>
       ),
       children: <Theater loading={cinemaLoading} cinemas={allCinemas} />,
@@ -162,7 +162,7 @@ function CinemaSetup() {
         <div className="flex gap-2 ml-4">
           {activeTab === "theaters" && (
             <Button
-              title="Add Cinema"
+              title="Add Location"
               onClick={() => setIsAddTheaterModalOpen(true)}
               className="gap-2 rounded-md"
               icon={<Building2 className="w-4 h-4" />}

@@ -265,8 +265,8 @@ function SignagePage() {
         title="Create New Content"
       >
         <AddContentForm
-        // onSubmit={handleAddContent}
-        // onCancel={() => setIsAddContentModalOpen(false)}
+          onSubmit={handleAddContent}
+          onCancel={() => setIsAddContentModalOpen(false)}
         />
       </DisplayModal>
 
@@ -276,9 +276,9 @@ function SignagePage() {
         title="Add Schedule Item"
       >
         <AddScheduleForm
-        //   contentTemplates={contentTemplates}
-        //   onSubmit={handleAddSchedule}
-        //   onCancel={() => setIsAddScheduleModalOpen(false)}
+          contentTemplates={contentTemplates}
+          onSubmit={handleAddSchedule}
+          onCancel={() => setIsAddScheduleModalOpen(false)}
         />
       </DisplayModal>
     </div>
