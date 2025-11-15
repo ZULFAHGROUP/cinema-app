@@ -14,6 +14,7 @@ import ConfirmationModal from "../../../../components/shared/Modal/ConfirmationM
 import ReusableTable from "../../../../components/shared/Table";
 import RolesForm from "./components/RolesForm";
 import { getAllRoles } from "../../../../store/slices/roles";
+import Loader from "../../../../components/shared/Loader";
 
 const Roles = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -106,7 +107,7 @@ const Roles = () => {
       </div>
 
       {roleLoading ? (
-        <p>Loading...</p>
+        <Loader rows={6} />
       ) : (
         <ReusableTable
           data={roles || []}

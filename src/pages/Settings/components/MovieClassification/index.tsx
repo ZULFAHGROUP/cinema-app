@@ -13,6 +13,7 @@ import DisplayModal from "../../../../components/shared/Modal/DisplayModal";
 import ConfirmationModal from "../../../../components/shared/Modal/ConfirmationModal";
 import ReusableTable from "../../../../components/shared/Table";
 import MovieClassificationForm from "./components/MovieClassificationForm";
+import Loader from "../../../../components/shared/Loader";
 
 const MovieClassification = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -103,7 +104,7 @@ const MovieClassification = () => {
       </div>
 
       {loading ? (
-        <p>Loading...</p>
+        <Loader rows={6} />
       ) : (
         <ReusableTable
           data={classifications || []}

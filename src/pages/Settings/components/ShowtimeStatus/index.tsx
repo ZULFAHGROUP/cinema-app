@@ -12,6 +12,7 @@ import DisplayModal from "../../../../components/shared/Modal/DisplayModal";
 import { toast } from "react-toastify";
 import ShowtimeStatusForm from "./components/ShowtimeStatusForm";
 import ReusableTable from "../../../../components/shared/Table";
+import Loader from "../../../../components/shared/Loader";
 
 const ShowtimeStatus = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -102,7 +103,7 @@ const ShowtimeStatus = () => {
       </div>
 
       {loading ? (
-        <p>Loading...</p>
+        <Loader rows={6} />
       ) : (
         <ReusableTable
           data={statuses || []}

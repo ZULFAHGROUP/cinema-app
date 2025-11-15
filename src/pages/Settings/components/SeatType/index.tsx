@@ -12,6 +12,7 @@ import DisplayModal from "../../../../components/shared/Modal/DisplayModal";
 import ConfirmationModal from "../../../../components/shared/Modal/ConfirmationModal";
 import ReusableTable from "../../../../components/shared/Table";
 import SeatTypeForm from "./components/SeatTypeForm";
+import Loader from "../../../../components/shared/Loader";
 
 const SeatType = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -102,7 +103,7 @@ const SeatType = () => {
       </div>
 
       {loading ? (
-        <p>Loading...</p>
+        <Loader rows={6} />
       ) : (
         <ReusableTable
           data={seatTypes || []}

@@ -26,18 +26,18 @@ const Settings = () => {
   ];
   return (
     <div className="min-h-screen flex flex-col md:flex-row gap-2">
-      <div className="flex flex-row flex-wrap md:flex-col gap-4 w-full md:w-[20%]">
+      <div className="flex flex-row flex-wrap md:flex-col gap-4 md:gap-1 w-full md:w-[20%]">
         {settingsRoute.map((routes) => (
           <Button
             key={routes.url}
-            className="rounded-"
-            variant={currentScreen === routes.url ? "extra" : "extra-outline"}
+            className="rounded- border-0 rounded-md"
+            variant={currentScreen === routes.url ? "primary" : "outline"}
             onClick={() => setCurrentScreen(routes.url)}
             title={routes.name}
           />
         ))}
       </div>
-      <div className="md:border-l md:border-l-[#5480c7] md:px-2 w-full md:w-[80%]">
+      <div className="md:border-l md:border-l- md:px-2 w-full md:w-[80%]">
         {currentScreen === "movie-classification" ? (
           <MovieClassification />
         ) : currentScreen === "seat-type" ? (
