@@ -19,6 +19,7 @@ interface AddScreensFormProps {
   editMode?: boolean;
   screenData?: any;
   cinemas?: any;
+  preSelectedCinema?: any;
 }
 
 const AddScreensForm = ({
@@ -26,15 +27,16 @@ const AddScreensForm = ({
   editMode = false,
   screenData,
   cinemas,
+  preSelectedCinema,
 }: AddScreensFormProps) => {
   const dispatch = useAppDispatch();
   useEffect(() => {
     dispatch(getAllSeatTypes());
   }, [dispatch]);
   const { seatTypes } = useAppSelector((state) => state.seatType);
-
+  console.log("cinema id", preSelectedCinema);
   const initialValues = {
-    cinema_id: screenData?.cinema.name || "",
+    cinema_id: preSelectedCinema || screenData?.cinema?.name || "",
     name: screenData?.name || "",
     seat_layout: {
       rows: screenData?.seat_layout?.rows || [
@@ -121,7 +123,7 @@ const AddScreensForm = ({
                   : undefined
               }
               required
-              disabled={editMode}
+              disabled={editMode || Boolean(preSelectedCinema)}
             />{" "}
             <Input
               label="Screen Name"

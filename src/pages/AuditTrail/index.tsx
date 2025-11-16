@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from "react";
 import { getAllAuditTrails } from "../../store/slices/extras";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import ReusableTable from "../../components/shared/Table";
+import Loader from "../../components/shared/Loader";
+import { humanDateAndTime } from "../../utils";
 
 const AuditTrail = () => {
   const dispatch = useAppDispatch();
@@ -14,13 +17,29 @@ const AuditTrail = () => {
   const columns = [
     {
       title: "Name",
-      dataIndex: "role_name",
-      key: "role_name",
+      dataIndex: "user_id",
+      key: "user_id",
     },
     {
       title: "Description",
       dataIndex: "description",
       key: "description",
+    },
+    {
+      title: "Action",
+      dataIndex: "action",
+      key: "action",
+    },
+    {
+      title: "User Agent",
+      dataIndex: "user_agent",
+      key: "user_agent",
+    },
+    {
+      title: "Time and Date",
+      dataIndex: "created_at",
+      key: "created_at",
+      render: (created_at: any) => humanDateAndTime(created_at),
     },
   ];
 
@@ -31,7 +50,7 @@ const AuditTrail = () => {
       </div>
 
       {auditLoading ? (
-        <p>Loading...</p>
+        <Loader rows={10} />
       ) : (
         <ReusableTable
           data={auditTrails || []}

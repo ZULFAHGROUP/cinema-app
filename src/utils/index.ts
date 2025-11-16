@@ -99,3 +99,36 @@ export const getDesiredTime = (time: string | number | Date): string => {
 };
 
 export const currentYear = new Date().getFullYear();
+
+export const humanDateAndTime = (value: string | number | Date): string => {
+  const date = new Date(value);
+
+  if (isNaN(date.getTime())) return "Invalid date";
+
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  const month = months[date.getMonth()];
+  const day = date.getDate();
+  const year = date.getFullYear();
+
+  // Time
+  let hours = date.getHours();
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  const ampm = hours >= 12 ? "pm" : "am";
+  hours = hours % 12 || 12; // 0 becomes 12
+
+  return `${month} ${day}, ${year} at ${hours}:${minutes} ${ampm}`;
+};
