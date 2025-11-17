@@ -214,7 +214,7 @@ const Theater = ({ cinemas, loading, screens, screensLoading }: any) => {
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
-          <p>Loading...</p>
+          <Loader rows={6} />
         ) : (
           cinemas?.length > 0 &&
           cinemas?.map((theater: any) => {
@@ -243,16 +243,16 @@ const Theater = ({ cinemas, loading, screens, screensLoading }: any) => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex flex-wrap gap-1">
+                    {/* <div className="flex flex-wrap gap-1">
                       {theater?.features?.map((feature: any) => (
                         <Tag key={feature} className="text-xs">
                           {feature}
                         </Tag>
                       ))}
-                    </div>
+                    </div> */}
 
                     {/* Screens Dropdown */}
-                    <div className="mb-3">
+                    <div className="mb-6">
                       {cinemaScreens?.length > 0 && (
                         <Collapse
                           bordered={false}
@@ -280,7 +280,7 @@ const Theater = ({ cinemas, loading, screens, screensLoading }: any) => {
                                 cinemaScreens?.map((screen: any) => (
                                   <div
                                     key={screen.screen_id}
-                                    className="flex items-center justify-between p-2 bg-white rounded border border-gray-200"
+                                    className="flex items-center justify-between p-1 bg-white rounded border border-gray-200"
                                   >
                                     <div className="flex-1">
                                       <p className="font-sans text-sm font-medium">

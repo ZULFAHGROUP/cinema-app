@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import { Table, TableProps } from "antd";
 import Input from "./Input";
@@ -20,6 +21,8 @@ interface ReusableTableProps<T> {
   tableText?: string;
   pathLink?: string;
   showPdfDownload?: boolean;
+  paginationProps?: any;
+  onTableChange?: (pagination: any) => void;
 }
 
 type TablePaginationPosition =
@@ -43,6 +46,8 @@ const ReusableTable = <T extends Record<string, any>>({
   pathLink,
   pathText = "Create New",
   showPdfDownload = false,
+  paginationProps,
+  onTableChange,
 }: ReusableTableProps<T>) => {
   const [filteredData, setFilteredData] = useState<T[]>(data);
   const [searchText, setSearchText] = useState<string>("");
@@ -157,7 +162,17 @@ const ReusableTable = <T extends Record<string, any>>({
           columns={updatedColumns}
           dataSource={filteredData}
           bordered
-          pagination={paginationConfig}
+          // pagination={paginationConfig}
+          pagination={
+            showPagination
+              ? {
+                  ...paginationProps,
+                  showSizeChanger: true,
+                  pageSizeOptions: ["10", "20", "50", "100"],
+                }
+              : false
+          }
+          onChange={onTableChange}
           title={() => (
             <div
               className="bg-extra"

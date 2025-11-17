@@ -3,8 +3,8 @@ import urls from "../../constants/urls";
 import Axios from "../httpClient";
 
 const Extras = {
-  allAuditTrails: () => {
-    return Axios.get(urls.audit);
+  allAuditTrails: (page: number, limit: number) => {
+    return Axios.get(`${urls.audit}?page=${page}&limit=${limit}`);
   },
 };
 
