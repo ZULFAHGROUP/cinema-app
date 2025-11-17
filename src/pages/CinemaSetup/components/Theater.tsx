@@ -212,38 +212,42 @@ const Theater = ({ cinemas, loading, screens, screensLoading }: any) => {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {loading ? (
-          <Loader rows={6} />
-        ) : (
-          cinemas?.length > 0 &&
-          cinemas?.map((theater: any) => {
-            const cinemaScreens = getCinemaScreens(theater?.cinema_id);
+      {loading ? (
+        <Loader rows={6} />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {cinemas?.length > 0 &&
+            cinemas?.map((theater: any) => {
+              const cinemaScreens = getCinemaScreens(theater?.cinema_id);
 
-            return (
-              <Card
-                key={theater?.id}
-                className="hover:shadow-md transition-shadow relative"
-              >
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="font-sans">{theater?.name}</CardTitle>
-                    <Tag
-                      color={theater?.status === "Active" ? "green" : "orange"}
-                    >
-                      {theater?.status}
-                    </Tag>
-                  </div>
-                  <CardDescription className="font-serif">
-                    <p>{theater?.location}</p>
-                    {cinemaScreens?.length} screen
-                    {cinemaScreens?.length !== 1 ? "s" : ""} •{" "}
-                    {theater?.totalSeats} seats
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {/* <div className="flex flex-wrap gap-1">
+              return (
+                <Card
+                  key={theater?.id}
+                  className="hover:shadow-md transition-shadow relative"
+                >
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="font-sans">
+                        {theater?.name}
+                      </CardTitle>
+                      <Tag
+                        color={
+                          theater?.status === "Active" ? "green" : "orange"
+                        }
+                      >
+                        {theater?.status}
+                      </Tag>
+                    </div>
+                    <CardDescription className="font-serif">
+                      <p>{theater?.location}</p>
+                      {cinemaScreens?.length} screen
+                      {cinemaScreens?.length !== 1 ? "s" : ""} •{" "}
+                      {theater?.totalSeats} seats
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {/* <div className="flex flex-wrap gap-1">
                       {theater?.features?.map((feature: any) => (
                         <Tag key={feature} className="text-xs">
                           {feature}
@@ -251,119 +255,122 @@ const Theater = ({ cinemas, loading, screens, screensLoading }: any) => {
                       ))}
                     </div> */}
 
-                    {/* Screens Dropdown */}
-                    <div className="mb-6">
-                      {cinemaScreens?.length > 0 && (
-                        <Collapse
-                          bordered={false}
-                          expandIcon={({ isActive }) => (
-                            <ChevronDown
-                              className={`w-4 h-4 transition-transform ${
-                                isActive ? "rotate-180" : ""
-                              }`}
-                            />
-                          )}
-                          className="bg-gray-50 rounded-md"
-                        >
-                          <Panel
-                            header={
-                              <span className="font-serif text-sm">
-                                Screens ({cinemaScreens?.length})
-                              </span>
-                            }
-                            key="1"
+                      {/* Screens Dropdown */}
+                      <div className="mb-6">
+                        {cinemaScreens?.length > 0 && (
+                          <Collapse
+                            bordered={false}
+                            expandIcon={({ isActive }) => (
+                              <ChevronDown
+                                className={`w-4 h-4 transition-transform ${
+                                  isActive ? "rotate-180" : ""
+                                }`}
+                              />
+                            )}
+                            className="bg-white shadow-md rounded-md"
                           >
-                            <div className="space-y-2">
-                              {screensLoading ? (
-                                <Loader rows={2} />
-                              ) : (
-                                cinemaScreens?.map((screen: any) => (
-                                  <div
-                                    key={screen.screen_id}
-                                    className="flex items-center justify-between p-1 bg-white rounded border border-gray-200"
-                                  >
-                                    <div className="flex-1">
-                                      <p className="font-sans text-sm font-medium">
-                                        {screen.name}
-                                      </p>
-                                      <p className="font-serif text-xs text-muted-foreground">
-                                        {screen.size} • {screen.resolution} •{" "}
-                                        {screen.soundSystem}
-                                      </p>
+                            <Panel
+                              header={
+                                <span className="font-serif text-sm">
+                                  Screens ({cinemaScreens?.length})
+                                </span>
+                              }
+                              key="1"
+                            >
+                              <div className="space-y-2">
+                                {screensLoading ? (
+                                  <Loader rows={2} />
+                                ) : (
+                                  cinemaScreens?.map((screen: any) => (
+                                    <div
+                                      key={screen.screen_id}
+                                      className="flex items-center justify-between p-1 bg-white rounded border border-gray-200"
+                                    >
+                                      <div className="flex-1">
+                                        <p className="font-sans text-sm font-medium">
+                                          {screen.name}
+                                        </p>
+                                        <p className="font-serif text-xs text-muted-foreground">
+                                          {screen.size} • {screen.resolution} •{" "}
+                                          {screen.soundSystem}
+                                        </p>
+                                      </div>
+                                      <div className="flex gap-1">
+                                        <Button
+                                          variant="secondary"
+                                          size="sm"
+                                          className="gap-1 rounded-md p-1 h-7"
+                                          icon={<Edit className="w-3 h-3" />}
+                                          onClick={() => {
+                                            setSelectedScreen(screen);
+                                            setShowEditScreenModal(true);
+                                          }}
+                                        />
+                                        <Button
+                                          variant="primary"
+                                          size="sm"
+                                          className="gap-1 rounded-md p-1 h-7"
+                                          icon={<Trash2 className="w-3 h-3" />}
+                                          onClick={() => {
+                                            setSelectedScreen(screen);
+                                            setShowDeleteScreenModal(true);
+                                          }}
+                                        />
+                                      </div>
                                     </div>
-                                    <div className="flex gap-1">
-                                      <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        className="gap-1 rounded-md p-1 h-7"
-                                        icon={<Edit className="w-3 h-3" />}
-                                        onClick={() => {
-                                          setSelectedScreen(screen);
-                                          setShowEditScreenModal(true);
-                                        }}
-                                      />
-                                      <Button
-                                        variant="primary"
-                                        size="sm"
-                                        className="gap-1 rounded-md p-1 h-7"
-                                        icon={<Trash2 className="w-3 h-3" />}
-                                        onClick={() => {
-                                          setSelectedScreen(screen);
-                                          setShowDeleteScreenModal(true);
-                                        }}
-                                      />
-                                    </div>
-                                  </div>
-                                ))
-                              )}
-                            </div>
-                          </Panel>
-                        </Collapse>
-                      )}
-                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </Panel>
+                          </Collapse>
+                        )}
+                      </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 absolute bottom-3">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        // title="Add Screen"
-                        icon={<Monitor className="w-3 h-3" />}
-                        className="flex-1 gap-2 rounded-md"
-                        onClick={() => {
-                          setSelectedCinema(theater);
-                          setShowAddScreenModal(true);
-                        }}
-                      />
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        // title="Edit"
-                        icon={<Edit className="w-3 h-3" />}
-                        className="gap-2 rounded-md"
-                        onClick={() => {
-                          setSelectedCinema(theater);
-                          setShowEditCinemaModal(true);
-                        }}
-                      />
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        className="gap-2 rounded-md"
-                        icon={<Trash2 className="w-3 h-3" />}
-                        onClick={() => {
-                          setSelectedCinema(theater);
-                          setShowDeleteCinemaModal(true);
-                        }}
-                      />
+                      {/* Action Buttons */}
+                      <div className="absolute bottom-3 left-0 right-0 px-2">
+                        <div className="flex gap-2 w-full">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            // title="Add Screen"
+                            icon={<Monitor className="w-3 h-3" />}
+                            className="flex-1 gap-2 rounded-md"
+                            onClick={() => {
+                              setSelectedCinema(theater);
+                              setShowAddScreenModal(true);
+                            }}
+                          />
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            // title="Edit"
+                            icon={<Edit className="w-3 h-3" />}
+                            className="flex-1 gap-2 rounded-md"
+                            onClick={() => {
+                              setSelectedCinema(theater);
+                              setShowEditCinemaModal(true);
+                            }}
+                          />
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            className="gap-2 rounded-md"
+                            icon={<Trash2 className="w-3 h-3" />}
+                            onClick={() => {
+                              setSelectedCinema(theater);
+                              setShowDeleteCinemaModal(true);
+                            }}
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })
-        )}
-      </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+        </div>
+      )}
+      {/* </div> */}
 
       {/* Delete Cinema Confirmation */}
       <ConfirmationModal

@@ -74,7 +74,7 @@ const TheaterForm = ({
         <Form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <Input
-              label="Theater Name"
+              label="Cinema Name"
               name="name"
               value={values.name}
               onChange={handleChange}

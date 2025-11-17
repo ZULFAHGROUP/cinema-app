@@ -21,8 +21,18 @@ import {
   CardTitle,
 } from "../../components/shared/Cards";
 import { Link } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../store/hook";
+import { useEffect } from "react";
+import { getAllMovies } from "../../store/slices/movie";
 
 function Dashboard() {
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(getAllMovies());
+  }, [dispatch]);
+
+  const { movies } = useAppSelector((state) => state.movie);
+
   const dashboardStats = [
     {
       title: "Today's Sales",
@@ -32,8 +42,10 @@ function Dashboard() {
       color: "text-green-600",
     },
     {
-      title: "Active Movies",
-      value: "24",
+      // title: "Active Movies",
+      title: "Movies",
+      value: movies.length,
+      // value:'24',
       change: "+2",
       icon: Film,
       color: "text-blue-600",

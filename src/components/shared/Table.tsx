@@ -23,6 +23,7 @@ interface ReusableTableProps<T> {
   showPdfDownload?: boolean;
   paginationProps?: any;
   onTableChange?: (pagination: any) => void;
+  paginationMode?: "frontend" | "backend";
 }
 
 type TablePaginationPosition =
@@ -37,7 +38,7 @@ const ReusableTable = <T extends Record<string, any>>({
   data,
   columns,
   title = "Order History",
-  showPagination = true,
+  showPagination = false,
   searchField = "",
   showSearch = true,
   onRowClick,
@@ -48,6 +49,7 @@ const ReusableTable = <T extends Record<string, any>>({
   showPdfDownload = false,
   paginationProps,
   onTableChange,
+  paginationMode,
 }: ReusableTableProps<T>) => {
   const [filteredData, setFilteredData] = useState<T[]>(data);
   const [searchText, setSearchText] = useState<string>("");
@@ -163,16 +165,28 @@ const ReusableTable = <T extends Record<string, any>>({
           dataSource={filteredData}
           bordered
           // pagination={paginationConfig}
+          // pagination={
+          //   showPagination
+          //     ? {
+          //         ...paginationProps,
+          //         showSizeChanger: true,
+          //         pageSizeOptions: ["10", "20", "50", "100"],
+          //       }
+          //     : false
+          // }
           pagination={
             showPagination
-              ? {
-                  ...paginationProps,
-                  showSizeChanger: true,
-                  pageSizeOptions: ["10", "20", "50", "100"],
-                }
+              ? paginationMode === "backend"
+                ? {
+                    ...paginationProps,
+                    showSizeChanger: true,
+                    pageSizeOptions: ["10", "20", "50", "100"],
+                  }
+                : { paginationConfig }
               : false
           }
-          onChange={onTableChange}
+          // onChange={onTableChange}
+          onChange={paginationMode === "backend" ? onTableChange : undefined}
           title={() => (
             <div
               className="bg-extra"

@@ -9,7 +9,7 @@ import AddShowtimeForm from "./components/AddShowtimeForm";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
 import { getAllClassifications } from "../../store/slices/classification";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
-import { getAllMovies } from "../../store/slices/movie";
+// import { getAllMovies } from "../../store/slices/movie";
 import { getAllShowtimes } from "../../store/slices/showtime";
 import { getAllCinemas } from "../../store/slices/cinema";
 import { getAllScreen } from "../../store/slices/screen";
@@ -22,7 +22,7 @@ function MoviesPage() {
 
   const dispatch = useAppDispatch();
   useEffect(() => {
-    dispatch(getAllMovies());
+    // dispatch(getAllMovies());
     dispatch(getAllClassifications());
     dispatch(getAllShowtimes());
     dispatch(getAllShowtimeStatuses());

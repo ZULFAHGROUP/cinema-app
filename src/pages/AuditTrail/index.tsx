@@ -110,6 +110,7 @@ const AuditTrail = () => {
           columns={columns}
           title="Audit Trail"
           showPagination={true}
+          paginationMode="backend"
           paginationProps={{
             total,
             current: page,
