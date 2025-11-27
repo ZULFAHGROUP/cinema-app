@@ -28,7 +28,7 @@ const Movies = ({ movies, loading }: any) => {
               key={movie.movie_id}
               className="overflow-hidden hover:shadow-md transition-shadow"
             >
-              <div className="aspect-[3/3] relative">
+              <div className="aspect-3/3 relative">
                 <img
                   src={movie.poster_url || "/placeholder.svg"}
                   alt={movie.title}
@@ -48,12 +48,12 @@ const Movies = ({ movies, loading }: any) => {
                 <CardDescription className="font-serif">
                   <p>{movie.language}</p>
                   <p>{movie.movieClassification.name}</p>
-                  <div className="max-h-16 h-fit">
+                  <p>
+                    <strong>Genres:</strong> <span>{movie.genres}</span>
+                  </p>
+                  {/* <div className="max-h-16 h-fit">
                     {movie.genres.length > 0 && (
                       <div className="">
-                        {/* <p className="text-sm font-serif text-muted-foreground mb-2">
-                      Genres
-                    </p> */}
                         <div className="flex flex-wrap gap-1">
                           {movie.genres.slice(0, 3).map((genre: any) => (
                             <Tag key={genre} color="blue" className="text-xs">
@@ -68,7 +68,7 @@ const Movies = ({ movies, loading }: any) => {
                         </div>
                       </div>
                     )}
-                  </div>{" "}
+                  </div> */}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -93,7 +93,7 @@ const Movies = ({ movies, loading }: any) => {
                     <p>
                       <strong>Director:</strong> <span>{movie.director}</span>
                     </p>
-                    {movie.cast.length > 0 && (
+                    {/* {movie.cast.length > 0 && (
                       <div className="">
                         <p className="text-sm font-serif text-muted-foreground mb-2">
                           Popular Cast
@@ -111,7 +111,10 @@ const Movies = ({ movies, loading }: any) => {
                           )}
                         </div>
                       </div>
-                    )}
+                    )} */}
+                    <p>
+                      <strong>Cast:</strong> <span>{movie.cast}</span>
+                    </p>
                   </div>
                   <div className="p-2">
                     {movie.showtimes.length > 0 ? (

@@ -45,13 +45,13 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
     title: movieData?.title || "",
     description: movieData?.description || "",
     duration: movieData?.duration || "",
-    genres: movieData?.genres || [""],
+    genres: movieData?.genres || "",
     rating: movieData?.rating || "",
     release_date: movieData?.release_date
       ? new Date(movieData.release_date).toISOString().split("T")[0]
       : "",
     director: movieData?.director || "",
-    cast: movieData?.cast || [""],
+    cast: movieData?.cast || "",
     poster_url: movieData?.poster_url || "",
     trailer_url: movieData?.trailer_url || "",
     language: movieData?.language || "",
@@ -68,7 +68,7 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
         ...values,
         duration: parseInt(values.duration),
         rating: parseInt(values.rating),
-        cast: values.cast.filter((actor: any) => actor.trim() !== ""),
+        // cast: values.cast.filter((actor: any) => actor.trim() !== ""),
       };
       if (editMode && movieData?.movie_id) {
         delete formattedValues.movie_classification_id;
@@ -83,7 +83,7 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
           ...values,
           duration: parseInt(values.duration),
           rating: values.rating ? parseFloat(values.rating) : 0,
-          cast: values.cast.filter((actor: any) => actor.trim() !== ""),
+          // cast: values.cast.filter((actor: any) => actor.trim() !== ""),
         };
         response = await dispatch(createMovie(formattedValues)).unwrap();
       }
@@ -146,19 +146,25 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
               />
 
               <div>
-                <label className="block font-medium md:text-lg mb-2">
+                {/* <label className="block font-medium md:text-lg mb-2">
                   Genres <span className="text-red-500">*</span>
                 </label>
                 {values.genres.map((genre: string, index: number) => (
-                  <div key={index} className="flex gap-2 mb-2">
-                    <Input
-                      name={`genres.${index}`}
-                      value={genre}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      placeholder={`Genre ${index + 1}`}
-                    />
-                    {values.genres.length > 1 && (
+                  <div key={index} className="flex gap-2 mb-2"> */}
+                <Input
+                  label="Genres"
+                  name="genres"
+                  value={values.genres}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="comedy"
+                  error={
+                    touched.genres && errors.genres === "string"
+                      ? errors.genres
+                      : ""
+                  }
+                />
+                {/* {values.genres.length > 1 && (
                       <Button
                         type="button"
                         variant="outline"
@@ -189,7 +195,7 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
                   <p className="text-sm text-red-500 italic mt-1">
                     {errors.genres}
                   </p>
-                )}
+                )} */}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -278,19 +284,27 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
               </div>
 
               <div>
-                <label className="block font-medium md:text-lg mb-2">
+                {/* <label className="block font-medium md:text-lg mb-2">
                   Cast <span className="text-red-500">*</span>
-                </label>
-                {values.cast.map((actor: string, index: number) => (
-                  <div key={index} className="flex gap-2 mb-2">
-                    <Input
-                      name={`cast.${index}`}
-                      value={actor}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      placeholder={`Actor ${index + 1}`}
-                    />
-                    {values.cast.length > 1 && (
+                </label> */}
+                {/* {values.cast.map((actor: string, index: number) => ( */}
+                <div className="">
+                  <Input
+                    label="Cast"
+                    // name={`cast.${index}`}
+                    name="cast"
+                    value={values.cast}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="Jet li"
+                    required
+                    error={
+                      touched.cast && typeof errors.cast === "string"
+                        ? errors.cast
+                        : undefined
+                    }
+                  />
+                  {/* {values.cast.length > 1 && (
                       <Button
                         type="button"
                         variant="outline"
@@ -304,22 +318,22 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
                         title="Remove"
                         className="px-3"
                       />
-                    )}
-                  </div>
-                ))}
-                <Button
+                    )} */}
+                </div>
+                {/* ))} */}
+                {/* <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setFieldValue("cast", [...values.cast, ""])}
                   title="+ Add Actor"
                   className="mt-2"
-                />
-                {touched.cast && typeof errors.cast === "string" && (
+                /> */}
+                {/* {touched.cast && typeof errors.cast === "string" && (
                   <p className="text-sm text-red-500 italic mt-1">
                     {errors.cast}
                   </p>
-                )}
+                )} */}
               </div>
 
               <div>

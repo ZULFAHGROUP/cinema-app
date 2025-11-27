@@ -33,7 +33,7 @@ function MoviesPage() {
   const { showtimes, showtimeLoading } = useAppSelector(
     (state) => state.showtime
   );
-
+  const { allCinemas } = useAppSelector((state) => state.cinema);
   const tabItems = [
     {
       key: "movies",
@@ -113,6 +113,7 @@ function MoviesPage() {
       >
         <AddShowtimeForm
           movies={movies}
+          cinemas={allCinemas}
           onCancel={() => setIsAddShowtimeModalOpen(false)}
         />
       </DisplayModal>

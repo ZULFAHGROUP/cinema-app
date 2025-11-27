@@ -37,10 +37,11 @@ export const addMovieValidationSchema = Yup.object({
   director: Yup.string()
     .required("Director is required")
     .min(2, "Director name must be at least 2 characters"),
-  genres: Yup.array()
-    .of(Yup.string().min(2, "Genre must be at least 2 characters"))
-    .min(1, "At least one genre is required")
-    .required("Cast is required"),
+  genres: Yup.string().required("Genres is required"),
+  // genres: Yup.array()
+  //   .of(Yup.string().min(2, "Genre must be at least 2 characters"))
+  //   .min(1, "At least one genre is required")
+  //   .required("Cast is required"),
   duration: Yup.number()
     .required("Duration is required")
     .min(1, "Duration must be at least 1 minute")
@@ -51,10 +52,11 @@ export const addMovieValidationSchema = Yup.object({
     .required("Description is required")
     .min(10, "Description must be at least 10 characters")
     .max(1000, "Description cannot exceed 1000 characters"),
-  cast: Yup.array()
-    .of(Yup.string().min(2, "Actor name must be at least 2 characters"))
-    .min(1, "At least one cast member is required")
-    .required("Cast is required"),
+  cast: Yup.string().required("Cast is required"),
+  // cast: Yup.array()
+  //   .of(Yup.string().min(2, "Actor name must be at least 2 characters"))
+  //   .min(1, "At least one cast member is required")
+  //   .required("Cast is required"),
   poster_url: Yup.string()
     // .required("Poster URL is required")
     .url("Must be a valid URL"),
