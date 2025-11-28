@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Formik, Form, FieldArray, FormikTouched } from "formik";
+import { Formik, Form, FormikTouched } from "formik";
 import Input from "../../../components/shared/Input";
 import Button from "../../../components/shared/Button";
 import { toast } from "react-toastify";
@@ -140,100 +140,54 @@ const AddScreensForm = ({
               required
             />
             <div className="pt-2">
-              <h3 className="text-sm font-semibold mb-2">Seat Layout (Rows)</h3>
-              <FieldArray name="seat_layout.rows">
-                {({ push, remove }) => (
-                  <div className="space-y-4">
-                    {values.seat_layout.rows.map((row: any, index: number) => (
-                      <div
-                        key={index}
-                        className="p-3 border rounded-md space-y-2 relative"
-                      >
-                        <div className="grid grid-cols-3 gap-3">
-                          <Input
-                            label="Row"
-                            name={`seat_layout.rows.${index}.row`}
-                            value={row.row}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={
-                              (
-                                touched.seat_layout?.rows as
-                                  | FormikTouched<any>[]
-                                  | undefined
-                              )?.[index]?.row &&
-                              typeof (errors.seat_layout?.rows as any)?.[index]
-                                ?.row === "string"
-                                ? (errors.seat_layout?.rows as any)[index].row
-                                : undefined
-                            }
-                            placeholder="A"
-                          />
+              <h3 className="text-sm font-semibold mb-2">Seat</h3>
+              <div className="space-y-4">
+                {values.seat_layout.rows.map((row: any, index: number) => (
+                  <div
+                    key={index}
+                    className="p-3 border rounded-md space-y-2 relative"
+                  >
+                    <div className="flex gap-3 w-full">
+                      <Input
+                        label="Seat Count"
+                        name={`seat_layout.rows.${index}.count`}
+                        type="number"
+                        value={row.count}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={
+                          (
+                            touched.seat_layout?.rows as
+                              | FormikTouched<any>[]
+                              | undefined
+                          )?.[index]?.count &&
+                          typeof (errors.seat_layout?.rows as any)?.[index]
+                            ?.count === "string"
+                            ? (errors.seat_layout?.rows as any)[index].count
+                            : undefined
+                        }
+                        placeholder="10"
+                        conClassName="flex-1"
+                      />
 
-                          <Input
-                            label="Seat Count"
-                            name={`seat_layout.rows.${index}.count`}
-                            type="number"
-                            value={row.count}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={
-                              (
-                                touched.seat_layout?.rows as
-                                  | FormikTouched<any>[]
-                                  | undefined
-                              )?.[index]?.count &&
-                              typeof (errors.seat_layout?.rows as any)?.[index]
-                                ?.count === "string"
-                                ? (errors.seat_layout?.rows as any)[index].count
-                                : undefined
-                            }
-                            placeholder="10"
-                          />
-
-                          <ReusableSelect
-                            label="Default Type"
-                            name={`seat_layout.rows.${index}.default_type`}
-                            value={row.default_type}
-                            onChange={(value) =>
-                              setFieldValue(
-                                `seat_layout.rows.${index}.default_type`,
-                                value
-                              )
-                            }
-                            onBlur={handleBlur}
-                            options={allSeat}
-                          />
-                        </div>
-
-                        {values.seat_layout.rows.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => remove(index)}
-                            className="text-red-500 text-sm absolute right-2 top-2"
-                          >
-                            Remove
-                          </button>
-                        )}
-                      </div>
-                    ))}
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      title="Add Row"
-                      onClick={() =>
-                        push({
-                          row: "",
-                          count: 0,
-                          default_type: "",
-                        })
-                      }
-                      className="rounded-md"
-                    />
+                      <ReusableSelect
+                        label="Default Type"
+                        name={`seat_layout.rows.${index}.default_type`}
+                        value={row.default_type}
+                        onChange={(value) =>
+                          setFieldValue(
+                            `seat_layout.rows.${index}.default_type`,
+                            value
+                          )
+                        }
+                        onBlur={handleBlur}
+                        options={allSeat}
+                        conClassName="flex-1"
+                      />
+                    </div>
                   </div>
-                )}
-              </FieldArray>
+                ))}
+              </div>
             </div>
           </div>
 

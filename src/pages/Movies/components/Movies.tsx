@@ -8,15 +8,39 @@ import {
 } from "../../../components/shared/Cards";
 import Button from "../../../components/shared/Button";
 import { Tag } from "antd";
-import { Edit, Play, Clock } from "lucide-react";
+import { Edit, Clock, Trash2 } from "lucide-react";
 import DisplayModal from "../../../components/shared/Modal/DisplayModal";
 import { useState } from "react";
 import AddMovieForm from "./AddMovieForm";
 import Loader from "../../../components/shared/Loader";
+import { useAppDispatch } from "../../../store/hook";
+import { deleteMovie, getAllMovies } from "../../../store/slices/movie";
+import { toast } from "react-toastify";
+import ConfirmationModal from "../../../components/shared/Modal/ConfirmationModal";
 
 const Movies = ({ movies, loading }: any) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [movieData, setMovieData] = useState<any>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const dispatch = useAppDispatch();
+
+  const handleDelete = async () => {
+    if (!movieData) return;
+
+    try {
+      const response = await dispatch(
+        deleteMovie(movieData?.movie_id)
+      ).unwrap();
+      if (response.code === 200) {
+        await dispatch(getAllMovies());
+        setShowDeleteModal(false);
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.message);
+      setShowDeleteModal(false);
+    }
+  };
   return (
     <>
       {loading ? (
@@ -166,7 +190,12 @@ const Movies = ({ movies, loading }: any) => {
                       variant="outline"
                       size="sm"
                       className="gap-2 rounded-md"
-                      icon={<Play className="w-3 h-3" />}
+                      // icon={<Play className="w-3 h-3" />}
+                      icon={<Trash2 className="w-3 h-3" />}
+                      onClick={() => {
+                        setMovieData(movie);
+                        setShowDeleteModal(true);
+                      }}
                     />
                   </div>
                 </div>
@@ -175,6 +204,15 @@ const Movies = ({ movies, loading }: any) => {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation */}
+      <ConfirmationModal
+        open={showDeleteModal}
+        onCancel={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        item={movieData?.title}
+      />
+
       {/* Add Movie Modal */}
       <DisplayModal
         open={isEditModalOpen}

@@ -160,7 +160,7 @@ export default function AddShowtimeForm({
         const allSlots = generateHalfHourSlots();
 
         return (
-          <Form className="space-y-6">
+          <Form className="space-y-6 h-full">
             {/* Movie & Cinema */}
             <div className="grid grid-cols-2 gap-4">
               <ReusableSelect
@@ -199,7 +199,7 @@ export default function AddShowtimeForm({
             {/* SHOWTIMES */}
             <FieldArray name="showtimes">
               {({ push, remove }) => (
-                <div className="space-y-4">
+                <div className="h-60 overflow-y-scroll space-y-4">
                   <div className="flex justify-between items-center">
                     <p className="font-medium font-sans">Showtimes</p>
                     <Button
