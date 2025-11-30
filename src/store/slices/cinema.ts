@@ -39,10 +39,21 @@ export const updateCinema = createAsyncThunk(
 
 export const getAllCinemas = createAsyncThunk(
   "cinema/getAllCinemas",
-  async (_, { rejectWithValue }) => {
+  async (
+    { page = 1, limit = 10 }: { page?: number; limit?: number },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await Cinema.allCinemas();
-      return response.data.data;
+      const response = await Cinema.allCinemas(page, limit);
+      console.log("response is", response);
+      // return response.data.data;
+      return {
+        data: response.data.data.cinemas,
+        page,
+        limit,
+        // total: 200,
+        total: response.data.data.pagination.total,
+      };
     } catch (error: any) {
       toast.error(error?.response?.data?.message);
       return rejectWithValue(error.response?.data || error.message);
@@ -89,7 +100,7 @@ const cinemaSlice = createSlice({
         state.error = null;
       })
       .addCase(getAllCinemas.fulfilled, (state, action: PayloadAction<any>) => {
-        state.allCinemas = action.payload;
+        state.allCinemas = action.payload.data;
         state.cinemaLoading = false;
         state.error = null;
       })

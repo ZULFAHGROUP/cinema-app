@@ -22,12 +22,13 @@ export const getAllAuditTrails = createAsyncThunk(
   ) => {
     try {
       const response = await Extras.allAuditTrails(page, limit);
+      console.log("audit is", response.data.data.audits);
       return {
-        data: response.data.data,
+        data: response.data.data.audits,
         page,
         limit,
-        total: 200,
-        // total: response.data.total,
+        // total: 200,
+        total: response.data.data.pagination.total,
       };
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
@@ -61,7 +62,7 @@ export const getAllAuditTrails = createAsyncThunk(
 const extrasSlice = createSlice({
   name: "extras",
   initialState: {
-    auditTrails: [],
+    auditTrails: [] as any[],
     auditLoading: false,
     total: 0,
     page: 1,

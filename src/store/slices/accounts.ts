@@ -39,9 +39,9 @@ export const login = createAsyncThunk(
   async (payload: FormData): Promise<ApiResponse> => {
     const response = await Accounts.login(payload);
     const data = {
-      // jwtToken: response.headers.authorization,
+      jwtToken: response.headers.authorization,
       user: response.data.data,
-      jwtToken: response.data.data.token,
+      // jwtToken: response.data.data.token,
       status: response.status === 200,
     };
     return data;
