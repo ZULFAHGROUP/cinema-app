@@ -1,36 +1,36 @@
-// import {
-//   Card,
-//   CardContent,
-//   CardDescription,
-//   CardHeader,
-//   CardTitle,
-// } from "../../components/shared/Cards";
+// /* eslint-disable @typescript-eslint/no-explicit-any */
 import Button from "../../components/shared/Button";
 import { Building2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Pagination } from "antd";
 import Theater from "./components/Theater";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
 import AddTheaterForm from "./components/AddTheaterForm";
-// import AddScreensForm from "./components/AddScreensForm";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { getAllCinemas } from "../../store/slices/cinema";
 import { getAllScreen } from "../../store/slices/screen";
-import { getAllSeats } from "../../store/slices/seat";
 
 function CinemaSetup() {
   const [isAddTheaterModalOpen, setIsAddTheaterModalOpen] = useState(false);
-  // const [isAddScreensModalOpen, setIsAddScreensModalOpen] = useState(false);
-  const { cinemaLoading, allCinemas, page, limit, total } = useAppSelector(
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const { cinemaLoading, allCinemas, total } = useAppSelector(
     (state) => state.cinema
   );
   const { loading, screens } = useAppSelector((state) => state.screen);
 
   const dispatch = useAppDispatch();
+
   useEffect(() => {
-    dispatch(getAllCinemas({ page, limit })).unwrap();
+    dispatch(getAllCinemas({ page: currentPage, limit: pageSize }));
     dispatch(getAllScreen());
-    dispatch(getAllSeats());
-  }, [dispatch, page, limit]);
+  }, [dispatch, currentPage, pageSize]);
+
+  const handlePageChange = (page: number, pageSize: number) => {
+    setCurrentPage(page);
+    setPageSize(pageSize);
+  };
 
   return (
     <div className="p-6">
@@ -56,8 +56,26 @@ function CinemaSetup() {
         cinemas={allCinemas}
         screens={screens}
         screensLoading={loading}
-        // onAddScreen={() => setIsAddScreensModalOpen(true)}
       />
+
+      {/* Pagination */}
+      {!cinemaLoading && allCinemas?.length > 0 && (
+        <div className="flex justify-center mt-6">
+          <Pagination
+            current={currentPage}
+            total={total}
+            pageSize={pageSize}
+            onChange={handlePageChange}
+            onShowSizeChange={handlePageChange}
+            showSizeChanger
+            showTotal={(total, range) =>
+              `${range[0]}-${range[1]} of ${total} cinemas`
+            }
+            pageSizeOptions={["6", "9", "12", "18", "24"]}
+            className="font-serif"
+          />
+        </div>
+      )}
 
       {/* Add Theater Modal */}
       <DisplayModal
@@ -67,18 +85,6 @@ function CinemaSetup() {
       >
         <AddTheaterForm onCancel={() => setIsAddTheaterModalOpen(false)} />
       </DisplayModal>
-
-      {/* Add Screen Modal */}
-      {/* <DisplayModal
-        open={isAddScreensModalOpen}
-        onClose={() => setIsAddScreensModalOpen(false)}
-        title="Add New Screen"
-      >
-        <AddScreensForm
-          cinemas={allCinemas}
-          onCancel={() => setIsAddScreensModalOpen(false)}
-        />
-      </DisplayModal> */}
     </div>
   );
 }

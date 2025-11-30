@@ -10,6 +10,7 @@ import {
   getAllCinemas,
   updateCinema,
 } from "../../../store/slices/cinema";
+import { useState } from "react";
 
 interface TheaterFormProps {
   onCancel: () => void;
@@ -23,7 +24,8 @@ const TheaterForm = ({
   cinemaData,
 }: TheaterFormProps) => {
   const dispatch = useAppDispatch();
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const initialValues = {
     name: cinemaData?.name || "",
     location: cinemaData?.location || "",
@@ -33,6 +35,8 @@ const TheaterForm = ({
     values: any,
     { resetForm }: { resetForm: () => void }
   ) {
+    setCurrentPage(currentPage);
+    setPageSize(pageSize);
     try {
       let response;
       if (editMode && cinemaData?.cinema_id) {
@@ -45,7 +49,7 @@ const TheaterForm = ({
 
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message);
-        await dispatch(getAllCinemas());
+        await dispatch(getAllCinemas({ page: currentPage, limit: pageSize }));
         resetForm();
         onCancel(); // close modal after success
       }

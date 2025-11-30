@@ -19,7 +19,7 @@ const persistConfig = {
     "accounts",
     "cinema",
     "classification",
-    "seatType",
+    "screenTypeReducer",
     "showtimeStatus",
     "movie",
     "showtime",

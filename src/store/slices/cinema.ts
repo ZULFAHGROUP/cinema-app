@@ -101,6 +101,9 @@ const cinemaSlice = createSlice({
       })
       .addCase(getAllCinemas.fulfilled, (state, action: PayloadAction<any>) => {
         state.allCinemas = action.payload.data;
+        state.page = action.payload.page;
+        state.limit = action.payload.limit;
+        state.total = action.payload.total;
         state.cinemaLoading = false;
         state.error = null;
       })

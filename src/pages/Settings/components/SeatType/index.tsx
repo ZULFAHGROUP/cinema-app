@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from "../../../../store/hook";
 import {
   deleteSeatType,
   getAllSeatTypes,
-} from "../../../../store/slices/seatType";
+} from "../../../../store/slices/screenType";
 import Button from "../../../../components/shared/Button";
 import DisplayModal from "../../../../components/shared/Modal/DisplayModal";
 import ConfirmationModal from "../../../../components/shared/Modal/ConfirmationModal";

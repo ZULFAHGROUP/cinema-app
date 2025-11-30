@@ -22,7 +22,6 @@ export const getAllAuditTrails = createAsyncThunk(
   ) => {
     try {
       const response = await Extras.allAuditTrails(page, limit);
-      console.log("audit is", response.data.data.audits);
       return {
         data: response.data.data.audits,
         page,

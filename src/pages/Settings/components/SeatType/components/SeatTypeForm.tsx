@@ -8,7 +8,7 @@ import {
   createSeatType,
   getAllSeatTypes,
   updateSeatType,
-} from "../../../../../store/slices/seatType";
+} from "../../../../../store/slices/screenType";
 import { seatTypeValidationSchema } from "../../../../../validations";
 
 interface SeatTypeFormProps {

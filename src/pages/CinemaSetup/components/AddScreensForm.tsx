@@ -12,7 +12,7 @@ import {
 import { screenValidationSchema } from "../../../validations";
 import ReusableSelect from "../../../components/shared/Select";
 import { useEffect } from "react";
-import { getAllSeatTypes } from "../../../store/slices/seatType";
+import { getAllScreenTypes } from "../../../store/slices/screenType";
 
 interface AddScreensFormProps {
   onCancel: () => void;
@@ -30,10 +30,13 @@ const AddScreensForm = ({
   preSelectedCinema,
 }: AddScreensFormProps) => {
   const dispatch = useAppDispatch();
+  const { screenTypes, page, limit, total } = useAppSelector(
+    (state) => state.screenType
+  );
+
   useEffect(() => {
-    dispatch(getAllSeatTypes());
+    dispatch(getAllScreenTypes(page, limit));
   }, [dispatch]);
-  const { seatTypes } = useAppSelector((state) => state.seatType);
   console.log("cinema id", preSelectedCinema);
   const initialValues = {
     cinema_id: preSelectedCinema || screenData?.cinema?.name || "",
@@ -84,7 +87,7 @@ const AddScreensForm = ({
       value: cinema.cinema_id,
     }));
 
-  const allSeat = [...(seatTypes || [])]
+  const allSeat = [...(screenTypes || [])]
     .sort((a: any, b: any) => a.name.localeCompare(b.name))
     .map((seats: { name: string }) => ({
       label: seats.name,

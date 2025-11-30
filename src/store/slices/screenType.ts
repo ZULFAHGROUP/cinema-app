@@ -1,26 +1,42 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import SeatTypes from "../../services/network/seatType";
 import { ApiResponse } from "../../@types/common";
+import ScreenTypes from "../../services/network/screenType";
 
-interface SeatTypeState {
-  seatTypes: any[];
+interface ScreenTypeState {
+  screenTypes: any[];
   loading: boolean;
   error: string | null;
+  total?: number;
+  page?: number;
+  limit?: number;
 }
 
-const initialState: SeatTypeState = {
-  seatTypes: [],
+const initialState: ScreenTypeState = {
+  screenTypes: [],
   loading: false,
+  total: 0,
+  page: 1,
+  limit: 10,
   error: null,
 };
 
-export const getAllSeatTypes = createAsyncThunk(
+export const getAllScreenTypes = createAsyncThunk(
   "seatType/getAllSeatTypes",
-  async (_, { rejectWithValue }) => {
+  async (
+    { page = 1, limit = 10 }: { page?: number; limit?: number },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await SeatTypes.allSeatType();
-      return response.data.data;
+      const response = await ScreenTypes.allScreenType(page, limit);
+      // return response.data.data;
+      return {
+        data: response.data.data.audits,
+        page,
+        limit,
+        // total: 200,
+        total: response.data.data.pagination.total,
+      };
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -28,11 +44,11 @@ export const getAllSeatTypes = createAsyncThunk(
 );
 
 // ✅ CREATE SEAT TYPE
-export const createSeatType = createAsyncThunk(
+export const createScreenType = createAsyncThunk(
   "seatType/createSeatType",
   async (payload: any, { rejectWithValue }): Promise<ApiResponse> => {
     try {
-      const response = await SeatTypes.createSeatType(payload);
+      const response = await ScreenTypes.createScreenType(payload);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
@@ -43,14 +59,14 @@ export const createSeatType = createAsyncThunk(
 );
 
 // ✅ UPDATE SEAT TYPE
-export const updateSeatType = createAsyncThunk(
+export const updateScreenType = createAsyncThunk(
   "seatType/updateSeatType",
   async (
     { id, payload }: { id: string | number; payload: any },
     { rejectWithValue }
   ): Promise<ApiResponse> => {
     try {
-      const response = await SeatTypes.updateSeatType(id, payload);
+      const response = await ScreenTypes.updateScreenType(id, payload);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
@@ -61,11 +77,11 @@ export const updateSeatType = createAsyncThunk(
 );
 
 // ✅ DELETE SEAT TYPE
-export const deleteSeatType = createAsyncThunk(
+export const deleteScreenType = createAsyncThunk(
   "seatType/deleteSeatType",
   async (id: string | number, { rejectWithValue }): Promise<ApiResponse> => {
     try {
-      const response = await SeatTypes.deleteSeatType(id);
+      const response = await ScreenTypes.deleteScreenType(id);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
@@ -75,61 +91,64 @@ export const deleteSeatType = createAsyncThunk(
   }
 );
 
-const seatTypeSlice = createSlice({
+const screenTypeSlice = createSlice({
   name: "seatType",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
       // GET
-      .addCase(getAllSeatTypes.pending, (state) => {
+      .addCase(getAllScreenTypes.pending, (state) => {
         state.loading = true;
       })
-      .addCase(getAllSeatTypes.fulfilled, (state, action) => {
+      .addCase(getAllScreenTypes.fulfilled, (state, action) => {
         state.loading = false;
-        state.seatTypes = action.payload || [];
+        state.screenTypes = action.payload.data || [];
+        state.page = action.payload.page;
+        state.limit = action.payload.limit;
+        state.total = action.payload.total;
       })
-      .addCase(getAllSeatTypes.rejected, (state, action) => {
+      .addCase(getAllScreenTypes.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
 
       // CREATE
-      .addCase(createSeatType.pending, (state) => {
+      .addCase(createScreenType.pending, (state) => {
         state.loading = true;
       })
-      .addCase(createSeatType.fulfilled, (state) => {
+      .addCase(createScreenType.fulfilled, (state) => {
         state.loading = false;
       })
-      .addCase(createSeatType.rejected, (state, action) => {
+      .addCase(createScreenType.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
 
       // UPDATE
-      .addCase(updateSeatType.pending, (state) => {
+      .addCase(updateScreenType.pending, (state) => {
         state.loading = true;
       })
-      .addCase(updateSeatType.fulfilled, (state) => {
+      .addCase(updateScreenType.fulfilled, (state) => {
         state.loading = false;
       })
-      .addCase(updateSeatType.rejected, (state, action) => {
+      .addCase(updateScreenType.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
 
       // DELETE
-      .addCase(deleteSeatType.pending, (state) => {
+      .addCase(deleteScreenType.pending, (state) => {
         state.loading = true;
       })
-      .addCase(deleteSeatType.fulfilled, (state) => {
+      .addCase(deleteScreenType.fulfilled, (state) => {
         state.loading = false;
       })
-      .addCase(deleteSeatType.rejected, (state, action) => {
+      .addCase(deleteScreenType.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
   },
 });
 
-export default seatTypeSlice.reducer;
+export default screenTypeSlice.reducer;
