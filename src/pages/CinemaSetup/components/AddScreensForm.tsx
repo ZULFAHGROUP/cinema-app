@@ -35,8 +35,8 @@ const AddScreensForm = ({
   );
 
   useEffect(() => {
-    dispatch(getAllScreenTypes(page, limit));
-  }, [dispatch]);
+    dispatch(getAllScreenTypes({ page, limit: total }));
+  }, [dispatch, page, limit, total]);
   console.log("cinema id", preSelectedCinema);
   const initialValues = {
     cinema_id: preSelectedCinema || screenData?.cinema?.name || "",
