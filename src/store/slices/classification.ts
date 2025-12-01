@@ -5,10 +5,21 @@ import MovieClassification from "../../services/network/classification";
 
 export const getAllClassifications = createAsyncThunk(
   "classification/getAll",
-  async (_, { rejectWithValue }) => {
+  async (
+    { page = 1, limit = 10 }: { page?: number; limit?: number },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await MovieClassification.allMovieClassification();
-      return response.data.data;
+      const response = await MovieClassification.allMovieClassification(
+        page,
+        limit
+      );
+      return {
+        data: response.data.data.moviesClassification,
+        page,
+        limit,
+        total: response.data.data.pagination.total,
+      };
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -71,6 +82,9 @@ const classificationSlice = createSlice({
     classifications: [],
     loading: false,
     error: null,
+    limit: 10,
+    page: 1,
+    total: 0,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -80,7 +94,10 @@ const classificationSlice = createSlice({
       })
       .addCase(getAllClassifications.fulfilled, (state, action) => {
         state.loading = false;
-        state.classifications = action.payload;
+        state.classifications = action.payload.data;
+        state.page = action.payload.page;
+        state.limit = action.payload.limit;
+        state.total = action.payload.total;
       })
       .addCase(getAllClassifications.rejected, (state, action) => {
         state.loading = false;

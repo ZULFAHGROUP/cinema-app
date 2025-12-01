@@ -5,10 +5,18 @@ import Roles from "../../services/network/roles";
 
 export const getAllRoles = createAsyncThunk(
   "role/getAll",
-  async (_, { rejectWithValue }) => {
+  async (
+    { page = 1, limit = 10 }: { page?: number; limit?: number },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await Roles.allRoles();
-      return response.data.data;
+      const response = await Roles.allRoles(page, limit);
+      return {
+        data: response.data.data.roles,
+        page,
+        limit,
+        total: response.data.data.pagination.total,
+      };
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
     }
@@ -66,6 +74,9 @@ const roleSlice = createSlice({
     roles: [],
     roleLoading: false,
     error: null,
+    page: 1,
+    limit: 10,
+    total: 0,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -75,7 +86,10 @@ const roleSlice = createSlice({
       })
       .addCase(getAllRoles.fulfilled, (state, action) => {
         state.roleLoading = false;
-        state.roles = action.payload || [];
+        state.roles = action.payload.data || [];
+        state.page = action.payload.page;
+        state.limit = action.payload.limit;
+        state.total = action.payload.total;
       })
       .addCase(getAllRoles.rejected, (state) => {
         state.roleLoading = false;

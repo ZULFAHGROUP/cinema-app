@@ -29,12 +29,10 @@ export const getAllScreenTypes = createAsyncThunk(
   ) => {
     try {
       const response = await ScreenTypes.allScreenType(page, limit);
-      // return response.data.data;
       return {
-        data: response.data.data.audits,
+        data: response.data.data.screenTypes,
         page,
         limit,
-        // total: 200,
         total: response.data.data.pagination.total,
       };
     } catch (error: any) {

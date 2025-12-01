@@ -182,7 +182,7 @@ const ReusableTable = <T extends Record<string, any>>({
                     showSizeChanger: true,
                     pageSizeOptions: ["10", "20", "50", "100"],
                   }
-                : { paginationConfig }
+                : paginationConfig
               : false
           }
           // onChange={onTableChange}

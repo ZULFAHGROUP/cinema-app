@@ -8,7 +8,7 @@ import Roles from "./components/Roles";
 const Settings = () => {
   type SettingsNav =
     | "movie-classification"
-    | "seat-type"
+    | "screen-type"
     | "showtime-status"
     | "roles";
   const [currentScreen, setCurrentScreen] = useState<SettingsNav>(
@@ -20,7 +20,7 @@ const Settings = () => {
   }
   const settingsRoute: SettingsRouteProps[] = [
     { name: "Movie Classification", url: "movie-classification" },
-    { name: "Seat Type", url: "seat-type" },
+    { name: "Screen Type", url: "screen-type" },
     { name: "Showtime Status", url: "showtime-status" },
     { name: "Roles", url: "roles" },
   ];
@@ -40,7 +40,7 @@ const Settings = () => {
       <div className="md:border-l md:border-l- md:px-2 w-full md:w-[80%]">
         {currentScreen === "movie-classification" ? (
           <MovieClassification />
-        ) : currentScreen === "seat-type" ? (
+        ) : currentScreen === "screen-type" ? (
           <SeatType />
         ) : currentScreen === "showtime-status" ? (
           <ShowtimeStatus />

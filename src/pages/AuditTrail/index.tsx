@@ -27,10 +27,23 @@ const AuditTrail = () => {
   };
 
   const columns = [
-    { title: "Name", dataIndex: "user_id", key: "user_id" },
+    {
+      title: "Name",
+      dataIndex: "user",
+      key: "user",
+      render: (user: any) =>
+        user ? `${user?.surname}  ${user?.other_names}` : "Name not available",
+    },
+    {
+      title: "Email",
+      dataIndex: "user",
+      key: "user",
+      render: (user: any) => user?.email || "Email not available",
+    },
     { title: "Description", dataIndex: "description", key: "description" },
     { title: "Action", dataIndex: "action", key: "action" },
     { title: "User Agent", dataIndex: "user_agent", key: "user_agent" },
+    { title: "Accessed Resource", dataIndex: "resource", key: "resource" },
     {
       title: "Time and Date",
       dataIndex: "created_at",

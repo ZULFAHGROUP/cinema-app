@@ -23,11 +23,13 @@ const Roles = () => {
   const [editMode, setEditMode] = useState(false);
 
   const dispatch = useAppDispatch();
-  const { roles, roleLoading } = useAppSelector((state) => state.role);
+  const { roles, roleLoading, page, limit, total } = useAppSelector(
+    (state) => state.role
+  );
 
   useEffect(() => {
-    dispatch(getAllRoles());
-  }, [dispatch]);
+    dispatch(getAllRoles({ page, limit })).unwrap();
+  }, [dispatch, page, limit]);
 
   const handleDelete = async () => {
     if (!selectedItem) return;
@@ -37,7 +39,7 @@ const Roles = () => {
       ).unwrap();
       if (response.code === 200) {
         toast.success(response.message);
-        await dispatch(getAllClassifications());
+        await dispatch(getAllClassifications({ page, limit })).unwrap();
         setShowDeleteModal(false);
       }
     } catch (error: any) {
@@ -90,6 +92,15 @@ const Roles = () => {
     },
   ];
 
+  const handleTableChange = (pagination: any) => {
+    dispatch(
+      getAllClassifications({
+        page: pagination.current,
+        limit: pagination.pageSize,
+      })
+    ).unwrap();
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-2">
@@ -114,6 +125,13 @@ const Roles = () => {
           columns={columns}
           title="Roles"
           searchField={["name"]}
+          paginationMode="backend"
+          paginationProps={{
+            total,
+            current: page,
+            pageSize: limit,
+          }}
+          onTableChange={handleTableChange}
         />
       )}
 

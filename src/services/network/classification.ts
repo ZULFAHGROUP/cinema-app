@@ -3,8 +3,8 @@ import urls from "../../constants/urls";
 import Axios from "../httpClient";
 
 const MovieClassification = {
-  allMovieClassification: () => {
-    return Axios.get(urls.movie_clas);
+  allMovieClassification: (page: number, limit: number) => {
+    return Axios.get(`${urls.movie_clas}?page=${page}&limit=${limit}`);
   },
 
   createMovieClassification: (data: any) => {

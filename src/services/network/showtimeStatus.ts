@@ -3,8 +3,8 @@ import urls from "../../constants/urls";
 import Axios from "../httpClient";
 
 const ShowtimeStatus = {
-  allShowtimeStatuses: () => {
-    return Axios.get(urls.showtime_status);
+  allShowtimeStatuses: (page:number, limit:number) => {
+    return Axios.get(`${urls.showtime_status}?page=${page}&limit=${limit}`);
   },
 
   createShowtimeStatus: (data: any) => {

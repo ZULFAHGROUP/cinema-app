@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Formik, Form, FormikTouched } from "formik";
+import { Formik, Form } from "formik";
 import Input from "../../../components/shared/Input";
 import Button from "../../../components/shared/Button";
 import { toast } from "react-toastify";
@@ -26,7 +26,7 @@ const AddScreensForm = ({
   onCancel,
   editMode = false,
   screenData,
-  cinemas,
+  // cinemas,
   preSelectedCinema,
 }: AddScreensFormProps) => {
   const dispatch = useAppDispatch();
@@ -39,17 +39,10 @@ const AddScreensForm = ({
   }, [dispatch, page, limit, total]);
   console.log("cinema id", preSelectedCinema);
   const initialValues = {
-    cinema_id: preSelectedCinema || screenData?.cinema?.name || "",
+    // cinema_id: preSelectedCinema || screenData?.cinema?.name || "",
     name: screenData?.name || "",
-    seat_layout: {
-      rows: screenData?.seat_layout?.rows || [
-        {
-          row: "",
-          count: 0,
-          default_type: "",
-        },
-      ],
-    },
+    seat_count: screenData?.seat_count || "",
+    screen_type_id: screenData?.screen_type?.name || "",
   };
 
   async function handleSubmit(
@@ -80,18 +73,18 @@ const AddScreensForm = ({
     }
   }
 
-  const allCinema = [...(cinemas || [])]
-    .sort((a: any, b: any) => a.name.localeCompare(b.name))
-    .map((cinema: { cinema_id: string; name: string }) => ({
-      label: cinema.name,
-      value: cinema.cinema_id,
-    }));
+  // const allCinema = [...(cinemas || [])]
+  //   .sort((a: any, b: any) => a.name.localeCompare(b.name))
+  //   .map((cinema: { cinema_id: string; name: string }) => ({
+  //     label: cinema.name,
+  //     value: cinema.cinema_id,
+  //   }));
 
-  const allSeat = [...(screenTypes || [])]
+  const allScreenType = [...(screenTypes || [])]
     .sort((a: any, b: any) => a.name.localeCompare(b.name))
-    .map((seats: { name: string }) => ({
-      label: seats.name,
-      value: seats.name,
+    .map((screens: { name: string; screen_type_id: string }) => ({
+      label: screens.name,
+      value: screens.screen_type_id,
     }));
 
   return (
@@ -113,7 +106,7 @@ const AddScreensForm = ({
       }) => (
         <Form onSubmit={handleSubmit}>
           <div className="space-y-4">
-            <ReusableSelect
+            {/* <ReusableSelect
               label="Cinema"
               name="cinema_id"
               value={values.cinema_id}
@@ -127,7 +120,7 @@ const AddScreensForm = ({
               }
               required
               disabled={editMode || Boolean(preSelectedCinema)}
-            />{" "}
+            />{" "} */}
             <Input
               label="Screen Name"
               name="name"
@@ -142,55 +135,32 @@ const AddScreensForm = ({
               placeholder="Screen 1"
               required
             />
-            <div className="pt-2">
-              <h3 className="text-sm font-semibold mb-2">Seat</h3>
-              <div className="space-y-4">
-                {values.seat_layout.rows.map((row: any, index: number) => (
-                  <div
-                    key={index}
-                    className="p-3 border rounded-md space-y-2 relative"
-                  >
-                    <div className="flex gap-3 w-full">
-                      <Input
-                        label="Seat Count"
-                        name={`seat_layout.rows.${index}.count`}
-                        type="number"
-                        value={row.count}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={
-                          (
-                            touched.seat_layout?.rows as
-                              | FormikTouched<any>[]
-                              | undefined
-                          )?.[index]?.count &&
-                          typeof (errors.seat_layout?.rows as any)?.[index]
-                            ?.count === "string"
-                            ? (errors.seat_layout?.rows as any)[index].count
-                            : undefined
-                        }
-                        placeholder="10"
-                        conClassName="flex-1"
-                      />
+            <div className="flex gap-3 w-full">
+              <Input
+                label="Seat Count"
+                name="seat_count"
+                type="number"
+                value={values.seat_count}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={
+                  touched.seat_count && typeof errors.seat_count === "string"
+                    ? errors.seat_count
+                    : undefined
+                }
+                placeholder="10"
+                conClassName="flex-1"
+              />
 
-                      <ReusableSelect
-                        label="Default Type"
-                        name={`seat_layout.rows.${index}.default_type`}
-                        value={row.default_type}
-                        onChange={(value) =>
-                          setFieldValue(
-                            `seat_layout.rows.${index}.default_type`,
-                            value
-                          )
-                        }
-                        onBlur={handleBlur}
-                        options={allSeat}
-                        conClassName="flex-1"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <ReusableSelect
+                label="Screen Type"
+                name="screen_type_id"
+                value={values.screen_type_id}
+                onChange={(value) => setFieldValue(`screen_type_id`, value)}
+                onBlur={handleBlur}
+                options={allScreenType}
+                conClassName="flex-1"
+              />
             </div>
           </div>
 

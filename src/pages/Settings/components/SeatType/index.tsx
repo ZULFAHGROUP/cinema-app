@@ -4,38 +4,40 @@ import { Edit, Trash2, Plus } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../../../store/hook";
 import {
-  deleteSeatType,
-  getAllSeatTypes,
+  deleteScreenType,
+  getAllScreenTypes,
 } from "../../../../store/slices/screenType";
 import Button from "../../../../components/shared/Button";
 import DisplayModal from "../../../../components/shared/Modal/DisplayModal";
 import ConfirmationModal from "../../../../components/shared/Modal/ConfirmationModal";
 import ReusableTable from "../../../../components/shared/Table";
-import SeatTypeForm from "./components/SeatTypeForm";
+import ScreenTypeForm from "./components/ScreenTypeForm";
 import Loader from "../../../../components/shared/Loader";
 
-const SeatType = () => {
+const ScreenType = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
   const dispatch = useAppDispatch();
-  const { seatTypes, loading } = useAppSelector((state) => state.seatType);
+  const { screenTypes, loading, page, limit, total } = useAppSelector(
+    (state) => state.screenType
+  );
 
   useEffect(() => {
-    dispatch(getAllSeatTypes());
-  }, [dispatch]);
+    dispatch(getAllScreenTypes({ page, limit }));
+  }, [dispatch, page, limit]);
 
   const handleDelete = async () => {
     if (!selectedItem) return;
     try {
       const response = await dispatch(
-        deleteSeatType(selectedItem?.seat_type_id)
+        deleteScreenType(selectedItem?.seat_type_id)
       ).unwrap();
       if (response.code === 200) {
         toast.success(response.message);
-        await dispatch(getAllSeatTypes());
+        await dispatch(getAllScreenTypes({ page, limit }));
         setShowDeleteModal(false);
       }
     } catch (error: any) {
@@ -86,10 +88,19 @@ const SeatType = () => {
     },
   ];
 
+  const handleTableChange = (pagination: any) => {
+    dispatch(
+      getAllScreenTypes({
+        page: pagination.current,
+        limit: pagination.pageSize,
+      })
+    ).unwrap();
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-semibold">Seat Types</h2>
+        <h2 className="text-lg font-semibold">Screen Types</h2>
         <Button
           className="rounded-md"
           icon={<Plus className="w-4 h-4" />}
@@ -106,21 +117,29 @@ const SeatType = () => {
         <Loader rows={6} />
       ) : (
         <ReusableTable
-          data={seatTypes || []}
+          data={screenTypes || []}
           columns={columns}
-          title="Seat Types"
+          title="Screen Types"
           searchField={["name", "description"]}
           excludeColumns={["seat_type_id"]}
+          showPagination={true}
+          paginationMode="backend"
+          paginationProps={{
+            total,
+            current: page,
+            pageSize: limit,
+          }}
+          onTableChange={handleTableChange}
         />
       )}
 
       {/* Add / Edit Modal */}
       <DisplayModal
         open={showFormModal}
-        title={editMode ? "Edit Seat Type" : "Add Seat Type"}
+        title={editMode ? "Edit Screen Type" : "Add Screen Type"}
         onClose={() => setShowFormModal(false)}
       >
-        <SeatTypeForm
+        <ScreenTypeForm
           onCancel={() => setShowFormModal(false)}
           editMode={editMode}
           seatTypeData={selectedItem}
@@ -138,4 +157,4 @@ const SeatType = () => {
   );
 };
 
-export default SeatType;
+export default ScreenType;

@@ -5,10 +5,18 @@ import { ApiResponse } from "../../@types/common";
 
 export const getAllShowtimeStatuses = createAsyncThunk(
   "showtimeStatus/getAll",
-  async (_, { rejectWithValue }) => {
+  async (
+    { page = 1, limit = 10 }: { page?: number; limit?: number },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await ShowtimeStatus.allShowtimeStatuses();
-      return response.data.data;
+      const response = await ShowtimeStatus.allShowtimeStatuses(page, limit);
+      return {
+        data: response.data.data.showtimeStatuses,
+        page,
+        limit,
+        total: response.data.data.pagination.total,
+      };
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
     }
@@ -66,6 +74,9 @@ const showtimeStatusSlice = createSlice({
     statuses: [],
     loading: false,
     error: null,
+    page: 1,
+    limit: 10,
+    total: 0,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -75,7 +86,10 @@ const showtimeStatusSlice = createSlice({
       })
       .addCase(getAllShowtimeStatuses.fulfilled, (state, action) => {
         state.loading = false;
-        state.statuses = action.payload || [];
+        state.statuses = action.payload.data || [];
+        state.page = action.payload.page;
+        state.limit = action.payload.limit;
+        state.total = action.payload.total;
       })
       .addCase(getAllShowtimeStatuses.rejected, (state) => {
         state.loading = false;

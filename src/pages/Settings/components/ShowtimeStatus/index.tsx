@@ -21,11 +21,13 @@ const ShowtimeStatus = () => {
   const [editMode, setEditMode] = useState(false);
 
   const dispatch = useAppDispatch();
-  const { statuses, loading } = useAppSelector((state) => state.showtimeStatus);
+  const { statuses, loading, page, limit, total } = useAppSelector(
+    (state) => state.showtimeStatus
+  );
 
   useEffect(() => {
-    dispatch(getAllShowtimeStatuses());
-  }, [dispatch]);
+    dispatch(getAllShowtimeStatuses({ page, limit }));
+  }, [dispatch, page, limit]);
 
   const handleDelete = async () => {
     if (!selectedItem) return;
@@ -35,7 +37,7 @@ const ShowtimeStatus = () => {
       ).unwrap();
       if (response.code === 200) {
         toast.success(response.message);
-        await dispatch(getAllShowtimeStatuses());
+        await dispatch(getAllShowtimeStatuses({ page, limit }));
         setShowDeleteModal(false);
       }
     } catch (error: any) {
@@ -86,6 +88,15 @@ const ShowtimeStatus = () => {
     },
   ];
 
+  const handleTableChange = (pagination: any) => {
+    dispatch(
+      getAllShowtimeStatuses({
+        page: pagination.current,
+        limit: pagination.pageSize,
+      })
+    ).unwrap();
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -111,6 +122,14 @@ const ShowtimeStatus = () => {
           title="Showtime Status"
           searchField={["name"]}
           excludeColumns={["showtime_status_id"]}
+          showPagination={true}
+          paginationMode="backend"
+          paginationProps={{
+            total,
+            current: page,
+            pageSize: limit,
+          }}
+          onTableChange={handleTableChange}
         />
       )}
 

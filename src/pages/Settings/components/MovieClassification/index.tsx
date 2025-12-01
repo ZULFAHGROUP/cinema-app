@@ -22,13 +22,13 @@ const MovieClassification = () => {
   const [editMode, setEditMode] = useState(false);
 
   const dispatch = useAppDispatch();
-  const { classifications, loading } = useAppSelector(
+  const { classifications, loading, limit, page, total } = useAppSelector(
     (state) => state.classification
   );
 
   useEffect(() => {
-    dispatch(getAllClassifications());
-  }, [dispatch]);
+    dispatch(getAllClassifications({ limit, page })).unwrap();
+  }, [dispatch, limit, page]);
 
   const handleDelete = async () => {
     if (!selectedItem) return;
@@ -38,7 +38,7 @@ const MovieClassification = () => {
       ).unwrap();
       if (response.code === 200) {
         toast.success(response.message);
-        await dispatch(getAllClassifications());
+        await dispatch(getAllClassifications({ limit, page })).unwrap();
         setShowDeleteModal(false);
       }
     } catch (error: any) {
@@ -87,6 +87,15 @@ const MovieClassification = () => {
     },
   ];
 
+  const handleTableChange = (pagination: any) => {
+    dispatch(
+      getAllClassifications({
+        page: pagination.current,
+        limit: pagination.pageSize,
+      })
+    ).unwrap();
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-2">
@@ -111,6 +120,14 @@ const MovieClassification = () => {
           columns={columns}
           title="Movie Classifications"
           searchField={["name"]}
+          showPagination={true}
+          paginationMode="backend"
+          paginationProps={{
+            total,
+            current: page,
+            pageSize: limit,
+          }}
+          onTableChange={handleTableChange}
         />
       )}
 

@@ -3,26 +3,27 @@ import { Formik, Form } from "formik";
 import Input from "../../../../../components/shared/Input";
 import Button from "../../../../../components/shared/Button";
 import { toast } from "react-toastify";
-import { useAppDispatch } from "../../../../../store/hook";
+import { useAppDispatch, useAppSelector } from "../../../../../store/hook";
 import {
-  createSeatType,
-  getAllSeatTypes,
-  updateSeatType,
+  createScreenType,
+  getAllScreenTypes,
+  updateScreenType,
 } from "../../../../../store/slices/screenType";
 import { seatTypeValidationSchema } from "../../../../../validations";
 
-interface SeatTypeFormProps {
+interface ScreenTypeFormProps {
   onCancel: () => void;
   editMode?: boolean;
   seatTypeData?: any;
 }
 
-const SeatTypeForm = ({
+const ScreenTypeForm = ({
   onCancel,
   editMode,
   seatTypeData,
-}: SeatTypeFormProps) => {
+}: ScreenTypeFormProps) => {
   const dispatch = useAppDispatch();
+  const { page, limit } = useAppSelector((state) => state.screenType);
 
   const initialValues = {
     name: seatTypeData?.name || "",
@@ -38,18 +39,18 @@ const SeatTypeForm = ({
       let response;
       if (editMode) {
         response = await dispatch(
-          updateSeatType({
+          updateScreenType({
             id: seatTypeData?.seat_type_id,
             payload: values,
           })
         ).unwrap();
       } else {
-        response = await dispatch(createSeatType(values)).unwrap();
+        response = await dispatch(createScreenType(values)).unwrap();
       }
 
       if (response.code === 201 || response.code === 200) {
         toast.success(response.message || "Success!");
-        await dispatch(getAllSeatTypes());
+        await dispatch(getAllScreenTypes({ page, limit }));
         resetForm();
         onCancel();
       }
@@ -152,4 +153,4 @@ const SeatTypeForm = ({
   );
 };
 
-export default SeatTypeForm;
+export default ScreenTypeForm;

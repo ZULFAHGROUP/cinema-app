@@ -3,7 +3,7 @@ import { Formik, Form } from "formik";
 import Input from "../../../../../components/shared/Input";
 import Button from "../../../../../components/shared/Button";
 import { toast } from "react-toastify";
-import { useAppDispatch } from "../../../../../store/hook";
+import { useAppDispatch, useAppSelector } from "../../../../../store/hook";
 import {
   createClassification,
   updateClassification,
@@ -23,7 +23,7 @@ const MovieClassificationForm = ({
   classificationData,
 }: MovieClassificationFormProps) => {
   const dispatch = useAppDispatch();
-
+  const { limit, page } = useAppSelector((state) => state.classification);
   const initialValues = {
     name: classificationData?.name || "",
   };
@@ -47,7 +47,7 @@ const MovieClassificationForm = ({
       console.log("coming response", response);
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message);
-        await dispatch(getAllClassifications());
+        await dispatch(getAllClassifications({ limit, page })).unwrap();
         resetForm();
         onCancel();
       }

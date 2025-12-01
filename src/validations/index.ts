@@ -101,25 +101,9 @@ export const showtimeStatusSchema = Yup.object().shape({
 });
 
 export const screenValidationSchema = Yup.object().shape({
-  cinema_id: Yup.string().required("Cinema is required"),
+  screen_type_id: Yup.string().required("Screen type is required"),
   name: Yup.string().required("Screen Name is required"),
-  seat_layout: Yup.object().shape({
-    rows: Yup.array()
-      .of(
-        Yup.object().shape({
-          row: Yup.string()
-            .trim()
-            .required("Row label is required (e.g., A, B, C)"),
-          count: Yup.number()
-            .typeError("Seat count must be a number")
-            .min(1, "Each row must have at least 1 seat")
-            .required("Seat count is required"),
-          default_type: Yup.string().required("Default seat type is required"),
-        })
-      )
-      .min(1, "At least one row is required")
-      .required("Seat layout is required"),
-  }),
+  seat_count: Yup.string().required("Seat count is required"),
 });
 
 export const roleSchema = Yup.object().shape({

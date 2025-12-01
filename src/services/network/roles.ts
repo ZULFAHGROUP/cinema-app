@@ -3,8 +3,8 @@ import urls from "../../constants/urls";
 import Axios from "../httpClient";
 
 const Roles = {
-  allRoles: () => {
-    return Axios.get(urls.role);
+  allRoles: (page: number, limit: number) => {
+    return Axios.get(`${urls.role}?page=${page}&limit=${limit}`);
   },
 
   createRole: (data: any) => {

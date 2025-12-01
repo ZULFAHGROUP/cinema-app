@@ -26,7 +26,6 @@ export const getAllAuditTrails = createAsyncThunk(
         data: response.data.data.audits,
         page,
         limit,
-        // total: 200,
         total: response.data.data.pagination.total,
       };
     } catch (error: any) {
