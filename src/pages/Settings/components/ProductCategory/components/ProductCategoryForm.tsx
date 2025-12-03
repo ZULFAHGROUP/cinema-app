@@ -1,32 +1,32 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Form, Formik } from "formik";
+import { Formik, Form } from "formik";
 import Input from "../../../../../components/shared/Input";
 import Button from "../../../../../components/shared/Button";
-import { useAppDispatch, useAppSelector } from "../../../../../store/hook";
-import {
-  createShowtimeStatus,
-  updateShowtimeStatus,
-  getAllShowtimeStatuses,
-} from "../../../../../store/slices/showtimeStatus";
 import { toast } from "react-toastify";
-import { showtimeStatusSchema } from "../../../../../validations";
+import { useAppDispatch, useAppSelector } from "../../../../../store/hook";
+import { productCatSchema } from "../../../../../validations";
+import {
+  createProductCategories,
+  getAllProductCategories,
+  updateProductCategories,
+} from "../../../../../store/slices/productCat";
 
-interface ShowtimeStatusFormProps {
+interface ProductCategoryFormProps {
   onCancel: () => void;
   editMode?: boolean;
-  statusData?: any;
+  productCategoryData?: any;
 }
 
-const ShowtimeStatusForm = ({
+const ProductCategoryForm = ({
   onCancel,
-  editMode,
-  statusData,
-}: ShowtimeStatusFormProps) => {
+  editMode = false,
+  productCategoryData,
+}: ProductCategoryFormProps) => {
   const dispatch = useAppDispatch();
-  const { page, limit } = useAppSelector((state) => state.showtimeStatus);
+  const { page, limit } = useAppSelector((state) => state.productCat);
   const initialValues = {
-    name: statusData?.name || "",
-    // description: statusData?.description || "",
+    name: productCategoryData?.name || "",
+    description: productCategoryData?.description || "",
   };
 
   async function handleSubmit(
@@ -34,27 +34,26 @@ const ShowtimeStatusForm = ({
     { resetForm }: { resetForm: () => void }
   ) {
     try {
-      if (editMode) {
-        const response = await dispatch(
-          updateShowtimeStatus({
-            id: statusData.showtime_status_id,
+      let response;
+      if (editMode && productCategoryData?.product_category_id) {
+        response = await dispatch(
+          updateProductCategories({
+            id: productCategoryData.product_category_id,
             data: values,
           })
         ).unwrap();
-        if (response.code === 200) {
-          toast.success(response.message);
-        }
       } else {
-        const response = await dispatch(createShowtimeStatus(values)).unwrap();
-        if (response.code === 201) {
-          toast.success(response.message);
-        }
+        response = await dispatch(createProductCategories(values)).unwrap();
       }
-
-      await dispatch(getAllShowtimeStatuses({ page, limit }));
-      resetForm();
-      onCancel();
+      console.log("coming response", response);
+      if (response.code === 200 || response.code === 201) {
+        toast.success(response.message);
+        await dispatch(getAllProductCategories({ page, limit }));
+        resetForm();
+        onCancel();
+      }
     } catch (error: any) {
+      console.error("Error submitting role form", error);
       toast.error(error?.response?.message || "Something went wrong");
     }
   }
@@ -63,7 +62,7 @@ const ShowtimeStatusForm = ({
     <Formik
       enableReinitialize
       initialValues={initialValues}
-      validationSchema={showtimeStatusSchema}
+      validationSchema={productCatSchema}
       onSubmit={handleSubmit}
     >
       {({
@@ -78,7 +77,7 @@ const ShowtimeStatusForm = ({
         <Form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <Input
-              label="Showtime Status Name"
+              label="Product Category Name"
               name="name"
               value={values.name}
               onChange={handleChange}
@@ -88,7 +87,22 @@ const ShowtimeStatusForm = ({
                   ? errors.name
                   : undefined
               }
-              placeholder="Scheduled"
+              placeholder="Snacks"
+              required
+            />
+
+            <Input
+              label="Role Description"
+              name="description"
+              value={values.description}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={
+                touched.description && typeof errors.description === "string"
+                  ? errors.description
+                  : undefined
+              }
+              placeholder="Yummy snacks"
               required
             />
           </div>
@@ -105,8 +119,8 @@ const ShowtimeStatusForm = ({
                     ? "Updating..."
                     : "Adding..."
                   : editMode
-                  ? "Update Classification"
-                  : "Add Classification"
+                  ? "Update Product Cat."
+                  : "Add Product Cat."
               }
             />
             <Button
@@ -124,4 +138,4 @@ const ShowtimeStatusForm = ({
   );
 };
 
-export default ShowtimeStatusForm;
+export default ProductCategoryForm;

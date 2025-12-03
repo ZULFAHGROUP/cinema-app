@@ -3,8 +3,10 @@ import urls from "../../constants/urls";
 import Axios from "../httpClient";
 
 const Screens = {
-  allScreens: () => {
-    return Axios.get(urls.screen);
+  allScreens: (page: number, limit: number, cinema_id: string) => {
+    return Axios.get(
+      `${urls.screen}?page=${page}&limit=${limit}&cinema_id=${cinema_id}`
+    );
   },
 
   createScreen: (data: any) => {

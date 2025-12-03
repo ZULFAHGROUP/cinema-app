@@ -2,18 +2,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import Extras from "../../services/network/extras";
 
-// export const getAllAuditTrails = createAsyncThunk(
-//   "role/getAll",
-//   async (_, { rejectWithValue }) => {
-//     try {
-//       const response = await Extras.allAuditTrails();
-//       return response.data.data;
-//     } catch (error: any) {
-//       return rejectWithValue(error.response?.data);
-//     }
-//   }
-// );
-
 export const getAllAuditTrails = createAsyncThunk(
   "extras/getAllAuditTrails",
   async (

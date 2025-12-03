@@ -3,7 +3,7 @@ import { Formik, Form } from "formik";
 import Input from "../../../../../components/shared/Input";
 import Button from "../../../../../components/shared/Button";
 import { toast } from "react-toastify";
-import { useAppDispatch } from "../../../../../store/hook";
+import { useAppDispatch, useAppSelector } from "../../../../../store/hook";
 import { roleSchema } from "../../../../../validations";
 import {
   createRole,
@@ -23,7 +23,7 @@ const RolesForm = ({
   roleData,
 }: RolesFormProps) => {
   const dispatch = useAppDispatch();
-
+  const { page, limit } = useAppSelector((state) => state.role);
   const initialValues = {
     role_name: roleData?.role_name || "",
     description: roleData?.description || "",
@@ -48,7 +48,7 @@ const RolesForm = ({
       console.log("coming response", response);
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message);
-        await dispatch(getAllRoles());
+        await dispatch(getAllRoles({ page, limit }));
         resetForm();
         onCancel();
       }

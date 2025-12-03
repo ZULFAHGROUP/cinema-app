@@ -3,8 +3,10 @@ import urls from "../../constants/urls";
 import Axios from "../httpClient";
 
 const Movie = {
-  allMovies: () => {
-    return Axios.get(urls.movie);
+  allMovies: (page: number, limit: number) => {
+    return Axios.get(
+      `${urls.movie}?page=${page}&limit=${limit}                                                                  `
+    );
   },
 
   createMovie: (data: any) => {

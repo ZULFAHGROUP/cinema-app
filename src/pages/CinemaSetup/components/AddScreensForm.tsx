@@ -26,20 +26,21 @@ const AddScreensForm = ({
   onCancel,
   editMode = false,
   screenData,
-  // cinemas,
+  cinemas,
   preSelectedCinema,
 }: AddScreensFormProps) => {
   const dispatch = useAppDispatch();
   const { screenTypes, page, limit, total } = useAppSelector(
     (state) => state.screenType
   );
+  const { screensPage, screensLimit } = useAppSelector((state) => state.screen);
 
   useEffect(() => {
     dispatch(getAllScreenTypes({ page, limit: total }));
   }, [dispatch, page, limit, total]);
   console.log("cinema id", preSelectedCinema);
   const initialValues = {
-    // cinema_id: preSelectedCinema || screenData?.cinema?.name || "",
+    cinema_id: preSelectedCinema || screenData?.cinema?.name || "",
     name: screenData?.name || "",
     seat_count: screenData?.seat_count || "",
     screen_type_id: screenData?.screen_type?.name || "",
@@ -63,7 +64,13 @@ const AddScreensForm = ({
 
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message);
-        await dispatch(getAllScreen());
+        await dispatch(
+          getAllScreen({
+            screensPage,
+            screensLimit,
+            cinema_id: preSelectedCinema,
+          })
+        );
         resetForm();
         onCancel(); // close modal after success
       }
@@ -73,12 +80,12 @@ const AddScreensForm = ({
     }
   }
 
-  // const allCinema = [...(cinemas || [])]
-  //   .sort((a: any, b: any) => a.name.localeCompare(b.name))
-  //   .map((cinema: { cinema_id: string; name: string }) => ({
-  //     label: cinema.name,
-  //     value: cinema.cinema_id,
-  //   }));
+  const allCinema = [...(cinemas || [])]
+    .sort((a: any, b: any) => a.name.localeCompare(b.name))
+    .map((cinema: { cinema_id: string; name: string }) => ({
+      label: cinema.name,
+      value: cinema.cinema_id,
+    }));
 
   const allScreenType = [...(screenTypes || [])]
     .sort((a: any, b: any) => a.name.localeCompare(b.name))
@@ -106,7 +113,7 @@ const AddScreensForm = ({
       }) => (
         <Form onSubmit={handleSubmit}>
           <div className="space-y-4">
-            {/* <ReusableSelect
+            <ReusableSelect
               label="Cinema"
               name="cinema_id"
               value={values.cinema_id}
@@ -119,8 +126,8 @@ const AddScreensForm = ({
                   : undefined
               }
               required
-              disabled={editMode || Boolean(preSelectedCinema)}
-            />{" "} */}
+              // disabled={editMode || Boolean(preSelectedCinema)}
+            />{" "}
             <Input
               label="Screen Name"
               name="name"

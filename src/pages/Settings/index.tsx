@@ -4,13 +4,16 @@ import MovieClassification from "./components/MovieClassification";
 import SeatType from "./components/SeatType";
 import ShowtimeStatus from "./components/ShowtimeStatus";
 import Roles from "./components/Roles";
+import ProductCategory from "./components/ProductCategory";
 
 const Settings = () => {
   type SettingsNav =
     | "movie-classification"
     | "screen-type"
     | "showtime-status"
-    | "roles";
+    | "roles"
+    | "product-category";
+
   const [currentScreen, setCurrentScreen] = useState<SettingsNav>(
     "movie-classification"
   );
@@ -23,6 +26,7 @@ const Settings = () => {
     { name: "Screen Type", url: "screen-type" },
     { name: "Showtime Status", url: "showtime-status" },
     { name: "Roles", url: "roles" },
+    { name: "Product Category", url: "product-category" },
   ];
   return (
     <div className="min-h-screen flex flex-col md:flex-row gap-2">
@@ -44,8 +48,10 @@ const Settings = () => {
           <SeatType />
         ) : currentScreen === "showtime-status" ? (
           <ShowtimeStatus />
-        ) : (
+        ) : currentScreen === "roles" ? (
           <Roles />
+        ) : (
+          <ProductCategory />
         )}
       </div>
     </div>

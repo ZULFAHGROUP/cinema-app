@@ -26,6 +26,7 @@ const persistConfig = {
     "seat",
     "role",
     "extras",
+    "productCat",
   ],
 };
 

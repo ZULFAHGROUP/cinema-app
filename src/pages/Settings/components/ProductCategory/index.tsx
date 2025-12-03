@@ -7,34 +7,37 @@ import Button from "../../../../components/shared/Button";
 import DisplayModal from "../../../../components/shared/Modal/DisplayModal";
 import ConfirmationModal from "../../../../components/shared/Modal/ConfirmationModal";
 import ReusableTable from "../../../../components/shared/Table";
-import RolesForm from "./components/RolesForm";
-import { deleteRole, getAllRoles } from "../../../../store/slices/roles";
 import Loader from "../../../../components/shared/Loader";
+import ProductCategoryForm from "./components/ProductCategoryForm";
+import {
+  deleteProductCategories,
+  getAllProductCategories,
+} from "../../../../store/slices/productCat";
 
-const Roles = () => {
+const ProductCategory = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
   const dispatch = useAppDispatch();
-  const { roles, roleLoading, page, limit, total } = useAppSelector(
-    (state) => state.role
+  const { productCats, productCatLoading, page, limit, total } = useAppSelector(
+    (state) => state.productCat
   );
 
   useEffect(() => {
-    dispatch(getAllRoles({ page, limit })).unwrap();
+    dispatch(getAllProductCategories({ page, limit })).unwrap();
   }, [dispatch, page, limit]);
 
   const handleDelete = async () => {
     if (!selectedItem) return;
     try {
       const response = await dispatch(
-        deleteRole(selectedItem?.role_id)
+        deleteProductCategories(selectedItem?.product_category_id)
       ).unwrap();
       if (response.code === 200) {
         toast.success(response.message);
-        await dispatch(getAllRoles({ page, limit })).unwrap();
+        await dispatch(getAllProductCategories({ page, limit })).unwrap();
         setShowDeleteModal(false);
       }
     } catch (error: any) {
@@ -46,8 +49,8 @@ const Roles = () => {
   const columns = [
     {
       title: "Name",
-      dataIndex: "role_name",
-      key: "role_name",
+      dataIndex: "name",
+      key: "name",
     },
     {
       title: "Description",
@@ -89,7 +92,7 @@ const Roles = () => {
 
   const handleTableChange = (pagination: any) => {
     dispatch(
-      getAllRoles({
+      getAllProductCategories({
         page: pagination.current,
         limit: pagination.pageSize,
       })
@@ -112,11 +115,11 @@ const Roles = () => {
         />
       </div>
 
-      {roleLoading ? (
+      {productCatLoading ? (
         <Loader rows={6} />
       ) : (
         <ReusableTable
-          data={roles || []}
+          data={productCats || []}
           columns={columns}
           title="Roles"
           searchField={["name"]}
@@ -136,10 +139,10 @@ const Roles = () => {
         title={editMode ? "Edit Role" : "Add Role"}
         onClose={() => setShowFormModal(false)}
       >
-        <RolesForm
+        <ProductCategoryForm
           onCancel={() => setShowFormModal(false)}
           editMode={editMode}
-          roleData={selectedItem}
+          productCategoryData={selectedItem}
         />
       </DisplayModal>
 
@@ -148,10 +151,10 @@ const Roles = () => {
         open={showDeleteModal}
         onCancel={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
-        content={`Are you sure that you want to delete this role, ${selectedItem?.name}`}
+        content={`Are you sure that you want to delete this product category, ${selectedItem?.name}`}
       />
     </div>
   );
 };
 
-export default Roles;
+export default ProductCategory;

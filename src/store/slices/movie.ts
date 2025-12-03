@@ -5,10 +5,18 @@ import Movie from "../../services/network/movie";
 
 export const getAllMovies = createAsyncThunk(
   "movie/getAll",
-  async (_, { rejectWithValue }) => {
+  async (
+    { page = 1, limit = 10 }: { page?: number; limit?: number },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await Movie.allMovies();
-      return response.data.data;
+      const response = await Movie.allMovies(page, limit);
+      return {
+        data: response.data.data.movies,
+        page,
+        limit,
+        total: response.data.data.pagination.total,
+      };
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
     }
@@ -65,7 +73,7 @@ const movieSlice = createSlice({
   initialState: {
     movies: [],
     moviesLoading: false,
-    error: null,
+    error: null,page:1,limit:10,total:0
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -75,7 +83,10 @@ const movieSlice = createSlice({
       })
       .addCase(getAllMovies.fulfilled, (state, action) => {
         state.moviesLoading = false;
-        state.movies = action.payload || [];
+        state.movies = action.payload.data || [];
+        state.page = action.payload.page;
+        state.limit = action.payload.limit;
+        state.total = action.payload.total;
       })
       .addCase(getAllMovies.rejected, (state) => {
         state.moviesLoading = false;

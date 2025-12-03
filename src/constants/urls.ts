@@ -9,6 +9,7 @@ const urls = {
   movie: "/movie",
   showtime: "/showtime",
   role: "/role",
+  product_cat: "/product-category",
   audit: "/audit-trail",
 };
 
