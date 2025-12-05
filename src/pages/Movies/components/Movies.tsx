@@ -13,7 +13,7 @@ import DisplayModal from "../../../components/shared/Modal/DisplayModal";
 import { useState } from "react";
 import AddMovieForm from "./AddMovieForm";
 import Loader from "../../../components/shared/Loader";
-import { useAppDispatch } from "../../../store/hook";
+import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { deleteMovie, getAllMovies } from "../../../store/slices/movie";
 import { toast } from "react-toastify";
 import ConfirmationModal from "../../../components/shared/Modal/ConfirmationModal";
@@ -22,6 +22,7 @@ const Movies = ({ movies, loading }: any) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [movieData, setMovieData] = useState<any>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const { limit, page } = useAppSelector((state) => state.movie);
 
   const dispatch = useAppDispatch();
 
@@ -33,7 +34,7 @@ const Movies = ({ movies, loading }: any) => {
         deleteMovie(movieData?.movie_id)
       ).unwrap();
       if (response.code === 200) {
-        await dispatch(getAllMovies());
+        await dispatch(getAllMovies({ page, limit }));
         setShowDeleteModal(false);
       }
     } catch (error: any) {
@@ -47,7 +48,7 @@ const Movies = ({ movies, loading }: any) => {
         <Loader rows={8} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {movies.map((movie: any) => (
+          {movies?.map((movie: any) => (
             <Card
               key={movie.movie_id}
               className="overflow-hidden hover:shadow-md transition-shadow"
@@ -71,7 +72,7 @@ const Movies = ({ movies, loading }: any) => {
                 </CardTitle>
                 <CardDescription className="font-serif">
                   <p>{movie.language}</p>
-                  <p>{movie.movieClassification.name}</p>
+                  <p>{movie.movieClassification}</p>
                   <p>
                     <strong>Genres:</strong> <span>{movie.genres}</span>
                   </p>

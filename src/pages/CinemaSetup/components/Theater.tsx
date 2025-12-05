@@ -469,15 +469,19 @@ const Theater = ({ cinemas, loading }: any) => {
   };
 
   const handleDeleteScreen = async () => {
+    console.log("screen", selectedScreen);
     if (!selectedScreen) return;
 
     try {
       const response = await dispatch(
-        deleteScreen(selectedScreen?.screen_id)
+        deleteScreen({
+          id: selectedScreen?.screen_id,
+          cinema_id: selectedScreen?.cinema_id,
+        })
       ).unwrap();
       if (response.code === 200) {
         // Re-fetch screens for this specific cinema
-        const cinemaId = selectedScreen?.cinema?.cinema_id;
+        const cinemaId = selectedScreen?.cinema_id;
         if (cinemaId) {
           await dispatch(
             getAllScreen({

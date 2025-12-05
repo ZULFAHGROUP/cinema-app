@@ -40,10 +40,10 @@ const AddScreensForm = ({
   }, [dispatch, page, limit, total]);
   console.log("cinema id", preSelectedCinema);
   const initialValues = {
-    cinema_id: preSelectedCinema || screenData?.cinema?.name || "",
+    cinema_id: preSelectedCinema || screenData?.cinema_id || "",
     name: screenData?.name || "",
     seat_count: screenData?.seat_count || "",
-    screen_type_id: screenData?.screen_type?.name || "",
+    screen_type_id: screenData?.screenType?.name || "",
   };
 
   async function handleSubmit(
@@ -54,7 +54,7 @@ const AddScreensForm = ({
       let response;
       if (editMode && screenData?.screen_id) {
         const payload = { ...values };
-        delete payload.cinema_id;
+        // delete payload.cinema_id;
         response = await dispatch(
           updateScreen({ id: screenData.screen_id, data: payload })
         ).unwrap();
@@ -68,7 +68,7 @@ const AddScreensForm = ({
           getAllScreen({
             screensPage,
             screensLimit,
-            cinema_id: preSelectedCinema,
+            cinema_id: preSelectedCinema || screenData?.cinema_id,
           })
         );
         resetForm();
@@ -126,7 +126,7 @@ const AddScreensForm = ({
                   : undefined
               }
               required
-              // disabled={editMode || Boolean(preSelectedCinema)}
+              disabled={editMode || Boolean(preSelectedCinema)}
             />{" "}
             <Input
               label="Screen Name"

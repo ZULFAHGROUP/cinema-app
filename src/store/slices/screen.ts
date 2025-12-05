@@ -88,9 +88,12 @@ export const updateScreen = createAsyncThunk(
 
 export const deleteScreen = createAsyncThunk(
   "screen/delete",
-  async (id: string, { rejectWithValue }): Promise<ApiResponse> => {
+  async (
+    { id, cinema_id }: { id: string; cinema_id: string },
+    { rejectWithValue }
+  ): Promise<ApiResponse> => {
     try {
-      const response = await Screens.deleteScreen(id);
+      const response = await Screens.deleteScreen(id, cinema_id);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({

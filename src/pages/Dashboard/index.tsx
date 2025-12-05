@@ -27,9 +27,10 @@ import { getAllMovies } from "../../store/slices/movie";
 
 function Dashboard() {
   const dispatch = useAppDispatch();
+  const { limit, page } = useAppSelector((state) => state.movie);
   useEffect(() => {
-    dispatch(getAllMovies());
-  }, [dispatch]);
+    dispatch(getAllMovies({ page, limit }));
+  }, [dispatch, page, limit]);
 
   const { movies } = useAppSelector((state) => state.movie);
 

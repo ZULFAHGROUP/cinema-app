@@ -17,8 +17,8 @@ const Screens = {
     return Axios.patch(`${urls.screen}/${id}`, data);
   },
 
-  deleteScreen: (id: string | number) => {
-    return Axios.delete(`${urls.screen}/${id}`);
+  deleteScreen: (id: string | number, cinema_id: string) => {
+    return Axios.delete(`${urls.screen}/${id}?cinema_id=${cinema_id}`);
   },
 };
 

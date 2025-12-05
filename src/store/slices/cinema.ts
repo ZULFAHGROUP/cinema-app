@@ -46,12 +46,10 @@ export const getAllCinemas = createAsyncThunk(
     try {
       const response = await Cinema.allCinemas(page, limit);
       console.log("response is", response);
-      // return response.data.data;
       return {
         data: response.data.data.cinemas,
         page,
         limit,
-        // total: 200,
         total: response.data.data.pagination.total,
       };
     } catch (error: any) {

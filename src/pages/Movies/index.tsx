@@ -12,22 +12,41 @@ import { useAppDispatch, useAppSelector } from "../../store/hook";
 // import { getAllMovies } from "../../store/slices/movie";
 import { getAllShowtimes } from "../../store/slices/showtime";
 import { getAllCinemas } from "../../store/slices/cinema";
-import { getAllScreen } from "../../store/slices/screen";
+// import { getAllScreen } from "../../store/slices/screen";
 import { getAllShowtimeStatuses } from "../../store/slices/showtimeStatus";
 
 function MoviesPage() {
   const [activeTab, setActiveTab] = useState("movies");
   const [isAddMovieModalOpen, setIsAddMovieModalOpen] = useState(false);
   const [isAddShowtimeModalOpen, setIsAddShowtimeModalOpen] = useState(false);
+  const { limit: classificationLimit, page: classificationPage } =
+    useAppSelector((state) => state.classification);
+  const { limit: showtimeLimit, page: showtimePage } = useAppSelector(
+    (state) => state.showtime
+  );
+  const { limit: statusLimit, page: statusPage } = useAppSelector(
+    (state) => state.showtimeStatus
+  );
+  const { limit: cinemaLimit, page: cinemaPage } = useAppSelector(
+    (state) => state.cinema
+  );
+  // const { screensLimit, screensPage } = useAppSelector((state) => state.screen);
 
   const dispatch = useAppDispatch();
   useEffect(() => {
     // dispatch(getAllMovies());
-    dispatch(getAllClassifications());
-    dispatch(getAllShowtimes());
-    dispatch(getAllShowtimeStatuses());
-    dispatch(getAllCinemas());
-    dispatch(getAllScreen());
+    dispatch(
+      getAllClassifications({
+        limit: classificationLimit,
+        page: classificationPage,
+      })
+    );
+    dispatch(
+      getAllShowtimes({ limit: showtimeLimit, page: showtimePage })
+    ).unwrap();
+    dispatch(getAllShowtimeStatuses({ page: statusPage, limit: statusLimit }));
+    dispatch(getAllCinemas({ page: cinemaPage, limit: cinemaLimit }));
+    // dispatch(getAllScreen({screensLimit,screensPage})).unwrap();
   }, [dispatch]);
   const { movies, moviesLoading } = useAppSelector((state) => state.movie);
   const { showtimes, showtimeLoading } = useAppSelector(
