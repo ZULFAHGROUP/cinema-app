@@ -122,3 +122,12 @@ export const productCatSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
   description: Yup.string().required("Description is required"),
 });
+
+export const productSchema = Yup.object({
+  name: Yup.string().required("Product name is required").min(2, "Too short"),
+  product_category_id: Yup.string().required("Category is required"),
+  price: Yup.number().required("Price is required").min(0.01, "Invalid amount"),
+  // product_image: Yup.mixed().required("Product image is required"),
+  product_image: Yup.string().required("Product image is required"),
+  description: Yup.string(),
+});

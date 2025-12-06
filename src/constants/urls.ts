@@ -10,6 +10,7 @@ const urls = {
   showtime: "/showtime",
   role: "/role",
   product_cat: "/product-category",
+  product: "/product",
   audit: "/audit-trail",
 };
 
