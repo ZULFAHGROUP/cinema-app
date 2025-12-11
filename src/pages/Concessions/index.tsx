@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Tabs } from "antd";
 import Button from "../../components/shared/Button";
 import {
@@ -18,62 +18,40 @@ import Analytics from "./components/Analytics";
 import POSMode from "./components/PosMode";
 import AddProductForm from "./components/AddProductForm";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
+import { useAppDispatch, useAppSelector } from "../../store/hook";
+import { getAllProducts } from "../../store/slices/product";
 
 function ConcessionsPage() {
   const [activeTab, setActiveTab] = useState("inventory");
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
   const [isPOSMode, setIsPOSMode] = useState(false);
+  const [selectedCinemaId, setSelectedCinemaId] = useState<string>("");
 
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      name: "Large Popcorn",
-      category: "Snacks",
-      price: 8.99,
-      cost: 2.5,
-      stock: 45,
-      minStock: 20,
-      supplier: "Snack Supply Co",
-      image: "/bowl-of-popcorn.png",
-      status: "In Stock",
-    },
-    {
-      id: 2,
-      name: "Medium Soda",
-      category: "Beverages",
-      price: 5.99,
-      cost: 1.2,
-      stock: 8,
-      minStock: 15,
-      supplier: "Beverage Distributors",
-      image: "/soda-cup.png",
-      status: "Low Stock",
-    },
-    {
-      id: 3,
-      name: "Candy Mix",
-      category: "Candy",
-      price: 4.99,
-      cost: 1.8,
-      stock: 32,
-      minStock: 25,
-      supplier: "Sweet Treats Inc",
-      image: "/candy-mix.png",
-      status: "In Stock",
-    },
-    {
-      id: 4,
-      name: "Nachos with Cheese",
-      category: "Snacks",
-      price: 7.99,
-      cost: 2.2,
-      stock: 0,
-      minStock: 10,
-      supplier: "Snack Supply Co",
-      image: "/plate-of-loaded-nachos.png",
-      status: "Out of Stock",
-    },
-  ]);
+  const dispatch = useAppDispatch();
+  const { products, productPage, productLimit } = useAppSelector(
+    (state) => state.product
+  );
+  const { user } = useAppSelector((state) => state.accounts.data);
+  const { allCinemas } = useAppSelector((state) => state.cinema);
+
+  // Determine if user is admin
+  const isAdmin = user?.role?.name?.toLowerCase() === "admin";
+  const userCinemaId = user?.cinema_id;
+
+  // Use selected cinema for admin, or user's cinema for others
+  const activeCinemaId = isAdmin ? selectedCinemaId : userCinemaId;
+
+  useEffect(() => {
+    if (activeCinemaId) {
+      dispatch(
+        getAllProducts({
+          page: productPage,
+          limit: productLimit,
+          cinema_id: activeCinemaId,
+        })
+      );
+    }
+  }, [dispatch, productPage, productLimit, activeCinemaId]);
 
   const [cart, setCart] = useState<any[]>([]);
 
@@ -124,22 +102,6 @@ function ConcessionsPage() {
       cashier: "Mike Chen",
     },
   ];
-
-  const handleAddProduct = (productData: any) => {
-    const newProduct = {
-      id: products.length + 1,
-      ...productData,
-      image: "/placeholder.svg",
-      status:
-        productData.stock > productData.minStock
-          ? "In Stock"
-          : productData.stock > 0
-          ? "Low Stock"
-          : "Out of Stock",
-    };
-    setProducts([...products, newProduct]);
-    setIsAddProductModalOpen(false);
-  };
 
   const addToCart = (product: any) => {
     const existingItem = cart.find((item) => item.id === product.id);
@@ -364,8 +326,6 @@ function ConcessionsPage() {
         title="Add New Product"
       >
         <AddProductForm
-          suppliers={suppliers}
-          onSubmit={handleAddProduct}
           onCancel={() => setIsAddProductModalOpen(false)}
         />
       </DisplayModal>

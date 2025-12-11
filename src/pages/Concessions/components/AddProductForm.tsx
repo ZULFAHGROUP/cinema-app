@@ -11,6 +11,7 @@ import {
   updateProduct,
 } from "../../../store/slices/product";
 import { getAllProductCategories } from "../../../store/slices/productCat";
+import { getAllCinemas } from "../../../store/slices/cinema";
 import { useEffect } from "react";
 import { productSchema } from "../../../validations";
 
@@ -32,18 +33,37 @@ const AddProductForm = ({
   const { productPage, productLimit } = useAppSelector(
     (state) => state.product
   );
+  const { allCinemas } = useAppSelector((state) => state.cinema);
+  const { user } = useAppSelector((state) => state.accounts.data);
+
+  // Determine if user is admin (adjust role check as needed)
+  const isAdmin = user?.role?.toLowerCase() === "admin";
+  const userCinemaId = user?.cinema_id;
 
   useEffect(() => {
     dispatch(getAllProductCategories({ page, limit: 100 }));
-  }, [dispatch, page, limit]);
+    if (isAdmin) {
+      dispatch(getAllCinemas({ page: 1, limit: 100 }));
+    }
+  }, [dispatch, page, limit, isAdmin]);
 
   const initialValues = {
     name: productData?.name || "",
     product_category_id: productData?.product_category_id || "",
+    cinema_id: productData?.cinema_id || (isAdmin ? "" : userCinemaId || ""),
     price: productData?.price || "",
     product_image: "",
     description: productData?.description || "",
   };
+
+  console.log("cinemas", allCinemas);
+  const cinemas = [...(allCinemas || [])]
+    ?.sort((a: any, b: any) => a.name.localeCompare(b.name))
+    ?.map((cinema: { cinema_id: string; name: string }) => ({
+      label: cinema.name,
+      value: cinema.cinema_id,
+    }));
+  console.log("all cinemas", cinemas);
 
   async function handleSubmit(
     values: any,
@@ -139,6 +159,26 @@ const AddProductForm = ({
                 required
               />
             </div>
+
+            {/* Cinema Selection - Only for Admin */}
+            {isAdmin && (
+              <div className="grid grid-cols-1 gap-4">
+                <ReusableSelect
+                  label="Cinema Location"
+                  name="cinema_id"
+                  value={values.cinema_id}
+                  onChange={(value) => setFieldValue("cinema_id", value)}
+                  options={cinemas}
+                  defaultOption="Select cinema"
+                  error={
+                    touched.cinema_id && typeof errors.cinema_id === "string"
+                      ? errors.cinema_id
+                      : undefined
+                  }
+                  required
+                />
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <Input

@@ -106,7 +106,6 @@ function CinemaSetup() {
 
   useEffect(() => {
     dispatch(getAllCinemas({ page: currentPage, limit: pageSize }));
-    // REMOVED: dispatch(getAllScreen({ screensPage, screensLimit }));
   }, [dispatch, currentPage, pageSize]);
 
   const handlePageChange = (page: number, pageSize: number) => {

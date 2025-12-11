@@ -8,7 +8,7 @@ const initialState: any = {
   cinemaLoading: false,
   cinemaError: null,
   createCinema: {},
-  allCinemas: {},
+  allCinemas: [],
   deleteCinema: {},
 };
 
@@ -45,7 +45,6 @@ export const getAllCinemas = createAsyncThunk(
   ) => {
     try {
       const response = await Cinema.allCinemas(page, limit);
-      console.log("response is", response);
       return {
         data: response.data.data.cinemas,
         page,

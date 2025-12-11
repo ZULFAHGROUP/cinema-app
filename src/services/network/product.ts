@@ -3,8 +3,11 @@ import urls from "../../constants/urls";
 import Axios from "../httpClient";
 
 const Product = {
-  allProducts: (page: number, limit: number) => {
-    return Axios.get(`${urls.product}?page=${page}&limit=${limit}`);
+  allProducts: (page: number, limit: number, cinema_id?: string) => {
+    const url = cinema_id
+      ? `${urls.product}?page=${page}&limit=${limit}&cinema_id=${cinema_id}`
+      : `${urls.product}?page=${page}&limit=${limit}`;
+    return Axios.get(url);
   },
 
   createProduct: (data: any) => {

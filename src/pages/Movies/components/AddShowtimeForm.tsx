@@ -3,9 +3,10 @@ import { Formik, Form, FieldArray } from "formik";
 import Button from "../../../components/shared/Button";
 import ReusableSelect from "../../../components/shared/Select";
 import Input from "../../../components/shared/Input";
-import { useAppDispatch } from "../../../store/hook";
+import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { createShowtime, updateShowtime } from "../../../store/slices/showtime";
 import { toast } from "react-toastify";
+import { getAllScreen } from "../../../store/slices/screen";
 
 // Generate slots every 30 minutes
 function generateHalfHourSlots() {
@@ -101,6 +102,9 @@ export default function AddShowtimeForm({
   showTimeData,
 }: AddShowTimeProps) {
   const dispatch = useAppDispatch();
+  const { screensPage, screensLimit, screensByCinema } = useAppSelector(
+    (state) => state.screen
+  );
 
   const movieOptions = movies?.map((m) => ({
     label: m.title,
@@ -112,6 +116,13 @@ export default function AddShowtimeForm({
     label: c.name,
     value: c.cinema_id,
   }));
+
+  const allScreens = [...(screensByCinema || [])]
+    .sort((a: any, b: any) => a.name.localeCompare(b.name))
+    .map((screens: { name: string; screen_type_id: string }) => ({
+      label: screens.name,
+      value: screens.screen_type_id,
+    }));
 
   const initialValues = {
     movie_id: "",
@@ -137,6 +148,19 @@ export default function AddShowtimeForm({
     }
   }
 
+  const getCinemaScreens = (cinemaId: string) => {
+    return screensByCinema[cinemaId] || [];
+  };
+
+  //this most run when screens becomes available
+  // dispatch(
+  //         getAllScreen({
+  //           screensPage: 1,
+  //           screensLimit: 100,
+  //           cinema_id: cinemaId,
+  //         })
+  //       );
+
   return (
     <Formik
       initialValues={initialValues}
@@ -158,6 +182,7 @@ export default function AddShowtimeForm({
         const duration = selectedMovie?.duration || 0;
 
         const allSlots = generateHalfHourSlots();
+        const cinemaScreens = getCinemaScreens(theater?.cinema_id);
 
         return (
           <Form className="space-y-6 h-full">

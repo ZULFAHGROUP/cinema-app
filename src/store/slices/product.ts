@@ -4,13 +4,13 @@ import { ApiResponse } from "../../@types/common";
 import Product from "../../services/network/product";
 
 export const getAllProducts = createAsyncThunk(
-  "productCategory/getAll",
+  "product/getAll",
   async (
-    { page = 1, limit = 10 }: { page?: number; limit?: number },
+    { page = 1, limit = 10, cinema_id }: { page?: number; limit?: number; cinema_id?: string },
     { rejectWithValue }
   ) => {
     try {
-      const response = await Product.allProducts(page, limit);
+      const response = await Product.allProducts(page, limit, cinema_id);
       return {
         data: response.data.data.products,
         page,
