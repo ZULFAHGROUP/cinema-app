@@ -1,4 +1,4 @@
-import * as d3 from "d3-format";
+// import * as d3 from "d3-format";
 import moment from "moment";
 import classNames, { Argument } from "classnames";
 import { twMerge } from "tailwind-merge";
@@ -6,13 +6,6 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: Argument[]) {
   return twMerge(classNames(inputs));
 }
-
-// Format currency function
-export const formatCurrency = (amount: number = 0): string => {
-  const formattedAmount: string = d3.format(",.2f")(amount);
-  const splitAmount: string[] = formattedAmount.split(".");
-  return parseInt(splitAmount[1]) ? formattedAmount : splitAmount[0];
-};
 
 // Format Currenct Function to NGN
 export const formatCurrencyToNGN = (
@@ -131,4 +124,28 @@ export const humanDateAndTime = (value: string | number | Date): string => {
   hours = hours % 12 || 12; // 0 becomes 12
 
   return `${month} ${day}, ${year} at ${hours}:${minutes} ${ampm}`;
+};
+
+export const getHumanTime = (time: string): string => {
+  if (!time) return "";
+
+  const [hourStr, minuteStr] = time.split(":");
+  let hours = parseInt(hourStr, 10);
+  const minutes = parseInt(minuteStr, 10);
+
+  const ampm = hours >= 12 ? "PM" : "AM";
+
+  // Convert 24h -> 12h
+  hours = hours % 12 || 12;
+
+  const mm = String(minutes).padStart(2, "0");
+
+  return `${hours}:${mm} ${ampm}`;
+};
+
+export const formatCurrency = (amount: number, currency = "NGN") => {
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency,
+  }).format(amount);
 };

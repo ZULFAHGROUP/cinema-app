@@ -3,6 +3,7 @@ import { Card, CardContent } from "../../../components/shared/Cards";
 import Button from "../../../components/shared/Button";
 import { Edit, Trash2, Users } from "lucide-react";
 import Loader from "../../../components/shared/Loader";
+import { getHumanDate, getHumanTime } from "../../../utils";
 
 const Showtimes = ({ showtimes, loading }: any) => {
   return (
@@ -10,9 +11,10 @@ const Showtimes = ({ showtimes, loading }: any) => {
       {loading ? (
         <Loader />
       ) : (
-        showtimes.map((showtime: any) => (
-          <Card key={showtime.showtime_id}>
-            <CardContent className="p-6">
+        <div className="grid grid-cols-2 gap-4">
+          {showtimes.map((showtime: any) => (
+            <Card key={showtime.showtime_id}>
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <h3 className="font-sans font-semibold text-lg">
@@ -20,13 +22,13 @@ const Showtimes = ({ showtimes, loading }: any) => {
                   </h3>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="font-serif">
-                      {showtime.screen.cinema_id} • {showtime.screen.name}
-                    </span>
-                    <span className="font-serif">
-                      {showtime.date} at {showtime.time}
-                    </span>
-                    <span className="font-serif">${showtime.price}</span>
-                  </div>
+                      {showtime.screen.cinema.name} • {showtime.screen.name}
+                    </span></div>
+                    <p className="font-serif">
+                      {getHumanDate(showtime.show_date)} at {getHumanTime(showtime.show_time)}
+                    </p>
+                    {/* <span className="font-serif">{formatCurrency(showtime.price)}</span> */}
+                  
                 </div>
                 <div className="text-right">
                   <div className="flex items-center gap-2 mb-2">
@@ -54,7 +56,10 @@ const Showtimes = ({ showtimes, loading }: any) => {
               </div>
             </CardContent>
           </Card>
-        ))
+          
+        ))}
+        </div>
+        
       )}
     </div>
   );
