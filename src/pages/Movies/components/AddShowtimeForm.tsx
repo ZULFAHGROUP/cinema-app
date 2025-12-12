@@ -9,84 +9,7 @@ import { toast } from "react-toastify";
 import { getAllScreen } from "../../../store/slices/screen";
 import { useEffect } from "react";
 import { getAllShowtimeStatuses } from "../../../store/slices/showtimeStatus";
-
-// Generate slots every 30 minutes
-function generateHalfHourSlots() {
-  const result: string[] = [];
-  for (let h = 0; h < 24; h++) {
-    result.push(`${String(h).padStart(2, "0")}:00`);
-    result.push(`${String(h).padStart(2, "0")}:30`);
-  }
-  return result;
-}
-
-// Convert time string to minutes
-function timeToMinutes(time: string): number {
-  const [h, m] = time.split(":").map(Number);
-  return h * 60 + m;
-}
-
-// Convert minutes back to time string
-function minutesToTime(minutes: number): string {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
-// Get disabled time slots based on selected times and movie duration
-function getDisabledTimeSlots(
-  selectedTimes: string[],
-  duration: number
-): string[] {
-  const disabled = new Set<string>();
-  const allSlots = generateHalfHourSlots();
-
-  selectedTimes.forEach((startTime) => {
-    const startMinutes = timeToMinutes(startTime);
-    const endMinutes = startMinutes + duration;
-
-    // Disable all slots from start time until end time (exclusive of end)
-    allSlots.forEach((slot) => {
-      const slotMinutes = timeToMinutes(slot);
-
-      // If slot falls within the movie runtime (including the start time)
-      if (slotMinutes >= startMinutes && slotMinutes < endMinutes) {
-        disabled.add(slot);
-      }
-    });
-  });
-
-  return Array.from(disabled);
-}
-
-// Check if a time slot can be selected without overlapping
-function isTimeSlotAvailable(
-  time: string,
-  selectedTimes: string[],
-  duration: number
-): boolean {
-  const newStartMinutes = timeToMinutes(time);
-  const newEndMinutes = newStartMinutes + duration;
-
-  // Check against all already selected times
-  for (const selectedTime of selectedTimes) {
-    const selectedStartMinutes = timeToMinutes(selectedTime);
-    const selectedEndMinutes = selectedStartMinutes + duration;
-
-    // Check for overlap
-    // New movie starts during existing movie OR existing movie starts during new movie
-    if (
-      (newStartMinutes >= selectedStartMinutes &&
-        newStartMinutes < selectedEndMinutes) ||
-      (selectedStartMinutes >= newStartMinutes &&
-        selectedStartMinutes < newEndMinutes)
-    ) {
-      return false;
-    }
-  }
-
-  return true;
-}
+import { generateHalfHourSlots, getDisabledTimeSlots, isTimeSlotAvailable, minutesToTime, timeToMinutes } from "../../../utils/showtimeform";
 
 interface AddShowTimeProps {
   movies: any[];
@@ -131,7 +54,7 @@ export default function AddShowtimeForm({
     cinema_id: "",
     screen_id: "",
     showtime_status_id: "",
-    showtimes: [],
+    schedules: [],
   };
 
   const { user } = useAppSelector((state) => state.accounts.data);
@@ -273,11 +196,11 @@ export default function AddShowtimeForm({
             )}
 
             {/* SHOWTIMES */}
-            <FieldArray name="showtimes">
+            <FieldArray name="schedules">
               {({ push, remove }) => (
                 <div className="h-60 overflow-y-scroll space-y-4">
                   <div className="flex justify-between items-center">
-                    <p className="font-medium font-sans">Showtimes</p>
+                    <p className="font-medium font-sans">Schedules</p>
                     <Button
                       type="button"
                       title="Add Date"
@@ -287,13 +210,13 @@ export default function AddShowtimeForm({
                     />
                   </div>
 
-                  {values.showtimes.length === 0 && (
+                  {values.schedules.length === 0 && (
                     <div className="text-center py-8 text-muted-foreground font-serif">
                       No showtimes added yet. Click "Add Date" to get started.
                     </div>
                   )}
 
-                  {values.showtimes.map((item: any, index: number) => {
+                  {values.schedules.map((item: any, index: number) => {
                     const disabledTimes = duration
                       ? getDisabledTimeSlots(item.times || [], duration)
                       : [];
@@ -306,17 +229,17 @@ export default function AddShowtimeForm({
                         {/* Date */}
                         <Input
                           label="Date"
-                          name={`showtimes[${index}].date`}
+                          name={`schedules[${index}].date`}
                           type="date"
                           value={item.date}
                           onChange={handleChange}
                           onBlur={handleBlur}
                           error={
-                            touched.showtimes?.[index] &&
-                            errors.showtimes?.[index] &&
-                            typeof errors.showtimes[index] === "object" &&
-                            "date" in errors.showtimes[index]
-                              ? (errors.showtimes[index] as any).date
+                            touched.schedules?.[index] &&
+                            errors.schedules?.[index] &&
+                            typeof errors.schedules[index] === "object" &&
+                            "date" in errors.schedules[index]
+                              ? (errors.schedules[index] as any).date
                               : undefined
                           }
                           required
@@ -328,7 +251,7 @@ export default function AddShowtimeForm({
                           <ReusableSelect
                             mode="multiple"
                             label="Times"
-                            name={`showtimes[${index}].times`}
+                            name={`schedules[${index}].times`}
                             options={allSlots.map((t) => {
                               const isSelected = (item.times || []).includes(t);
                               const isDisabled =
@@ -369,13 +292,13 @@ export default function AddShowtimeForm({
 
                                 // New time is valid, update
                                 setFieldValue(
-                                  `showtimes[${index}].times`,
+                                  `schedules[${index}].times`,
                                   vals
                                 );
                               } else {
                                 // Removing a time - always allow
                                 setFieldValue(
-                                  `showtimes[${index}].times`,
+                                  `schedules[${index}].times`,
                                   vals
                                 );
                               }

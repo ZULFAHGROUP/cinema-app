@@ -26,14 +26,13 @@ function ConcessionsPage() {
   const [activeTab, setActiveTab] = useState("inventory");
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
   const [isPOSMode, setIsPOSMode] = useState(false);
-  const [selectedCinemaId, setSelectedCinemaId] = useState<string>("");
+  const [selectedCinemaId] = useState<string>(""); //setSelectedCinemaId
 
   const dispatch = useAppDispatch();
   const { products, productPage, productLimit } = useAppSelector(
     (state) => state.product
   );
   const { user } = useAppSelector((state) => state.accounts.data);
-  // const { allCinemas } = useAppSelector((state) => state.cinema);
 
   // Determine if user is admin
   const isAdmin = user?.role?.name?.toLowerCase() === "admin";

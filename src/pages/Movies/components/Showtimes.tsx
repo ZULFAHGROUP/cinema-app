@@ -2,12 +2,13 @@
 import { Card, CardContent } from "../../../components/shared/Cards";
 import Button from "../../../components/shared/Button";
 import { Edit, Trash2, Users } from "lucide-react";
+import Loader from "../../../components/shared/Loader";
 
 const Showtimes = ({ showtimes, loading }: any) => {
   return (
     <div className="space-y-4">
       {loading ? (
-        <p>Loading...</p>
+        <Loader />
       ) : (
         showtimes.map((showtime: any) => (
           <Card key={showtime.showtime_id}>
