@@ -4,9 +4,11 @@ import Button from "../../../components/shared/Button";
 import ReusableSelect from "../../../components/shared/Select";
 import Input from "../../../components/shared/Input";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
-import { createShowtime, updateShowtime } from "../../../store/slices/showtime";
+import { createShowtime, updateShowtime, getAllShowtimes } from "../../../store/slices/showtime";
 import { toast } from "react-toastify";
 import { getAllScreen } from "../../../store/slices/screen";
+import { useEffect } from "react";
+import { getAllShowtimeStatuses } from "../../../store/slices/showtimeStatus";
 
 // Generate slots every 30 minutes
 function generateHalfHourSlots() {
@@ -105,6 +107,13 @@ export default function AddShowtimeForm({
   const { screensPage, screensLimit, screensByCinema } = useAppSelector(
     (state) => state.screen
   );
+  const { statuses, page, limit } = useAppSelector(
+    (state) => state.showtimeStatus
+  );
+
+  useEffect(() => {
+    dispatch(getAllShowtimeStatuses({ page, limit }));
+  }, [dispatch, page, limit]);
 
   const movieOptions = movies?.map((m) => ({
     label: m.title,
@@ -117,18 +126,17 @@ export default function AddShowtimeForm({
     value: c.cinema_id,
   }));
 
-  const allScreens = [...(screensByCinema || [])]
-    .sort((a: any, b: any) => a.name.localeCompare(b.name))
-    .map((screens: { name: string; screen_type_id: string }) => ({
-      label: screens.name,
-      value: screens.screen_type_id,
-    }));
-
   const initialValues = {
     movie_id: "",
     cinema_id: "",
+    screen_id: "",
+    showtime_status_id: "",
     showtimes: [],
   };
+
+  const { user } = useAppSelector((state) => state.accounts.data);
+  const userCinemaId = user?.cinema_id;
+  const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "superadmin";
 
   async function handleSubmit(values: any, { resetForm }: any) {
     try {
@@ -140,6 +148,17 @@ export default function AddShowtimeForm({
 
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message);
+        
+        // Refresh showtime list with proper cinema_id filtering
+        const cinemaIdToUse = isAdmin ? values.cinema_id : userCinemaId;
+        await dispatch(
+          getAllShowtimes({
+            page: 1,
+            limit: 10,
+            cinema_id: cinemaIdToUse || undefined
+          })
+        );
+        
         resetForm();
         onCancel();
       }
@@ -151,15 +170,6 @@ export default function AddShowtimeForm({
   const getCinemaScreens = (cinemaId: string) => {
     return screensByCinema[cinemaId] || [];
   };
-
-  //this most run when screens becomes available
-  // dispatch(
-  //         getAllScreen({
-  //           screensPage: 1,
-  //           screensLimit: 100,
-  //           cinema_id: cinemaId,
-  //         })
-  //       );
 
   return (
     <Formik
@@ -182,8 +192,8 @@ export default function AddShowtimeForm({
         const duration = selectedMovie?.duration || 0;
 
         const allSlots = generateHalfHourSlots();
-        const cinemaScreens = getCinemaScreens(theater?.cinema_id);
-
+        const cinemaScreens = getCinemaScreens(values?.cinema_id);
+        console.log("cinema screens are", cinemaScreens);
         return (
           <Form className="space-y-6 h-full">
             {/* Movie & Cinema */}
@@ -202,9 +212,51 @@ export default function AddShowtimeForm({
                 label="Cinema"
                 name="cinema_id"
                 value={values.cinema_id}
-                onChange={(val) => setFieldValue("cinema_id", val)}
+                onChange={(cinemaId: string | number) => {
+                  setFieldValue("cinema_id", cinemaId);
+
+                  dispatch(
+                    getAllScreen({
+                      screensPage,
+                      screensLimit,
+                      cinema_id: cinemaId,
+                    })
+                  );
+                }}
+                // onChange={(val) => setFieldValue("cinema_id", val)}
                 options={cinemaOptions}
-                defaultOption="Select cinema"
+                defaultOption="Select screen"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <ReusableSelect
+                label="Screen"
+                name="screen_id"
+                value={values.screen_id}
+                onChange={(val) => setFieldValue("screen_id", val)}
+                options={
+                  cinemaScreens?.map((screen: any) => ({
+                    label: screen.name,
+                    value: screen.screen_id,
+                  })) || []
+                }
+                defaultOption="Select screen"
+                required
+              />
+              <ReusableSelect
+                label="Showtime Status"
+                name="showtime_status_id"
+                value={values.showtime_status_id}
+                onChange={(val) => setFieldValue("showtime_status_id", val)}
+                options={
+                  statuses?.map((screen: any) => ({
+                    label: screen.name,
+                    value: screen.showtime_status_id,
+                  })) || []
+                }
+                defaultOption="Select showtime status"
                 required
               />
             </div>

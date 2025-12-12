@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { ApiResponse } from "../../@types/common";
-import ShowTime from "../../services/network/showtime";
+import PriceRule from "../../services/network/priceRule";
 
-export const getAllShowtimes = createAsyncThunk(
-  "showtime/getAll",
+export const getAllPriceRules = createAsyncThunk(
+  "priceRule/getAll",
   async (
     { page = 1, limit = 10, cinema_id }: { page?: number; limit?: number; cinema_id?: string },
     { rejectWithValue }
   ) => {
     try {
-      const response = await ShowTime.allShowtimes(page, limit, cinema_id);
+      const response = await PriceRule.allPriceRules(page, limit, cinema_id);
       return {
-        data: response.data.data.showtimes,
+        data: response.data.data.priceRules,
         page,
         limit,
         total: response.data.data.pagination.total,
@@ -23,11 +23,11 @@ export const getAllShowtimes = createAsyncThunk(
   }
 );
 
-export const createShowtime = createAsyncThunk(
-  "showtime/create",
+export const createPriceRule = createAsyncThunk(
+  "priceRule/create",
   async (payload: any, { rejectWithValue }): Promise<ApiResponse> => {
     try {
-      const response = await ShowTime.createShowtime(payload);
+      const response = await PriceRule.createPriceRule(payload);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
@@ -37,14 +37,14 @@ export const createShowtime = createAsyncThunk(
   }
 );
 
-export const updateShowtime = createAsyncThunk(
-  "showtime/update",
+export const updatePriceRule = createAsyncThunk(
+  "priceRule/update",
   async (
     { id, data: payload }: { id: string; data: any },
     { rejectWithValue }
   ): Promise<ApiResponse> => {
     try {
-      const response = await ShowTime.updateShowtime(id, payload);
+      const response = await PriceRule.updatePriceRule(id, payload);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
@@ -54,11 +54,11 @@ export const updateShowtime = createAsyncThunk(
   }
 );
 
-export const deleteShowtime = createAsyncThunk(
-  "showtime/delete",
+export const deletePriceRule = createAsyncThunk(
+  "priceRule/delete",
   async (id: string, { rejectWithValue }): Promise<ApiResponse> => {
     try {
-      const response = await ShowTime.deleteShowtime(id);
+      const response = await PriceRule.deletePriceRule(id);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
@@ -68,11 +68,11 @@ export const deleteShowtime = createAsyncThunk(
   }
 );
 
-const showtimeSlice = createSlice({
-  name: "showtime",
+const priceRuleSlice = createSlice({
+  name: "priceRule",
   initialState: {
-    showtimes: [],
-    showtimeLoading: false,
+    priceRules: [],
+    loading: false,
     error: null,
     page: 1,
     limit: 10,
@@ -81,32 +81,32 @@ const showtimeSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(getAllShowtimes.pending, (state) => {
-        state.showtimeLoading = true;
+      .addCase(getAllPriceRules.pending, (state) => {
+        state.loading = true;
       })
-      .addCase(getAllShowtimes.fulfilled, (state, action) => {
-        state.showtimeLoading = false;
-        state.showtimes = action.payload.data || [];
+      .addCase(getAllPriceRules.fulfilled, (state, action) => {
+        state.loading = false;
+        state.priceRules = action.payload.data || [];
         state.page = action.payload.page;
         state.limit = action.payload.limit;
         state.total = action.payload.total;
       })
-      .addCase(getAllShowtimes.rejected, (state) => {
-        state.showtimeLoading = false;
+      .addCase(getAllPriceRules.rejected, (state) => {
+        state.loading = false;
       })
-      .addCase(createShowtime.pending, (state) => {
-        state.showtimeLoading = true;
+      .addCase(createPriceRule.pending, (state) => {
+        state.loading = true;
       })
-      .addCase(createShowtime.fulfilled, (state) => {
-        state.showtimeLoading = false;
+      .addCase(createPriceRule.fulfilled, (state) => {
+        state.loading = false;
       })
-      .addCase(updateShowtime.fulfilled, (state) => {
-        state.showtimeLoading = false;
+      .addCase(updatePriceRule.fulfilled, (state) => {
+        state.loading = false;
       })
-      .addCase(deleteShowtime.fulfilled, (state) => {
-        state.showtimeLoading = false;
+      .addCase(deletePriceRule.fulfilled, (state) => {
+        state.loading = false;
       });
   },
 });
 
-export default showtimeSlice.reducer;
+export default priceRuleSlice.reducer;

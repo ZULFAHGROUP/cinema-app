@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { Tabs } from "antd";
 import Button from "../../components/shared/Button";
@@ -7,18 +8,19 @@ import Showtimes from "./components/Showtimes";
 import AddMovieForm from "./components/AddMovieForm";
 import AddShowtimeForm from "./components/AddShowtimeForm";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
+import ReusableSelect from "../../components/shared/Select";
 import { getAllClassifications } from "../../store/slices/classification";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
-// import { getAllMovies } from "../../store/slices/movie";
 import { getAllShowtimes } from "../../store/slices/showtime";
 import { getAllCinemas } from "../../store/slices/cinema";
-// import { getAllScreen } from "../../store/slices/screen";
 import { getAllShowtimeStatuses } from "../../store/slices/showtimeStatus";
 
 function MoviesPage() {
   const [activeTab, setActiveTab] = useState("movies");
   const [isAddMovieModalOpen, setIsAddMovieModalOpen] = useState(false);
   const [isAddShowtimeModalOpen, setIsAddShowtimeModalOpen] = useState(false);
+  const [selectedCinemaId, setSelectedCinemaId] = useState<string>("");
+
   const { limit: classificationLimit, page: classificationPage } =
     useAppSelector((state) => state.classification);
   const { limit: showtimeLimit, page: showtimePage } = useAppSelector(
@@ -30,24 +32,42 @@ function MoviesPage() {
   const { limit: cinemaLimit, page: cinemaPage } = useAppSelector(
     (state) => state.cinema
   );
-  // const { screensLimit, screensPage } = useAppSelector((state) => state.screen);
+  const { user } = useAppSelector((state) => state.accounts.data);
+  const userCinemaId = user?.cinema_id;
+  const isAdmin =
+    user?.role?.toLowerCase() === "admin" ||
+    user?.role?.toLowerCase() === "superadmin";
 
   const dispatch = useAppDispatch();
   useEffect(() => {
-    // dispatch(getAllMovies());
     dispatch(
       getAllClassifications({
         limit: classificationLimit,
         page: classificationPage,
       })
     );
-    dispatch(
-      getAllShowtimes({ limit: showtimeLimit, page: showtimePage })
-    ).unwrap();
     dispatch(getAllShowtimeStatuses({ page: statusPage, limit: statusLimit }));
     dispatch(getAllCinemas({ page: cinemaPage, limit: cinemaLimit }));
-    // dispatch(getAllScreen({screensLimit,screensPage})).unwrap();
   }, [dispatch]);
+
+  useEffect(() => {
+    const cinemaIdToUse = isAdmin ? selectedCinemaId : userCinemaId;
+    dispatch(
+      getAllShowtimes({
+        limit: showtimeLimit,
+        page: showtimePage,
+        cinema_id: cinemaIdToUse || undefined,
+      })
+    ).unwrap();
+  }, [
+    dispatch,
+    selectedCinemaId,
+    userCinemaId,
+    isAdmin,
+    showtimeLimit,
+    showtimePage,
+  ]);
+
   const { movies, moviesLoading } = useAppSelector((state) => state.movie);
   const { showtimes, showtimeLoading } = useAppSelector(
     (state) => state.showtime
@@ -89,7 +109,24 @@ function MoviesPage() {
             className="movies-tabs"
           />
         </div>
-        <div className="flex gap-2 ml-4">
+        <div className="flex gap-2 ml-4 items-center">
+          {/* Cinema Selector for Admin on Showtimes Tab */}
+          {activeTab === "showtimes" && isAdmin && (
+            <div className="w-64">
+              <ReusableSelect
+                name="cinema_filter"
+                value={selectedCinemaId}
+                onChange={(value) => setSelectedCinemaId(value as string)}
+                options={allCinemas?.map((cinema: any) => ({
+                  label: cinema.name,
+                  value: cinema.cinema_id,
+                }))}
+                defaultOption="All Cinemas"
+                className="w-full"
+              />
+            </div>
+          )}
+
           {activeTab === "movies" && (
             <Button
               onClick={() => setIsAddMovieModalOpen(true)}

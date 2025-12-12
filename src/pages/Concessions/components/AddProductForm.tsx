@@ -12,7 +12,7 @@ import {
 } from "../../../store/slices/product";
 import { getAllProductCategories } from "../../../store/slices/productCat";
 import { getAllCinemas } from "../../../store/slices/cinema";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { productSchema } from "../../../validations";
 
 interface AddProductFormProps {
@@ -33,6 +33,7 @@ const AddProductForm = ({
   const { productPage, productLimit } = useAppSelector(
     (state) => state.product
   );
+  const [selectedCinema, setSelectedCinema] = useState<any>(null);
   const { allCinemas } = useAppSelector((state) => state.cinema);
   const { user } = useAppSelector((state) => state.accounts.data);
 
@@ -56,14 +57,12 @@ const AddProductForm = ({
     description: productData?.description || "",
   };
 
-  console.log("cinemas", allCinemas);
   const cinemas = [...(allCinemas || [])]
     ?.sort((a: any, b: any) => a.name.localeCompare(b.name))
     ?.map((cinema: { cinema_id: string; name: string }) => ({
       label: cinema.name,
       value: cinema.cinema_id,
     }));
-  console.log("all cinemas", cinemas);
 
   async function handleSubmit(
     values: any,
@@ -92,7 +91,7 @@ const AddProductForm = ({
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message);
         await dispatch(
-          getAllProducts({ page: productPage, limit: productLimit })
+          getAllProducts({ page: productPage, limit: productLimit,cinema_id:selectedCinema })
         );
         resetForm();
         onCancel();
@@ -167,7 +166,7 @@ const AddProductForm = ({
                   label="Cinema Location"
                   name="cinema_id"
                   value={values.cinema_id}
-                  onChange={(value) => setFieldValue("cinema_id", value)}
+                  onChange={(value) => {setFieldValue("cinema_id", value), setSelectedCinema(value)}}
                   options={cinemas}
                   defaultOption="Select cinema"
                   error={
@@ -236,7 +235,7 @@ const AddProductForm = ({
               />
               {touched.description && errors.description && (
                 <p className="text-sm text-red-500 italic mt-1">
-                  {errors.description === "string"
+                  {typeof errors.description === "string"
                     ? errors.description
                     : undefined}
                 </p>

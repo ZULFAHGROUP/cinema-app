@@ -131,3 +131,60 @@ export const productSchema = Yup.object({
   product_image: Yup.string().required("Product image is required"),
   description: Yup.string(),
 });
+
+export const priceRuleSchema = Yup.object({
+  name: Yup.string()
+    .required("Price rule name is required")
+    .min(2, "Name must be at least 2 characters"),
+  price: Yup.number()
+    .required("Price is required")
+    .min(0.01, "Price must be greater than 0"),
+  screen_type_id: Yup.string().required("Screen type is required"),
+  movie_id: Yup.string().required("Movie is required"),
+  priority: Yup.number()
+    .required("Priority is required")
+    .min(1, "Priority must be at least 1"),
+  day_of_week: Yup.array()
+    .of(Yup.number().min(0).max(6))
+    .min(1, "At least one day must be selected")
+    .required("Days of week are required"),
+  start_time: Yup.string()
+    .required("Start time is required")
+    .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, "Invalid time format (HH:MM:SS)"),
+  end_time: Yup.string()
+    .required("End time is required")
+    .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, "Invalid time format (HH:MM:SS)"),
+  cinema_id: Yup.string(), // Optional - admins can leave empty for general rules
+});
+
+// Inventory operation schemas
+export const inventoryOperationSchema = Yup.object({
+  quantity: Yup.number()
+    .required("Quantity is required")
+    .min(1, "Quantity must be at least 1"),
+  reason: Yup.string()
+    .required("Reason is required")
+    .min(3, "Reason must be at least 3 characters"),
+});
+
+export const transferOutSchema = Yup.object({
+  quantity: Yup.number()
+    .required("Quantity is required")
+    .min(1, "Quantity must be at least 1"),
+  reason: Yup.string()
+    .required("Reason is required")
+    .min(3, "Reason must be at least 3 characters"),
+  destination_cinema_id: Yup.string().required("Destination cinema is required"),
+});
+
+export const transferInSchema = Yup.object({
+  quantity: Yup.number()
+    .required("Quantity is required")
+    .min(1, "Quantity must be at least 1"),
+  reason: Yup.string()
+    .required("Reason is required")
+    .min(3, "Reason must be at least 3 characters"),
+  source_cinema_id: Yup.string().required("Source cinema is required"),
+});
+
+

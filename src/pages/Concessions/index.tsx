@@ -11,7 +11,8 @@ import {
   Plus,
   Minus,
 } from "lucide-react";
-import Inventory from "./components/Inventory";
+// import Inventory from "./components/Inventory";
+import InventoryManagement from "./components/InventoryManagement";
 import Sales from "./components/Sales";
 import Suppliers from "./components/Suppliers";
 import Analytics from "./components/Analytics";
@@ -32,7 +33,7 @@ function ConcessionsPage() {
     (state) => state.product
   );
   const { user } = useAppSelector((state) => state.accounts.data);
-  const { allCinemas } = useAppSelector((state) => state.cinema);
+  // const { allCinemas } = useAppSelector((state) => state.cinema);
 
   // Determine if user is admin
   const isAdmin = user?.role?.name?.toLowerCase() === "admin";
@@ -151,7 +152,7 @@ function ConcessionsPage() {
           <Package className="w-4 h-4" /> Inventory
         </span>
       ),
-      children: <Inventory products={products} />,
+      children: <InventoryManagement />,
     },
     {
       key: "sales",
@@ -325,9 +326,7 @@ function ConcessionsPage() {
         onClose={() => setIsAddProductModalOpen(false)}
         title="Add New Product"
       >
-        <AddProductForm
-          onCancel={() => setIsAddProductModalOpen(false)}
-        />
+        <AddProductForm onCancel={() => setIsAddProductModalOpen(false)} />
       </DisplayModal>
     </div>
   );

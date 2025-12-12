@@ -21,6 +21,13 @@ const Product = {
   deleteProduct: (id: string | number) => {
     return Axios.delete(`${urls.product}/${id}`);
   },
+
+  availableProducts: (cinema_id?: string) => {
+    const url = cinema_id
+      ? `${urls.product_available}?cinema_id=${cinema_id}`
+      : urls.product_available;
+    return Axios.get(url);
+  },
 };
 
 export default Product;

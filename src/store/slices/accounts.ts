@@ -12,8 +12,8 @@ const initialState: AuthState = {
     accountDetails: {
       id: "",
       title: "",
-      lastName: "",
-      otherNames: "",
+      surname: "",
+      othername: "",
       gender: null,
       maidenName: "",
       signature: null,
@@ -28,6 +28,8 @@ const initialState: AuthState = {
       employerName: "",
       employerAddress: "",
       employerPhoneNumber: "",
+      role:'',
+      cinema_id:''
     },
     jwtToken: null,
     sessionTimedOut: false,
@@ -94,6 +96,7 @@ const accountSlice = createSlice({
     logout: (state) => {
       state.data = initialState.data;
       sessionStorage.removeItem("persist:root");
+        window.location.reload();
     },
   },
   extraReducers: (builder) => {

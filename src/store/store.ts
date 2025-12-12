@@ -28,6 +28,8 @@ const persistConfig = {
     "extras",
     "productCat",
     "product",
+    "priceRule",
+    "inventory",
   ],
 };
 

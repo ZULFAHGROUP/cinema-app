@@ -33,7 +33,11 @@ export const getAllScreen = createAsyncThunk(
       screensPage = 1,
       screensLimit = 10,
       cinema_id,
-    }: { screensPage?: number; screensLimit?: number; cinema_id: string },
+    }: {
+      screensPage?: number;
+      screensLimit?: number;
+      cinema_id: string | number;
+    },
     { rejectWithValue }
   ) => {
     try {

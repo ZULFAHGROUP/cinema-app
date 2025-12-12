@@ -12,6 +12,8 @@ import roleReducer from "./slices/roles";
 import extraReducer from "./slices/extras";
 import productCategoryReducer from './slices/productCat'
 import productReducer from './slices/product'
+import priceRuleReducer from './slices/priceRule'
+import inventoryReducer from './slices/inventory'
 
 export default combineReducers({
   accounts: accountReducer,
@@ -27,4 +29,6 @@ export default combineReducers({
   extras: extraReducer,
   productCat: productCategoryReducer,
   product: productReducer,
+  priceRule: priceRuleReducer,
+  inventory: inventoryReducer,
 });

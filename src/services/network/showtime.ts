@@ -3,8 +3,11 @@ import urls from "../../constants/urls";
 import Axios from "../httpClient";
 
 const ShowTime = {
-  allShowtimes: (page: number, limit: number) => {
-    return Axios.get(`${urls.showtime}?page=${page}&limit=${limit}`);
+  allShowtimes: (page: number, limit: number, cinema_id?: string) => {
+    const url = cinema_id
+      ? `${urls.showtime}?page=${page}&limit=${limit}&cinema_id=${cinema_id}`
+      : `${urls.showtime}?page=${page}&limit=${limit}`;
+    return Axios.get(url);
   },
 
   singleShowtime: (id: string | number) => {

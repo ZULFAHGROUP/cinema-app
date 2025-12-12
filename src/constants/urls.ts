@@ -11,6 +11,9 @@ const urls = {
   role: "/role",
   product_cat: "/product-category",
   product: "/product",
+  product_available: "/product/available",
+  inventory: "/inventory",
+  price_rule: "/price-rule",
   audit: "/audit-trail",
 };
 
