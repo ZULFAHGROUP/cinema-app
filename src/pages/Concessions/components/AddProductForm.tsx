@@ -91,7 +91,11 @@ const AddProductForm = ({
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message);
         await dispatch(
-          getAllProducts({ page: productPage, limit: productLimit,cinema_id:selectedCinema })
+          getAllProducts({
+            page: productPage,
+            limit: productLimit,
+            cinema_id: selectedCinema,
+          })
         );
         resetForm();
         onCancel();
@@ -166,7 +170,10 @@ const AddProductForm = ({
                   label="Cinema Location"
                   name="cinema_id"
                   value={values.cinema_id}
-                  onChange={(value) => {setFieldValue("cinema_id", value), setSelectedCinema(value)}}
+                  onChange={(value) => {
+                    setFieldValue("cinema_id", value);
+                    setSelectedCinema(value);
+                  }}
                   options={cinemas}
                   defaultOption="Select cinema"
                   error={
