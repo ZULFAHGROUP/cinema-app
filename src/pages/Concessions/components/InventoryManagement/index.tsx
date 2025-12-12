@@ -34,11 +34,10 @@ const InventoryManagement = () => {
   const { allCinemas } = useAppSelector((state) => state.cinema);
   const { user } = useAppSelector((state) => state.accounts.data);
 
-  const userCinemaId = user?.cinema_id;
   const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "superadmin";
 
-  // Determine active cinema: admin uses selected, others use their assigned cinema
-  const activeCinemaId = isAdmin ? selectedCinemaId : userCinemaId;
+  // Determine active cinema: admin uses selected, others don't pass (backend uses auth token)
+  const activeCinemaId = isAdmin ? selectedCinemaId : undefined;
 
   useEffect(() => {
     if (isAdmin) {
@@ -290,6 +289,7 @@ const InventoryManagement = () => {
           onCancel={() => setShowStockInModal(false)}
           inventoryId={selectedItem?.inventory_id}
           productName={selectedItem?.productName}
+          cinema_id={selectedCinemaId}
         />
       </DisplayModal>
 
@@ -305,6 +305,7 @@ const InventoryManagement = () => {
           inventoryId={selectedItem?.inventory_id}
           productName={selectedItem?.productName}
           currentStock={selectedItem?.quantity}
+          cinema_id={selectedCinemaId}
         />
       </DisplayModal>
 
@@ -319,7 +320,8 @@ const InventoryManagement = () => {
           onCancel={() => setShowCorrectionModal(false)}
           inventoryId={selectedItem?.inventory_id}
           productName={selectedItem?.productName}
-          currentStock={selectedItem?.quantity}
+          currentStock={selectedItem?.quantity}         
+           cinema_id={selectedCinemaId}
         />
       </DisplayModal>
 
@@ -347,6 +349,7 @@ const InventoryManagement = () => {
       >
         <InventoryHistoryModal
           inventoryId={selectedItem?.inventory_id}
+          cinemaId={selectedItem?.cinema_id}
           productName={selectedItem?.productName}
         />
       </DisplayModal>

@@ -18,8 +18,8 @@ const Inventory = {
     return Axios.delete(`${urls.inventory}/${id}`);
   },
 
-  getInventoryHistory: (id: string | number) => {
-    return Axios.get(`${urls.inventory}/${id}/history`);
+  getInventoryHistory: (inventoryId: string | number, cinemaId: any) => {
+    return Axios.get(`${urls.inventory}/${inventoryId}/history?cinema_id=${cinemaId}`);
   },
 
   stockIn: (id: string | number, data: { quantity: number; reason: string }) => {

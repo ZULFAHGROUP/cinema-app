@@ -56,9 +56,10 @@ export const deleteInventory = createAsyncThunk(
 
 export const getInventoryHistory = createAsyncThunk(
   "inventory/history",
-  async (id: string, { rejectWithValue }) => {
+  async (    { inventoryId, cinemaId, }: { inventoryId: any; cinemaId: any; }
+, { rejectWithValue }) => {
     try {
-      const response = await Inventory.getInventoryHistory(id);
+      const response = await Inventory.getInventoryHistory(inventoryId, cinemaId);
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
@@ -69,7 +70,7 @@ export const getInventoryHistory = createAsyncThunk(
 export const stockIn = createAsyncThunk(
   "inventory/stockIn",
   async (
-    { id, data }: { id: string; data: { quantity: number; reason: string } },
+    { id, data }: { id: string; data: any },
     { rejectWithValue }
   ): Promise<ApiResponse> => {
     try {
@@ -86,7 +87,7 @@ export const stockIn = createAsyncThunk(
 export const recordSpoilage = createAsyncThunk(
   "inventory/spoilage",
   async (
-    { id, data }: { id: string; data: { quantity: number; reason: string } },
+    { id, data }: { id: string; data: any },
     { rejectWithValue }
   ): Promise<ApiResponse> => {
     try {
@@ -103,7 +104,7 @@ export const recordSpoilage = createAsyncThunk(
 export const correctInventory = createAsyncThunk(
   "inventory/correction",
   async (
-    { id, data }: { id: string; data: { quantity: number; reason: string } },
+    { id, data }: { id: string; data: any },
     { rejectWithValue }
   ): Promise<ApiResponse> => {
     try {

@@ -11,14 +11,13 @@ interface CorrectionFormProps {
   onCancel: () => void;
   inventoryId: string;
   productName: string;
-  currentStock: number;
+  currentStock: number;cinema_id:any
 }
 
-const CorrectionForm = ({ onCancel, inventoryId, productName, currentStock }: CorrectionFormProps) => {
+const CorrectionForm = ({ onCancel, inventoryId, productName, currentStock, cinema_id }: CorrectionFormProps) => {
   const dispatch = useAppDispatch();
   const { page, limit } = useAppSelector((state) => state.inventory);
   const { user } = useAppSelector((state) => state.accounts.data);
-  const userCinemaId = user?.cinema_id;
   const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "superadmin";
 
   const initialValues = {
@@ -34,14 +33,16 @@ const CorrectionForm = ({ onCancel, inventoryId, productName, currentStock }: Co
           data: {
             quantity: Number(values.quantity),
             reason: values.reason,
+            cinema_id:cinema_id
           },
         })
       ).unwrap();
 
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message || "Inventory corrected successfully");
-        const cinemaIdToUse = isAdmin ? undefined : userCinemaId;
-        await dispatch(getAllInventories({ page, limit, cinema_id: cinemaIdToUse }));
+           isAdmin ? 
+                await dispatch(getAllInventories({ page, limit, cinema_id: cinema_id })).unwrap() :         await dispatch(getAllInventories({ page, limit })).unwrap();
+        ;
         resetForm();
         onCancel();
       }

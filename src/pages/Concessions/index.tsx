@@ -37,10 +37,9 @@ function ConcessionsPage() {
 
   // Determine if user is admin
   const isAdmin = user?.role?.name?.toLowerCase() === "admin";
-  const userCinemaId = user?.cinema_id;
 
-  // Use selected cinema for admin, or user's cinema for others
-  const activeCinemaId = isAdmin ? selectedCinemaId : userCinemaId;
+  // Use selected cinema for admin, undefined for others (backend uses auth token)
+  const activeCinemaId = isAdmin ? selectedCinemaId : undefined;
 
   useEffect(() => {
     if (activeCinemaId) {

@@ -33,7 +33,6 @@ function MoviesPage() {
     (state) => state.cinema
   );
   const { user } = useAppSelector((state) => state.accounts.data);
-  const userCinemaId = user?.cinema_id;
   const isAdmin =
     user?.role?.toLowerCase() === "admin" ||
     user?.role?.toLowerCase() === "superadmin";
@@ -51,18 +50,17 @@ function MoviesPage() {
   }, [dispatch]);
 
   useEffect(() => {
-    const cinemaIdToUse = isAdmin ? selectedCinemaId : userCinemaId;
+    const cinemaIdToUse = isAdmin ? selectedCinemaId : undefined;
     dispatch(
       getAllShowtimes({
         limit: showtimeLimit,
         page: showtimePage,
-        cinema_id: cinemaIdToUse || undefined,
+        cinema_id: cinemaIdToUse,
       })
     ).unwrap();
   }, [
     dispatch,
     selectedCinemaId,
-    userCinemaId,
     isAdmin,
     showtimeLimit,
     showtimePage,

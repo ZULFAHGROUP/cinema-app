@@ -43,8 +43,6 @@ const PriceRule = () => {
   const { screenTypes } = useAppSelector((state) => state.screenType);
   const { allCinemas } = useAppSelector((state) => state.cinema);
   const { user } = useAppSelector((state) => state.accounts.data);
-  
-  const userCinemaId = user?.cinema_id;
   const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "superadmin";
 
   useEffect(() => {
@@ -56,9 +54,9 @@ const PriceRule = () => {
   }, [dispatch, isAdmin]);
 
   useEffect(() => {
-    const cinemaIdToUse = isAdmin ? selectedCinemaId : userCinemaId;
-    dispatch(getAllPriceRules({ page, limit, cinema_id: cinemaIdToUse || undefined }));
-  }, [dispatch, page, limit, isAdmin, userCinemaId, selectedCinemaId]);
+    const cinemaIdToUse = isAdmin ? selectedCinemaId : undefined;
+    dispatch(getAllPriceRules({ page, limit, cinema_id: cinemaIdToUse }));
+  }, [dispatch, page, limit, isAdmin, selectedCinemaId]);
 
   const handleDelete = async () => {
     if (!selectedItem) return;
@@ -68,8 +66,8 @@ const PriceRule = () => {
       ).unwrap();
       if (response.code === 200) {
         toast.success(response.message);
-        const cinemaIdToUse = isAdmin ? selectedCinemaId : userCinemaId;
-        await dispatch(getAllPriceRules({ page, limit, cinema_id: cinemaIdToUse || undefined }));
+        const cinemaIdToUse = isAdmin ? selectedCinemaId : undefined;
+        await dispatch(getAllPriceRules({ page, limit, cinema_id: cinemaIdToUse }));
         setShowDeleteModal(false);
       }
     } catch (error: any) {
@@ -150,12 +148,12 @@ const PriceRule = () => {
   ];
 
   const handleTableChange = (pagination: any) => {
-    const cinemaIdToUse = isAdmin ? selectedCinemaId : userCinemaId;
+    const cinemaIdToUse = isAdmin ? selectedCinemaId : undefined;
     dispatch(
       getAllPriceRules({
         page: pagination.current,
         limit: pagination.pageSize,
-        cinema_id: cinemaIdToUse || undefined,
+        cinema_id: cinemaIdToUse,
       })
     ).unwrap();
   };

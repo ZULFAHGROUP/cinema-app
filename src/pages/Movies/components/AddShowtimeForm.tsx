@@ -135,7 +135,6 @@ export default function AddShowtimeForm({
   };
 
   const { user } = useAppSelector((state) => state.accounts.data);
-  const userCinemaId = user?.cinema_id;
   const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "superadmin";
 
   async function handleSubmit(values: any, { resetForm }: any) {
@@ -149,13 +148,13 @@ export default function AddShowtimeForm({
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message);
         
-        // Refresh showtime list with proper cinema_id filtering
-        const cinemaIdToUse = isAdmin ? values.cinema_id : userCinemaId;
+        // Refresh showtime list - only pass cinema_id for admin users
+        const cinemaIdToUse = isAdmin ? values.cinema_id : undefined;
         await dispatch(
           getAllShowtimes({
             page: 1,
             limit: 10,
-            cinema_id: cinemaIdToUse || undefined
+            cinema_id: cinemaIdToUse
           })
         );
         

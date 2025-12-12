@@ -21,11 +21,7 @@ const TransferForm = ({ onCancel, inventoryId, productName, currentStock }: Tran
   const dispatch = useAppDispatch();
   const { page, limit } = useAppSelector((state) => state.inventory);
   const { allCinemas } = useAppSelector((state) => state.cinema);
-  const { user } = useAppSelector((state) => state.accounts.data);
   const [transferType, setTransferType] = useState<"out" | "in">("out");
-  
-  const userCinemaId = user?.cinema_id;
-  const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "superadmin";
 
   useEffect(() => {
     dispatch(getAllCinemas({ page: 1, limit: 100 }));
@@ -39,7 +35,6 @@ const TransferForm = ({ onCancel, inventoryId, productName, currentStock }: Tran
   };
 
   const cinemaOptions = allCinemas
-    ?.filter((cinema: any) => cinema.cinema_id !== userCinemaId) // Exclude current cinema
     ?.map((cinema: any) => ({
       label: cinema.name,
       value: cinema.cinema_id,
@@ -75,8 +70,8 @@ const TransferForm = ({ onCancel, inventoryId, productName, currentStock }: Tran
 
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message || `Transfer ${transferType === "out" ? "out" : "in"} successful`);
-        const cinemaIdToUse = isAdmin ? undefined : userCinemaId;
-        await dispatch(getAllInventories({ page, limit, cinema_id: cinemaIdToUse }));
+        // Don't pass cinema_id for non-admin (backend gets it from auth token)
+        await dispatch(getAllInventories({ page, limit }));
         resetForm();
         onCancel();
       }

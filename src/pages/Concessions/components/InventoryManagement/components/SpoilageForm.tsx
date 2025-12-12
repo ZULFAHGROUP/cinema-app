@@ -11,14 +11,14 @@ interface SpoilageFormProps {
   onCancel: () => void;
   inventoryId: string;
   productName: string;
-  currentStock: number;
+  currentStock: number;  
+  cinema_id?:any
 }
 
-const SpoilageForm = ({ onCancel, inventoryId, productName, currentStock }: SpoilageFormProps) => {
+const SpoilageForm = ({ onCancel, inventoryId, productName, currentStock, cinema_id }: SpoilageFormProps) => {
   const dispatch = useAppDispatch();
   const { page, limit } = useAppSelector((state) => state.inventory);
   const { user } = useAppSelector((state) => state.accounts.data);
-  const userCinemaId = user?.cinema_id;
   const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "superadmin";
 
   const initialValues = {
@@ -33,16 +33,17 @@ const SpoilageForm = ({ onCancel, inventoryId, productName, currentStock }: Spoi
           id: inventoryId,
           data: {
             quantity: Number(values.quantity),
-            reason: values.reason,
+            reason: values.reason, cinema_id: cinema_id
           },
         })
       ).unwrap();
 
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message || "Spoilage recorded successfully");
-        const cinemaIdToUse = isAdmin ? undefined : userCinemaId;
-        await dispatch(getAllInventories({ page, limit, cinema_id: cinemaIdToUse }));
-        resetForm();
+        // Don't pass cinema_id for non-admin (backend gets it from auth token)
+     isAdmin ? 
+        await dispatch(getAllInventories({ page, limit, cinema_id: cinema_id })).unwrap() :         await dispatch(getAllInventories({ page, limit })).unwrap();
+;        resetForm();
         onCancel();
       }
     } catch (error: any) {

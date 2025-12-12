@@ -6,16 +6,17 @@ import Loader from "../../../../../components/shared/Loader";
 
 interface InventoryHistoryModalProps {
   inventoryId: string;
+  cinemaId?: any;
   productName: string;
 }
 
-const InventoryHistoryModal = ({ inventoryId, productName }: InventoryHistoryModalProps) => {
+const InventoryHistoryModal = ({ inventoryId, cinemaId, productName }: InventoryHistoryModalProps) => {
   const dispatch = useAppDispatch();
   const { history, loading } = useAppSelector((state) => state.inventory);
 
   useEffect(() => {
     if (inventoryId) {
-      dispatch(getInventoryHistory(inventoryId));
+      dispatch(getInventoryHistory({inventoryId, cinemaId})).unwrap();
     }
   }, [dispatch, inventoryId]);
 
@@ -58,12 +59,12 @@ const InventoryHistoryModal = ({ inventoryId, productName }: InventoryHistoryMod
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-xs px-2 py-1 rounded ${getOperationColor(item.operation_type)}`}>
-                      {formatOperationType(item.operation_type)}
+                    <span className={`text-xs px-2 py-1 rounded ${getOperationColor(item.type)}`}>
+                      {formatOperationType(item.type)}
                     </span>
                     <span className="text-sm font-semibold">
-                      {item.quantity > 0 ? "+" : ""}
-                      {item.quantity} units
+                      {/* {item.quantity_change > 0 ? "+" : ""} */}
+                      {item.quantity_change} units
                     </span>
                   </div>
                   {item.reason && (
