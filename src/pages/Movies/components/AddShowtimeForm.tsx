@@ -4,12 +4,24 @@ import Button from "../../../components/shared/Button";
 import ReusableSelect from "../../../components/shared/Select";
 import Input from "../../../components/shared/Input";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
-import { createShowtime, updateShowtime, getAllShowtimes } from "../../../store/slices/showtime";
+import {
+  createShowtime,
+  updateShowtime,
+  getAllShowtimes,
+} from "../../../store/slices/showtime";
 import { toast } from "react-toastify";
 import { getAllScreen } from "../../../store/slices/screen";
 import { useEffect } from "react";
 import { getAllShowtimeStatuses } from "../../../store/slices/showtimeStatus";
-import { generateHalfHourSlots, getDisabledTimeSlots, isTimeSlotAvailable, minutesToTime, timeToMinutes } from "../../../utils/showtimeform";
+import {
+  generateHalfHourSlots,
+  getDisabledTimeSlots,
+  isTimeSlotAvailable,
+  minutesToTime,
+  timeToMinutes,
+  getNowMinutes,
+  isToday,
+} from "../../../utils/showtimeform.utils";
 
 interface AddShowTimeProps {
   movies: any[];
@@ -58,7 +70,9 @@ export default function AddShowtimeForm({
   };
 
   const { user } = useAppSelector((state) => state.accounts.data);
-  const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "superadmin";
+  const isAdmin =
+    user?.role?.toLowerCase() === "admin" ||
+    user?.role?.toLowerCase() === "superadmin";
 
   async function handleSubmit(values: any, { resetForm }: any) {
     try {
@@ -70,22 +84,22 @@ export default function AddShowtimeForm({
 
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message);
-        
+
         // Refresh showtime list - only pass cinema_id for admin users
         const cinemaIdToUse = isAdmin ? values.cinema_id : undefined;
         await dispatch(
           getAllShowtimes({
             page: 1,
             limit: 10,
-            cinema_id: cinemaIdToUse
+            cinema_id: cinemaIdToUse,
           })
         );
-        
+
         resetForm();
         onCancel();
       }
     } catch (err: any) {
-      toast.error(err?.response?.message || "Something went wrong");
+      toast.error(err?.message || "Something went wrong");
     }
   }
 
@@ -244,6 +258,7 @@ export default function AddShowtimeForm({
                           }
                           required
                           className="w-full"
+                          restrictPastDate
                         />
 
                         {/* TIMES */}
@@ -254,12 +269,26 @@ export default function AddShowtimeForm({
                             name={`schedules[${index}].times`}
                             options={allSlots.map((t) => {
                               const isSelected = (item.times || []).includes(t);
+
+                              const slotMinutes = timeToMinutes(t);
+                              const nowMinutes = getNowMinutes();
+
+                              const pastTimeToday =
+                                isToday(item.date) && slotMinutes <= nowMinutes;
+
+                              const isOverlapDisabled =
+                                disabledTimes.includes(t);
                               const isDisabled =
-                                disabledTimes.includes(t) && !isSelected;
+                                (pastTimeToday || isOverlapDisabled) &&
+                                !isSelected;
 
                               return {
-                                label: isDisabled
-                                  ? `${t} (Unavailable - Overlaps with selected time)`
+                                label: isSelected
+                                  ? t
+                                  : pastTimeToday
+                                  ? `${t} (Unavailable - Past time)`
+                                  : isOverlapDisabled
+                                  ? `${t} (Unavailable - Overlaps)`
                                   : t,
                                 value: t,
                                 disabled: isDisabled,
@@ -269,43 +298,38 @@ export default function AddShowtimeForm({
                             onChange={(vals: any) => {
                               const currentTimes = item.times || [];
 
-                              // Determine if this is an addition or removal
                               if (vals.length > currentTimes.length) {
-                                // Adding a new time - check if it's valid
                                 const newTime = vals.find(
                                   (t: string) => !currentTimes.includes(t)
                                 );
 
                                 if (newTime) {
-                                  // Check if the new time would overlap with existing times
+                                  const slotMinutes = timeToMinutes(newTime);
+                                  const nowMinutes = getNowMinutes();
+
+                                  if (
+                                    isToday(item.date) &&
+                                    slotMinutes <= nowMinutes
+                                  ) {
+                                    return; // ❌ block past/current time
+                                  }
+
                                   const wouldOverlap = !isTimeSlotAvailable(
                                     newTime,
                                     currentTimes,
                                     duration
                                   );
 
-                                  if (wouldOverlap) {
-                                    // Don't add the time, keep current selection
-                                    return;
-                                  }
+                                  if (wouldOverlap) return;
                                 }
-
-                                // New time is valid, update
-                                setFieldValue(
-                                  `schedules[${index}].times`,
-                                  vals
-                                );
-                              } else {
-                                // Removing a time - always allow
-                                setFieldValue(
-                                  `schedules[${index}].times`,
-                                  vals
-                                );
                               }
+
+                              setFieldValue(`schedules[${index}].times`, vals);
                             }}
                             defaultOption="Select times"
                             required
                           />
+
                           {item.times?.length > 0 && duration > 0 && (
                             <div className="mt-2 p-2 bg-white rounded border text-xs font-serif">
                               <p className="font-semibold mb-1">

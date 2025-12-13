@@ -22,6 +22,7 @@ interface SelectProps {
   name?: string;
   id?: string;
   mode?: "multiple" | "tags";
+  showSearch?: boolean;
 }
 
 const ReusableSelect = ({
@@ -39,6 +40,7 @@ const ReusableSelect = ({
   error,
   conClassName = "",
   mode,
+  showSearch = true,
 }: SelectProps) => {
   return (
     <div className={`flex flex-col ${conClassName}`}>
@@ -58,6 +60,7 @@ const ReusableSelect = ({
         className={`w-full ${className}`}
         disabled={disabled}
         mode={mode}
+        showSearch={showSearch}
       >
         <Select.Option value="">{defaultOption}</Select.Option>
         {options.map((option, index) => (

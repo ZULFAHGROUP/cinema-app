@@ -17,6 +17,7 @@ import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { deleteMovie, getAllMovies } from "../../../store/slices/movie";
 import { toast } from "react-toastify";
 import ConfirmationModal from "../../../components/shared/Modal/ConfirmationModal";
+import { getHumanDate, getHumanTime } from "../../../utils";
 
 const Movies = ({ movies, loading }: any) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -154,14 +155,8 @@ const Movies = ({ movies, loading }: any) => {
                               color="blue"
                               className="text-xs"
                             >
-                              {showtime.start_time
-                                ? new Date(
-                                    showtime.start_time
-                                  ).toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })
-                                : "N/A"}
+                             {getHumanDate(showtime.show_date)} - {getHumanTime(showtime.show_time)
+                               }
                             </Tag>
                           ))}
                           {movie.showtimes.length > 3 && (

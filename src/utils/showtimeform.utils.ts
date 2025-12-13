@@ -75,3 +75,19 @@ export function isTimeSlotAvailable(
 
   return true;
 }
+
+export const getNowMinutes = () => {
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes();
+};
+
+export const isToday = (date: string) => {
+  if (!date) return false;
+  const today = new Date();
+  const selected = new Date(date);
+  return (
+    today.getFullYear() === selected.getFullYear() &&
+    today.getMonth() === selected.getMonth() &&
+    today.getDate() === selected.getDate()
+  );
+};

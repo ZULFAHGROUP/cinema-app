@@ -229,7 +229,8 @@ const Theater = ({ cinemas, loading }: any) => {
                             variant="secondary"
                             size="sm"
                             icon={<Monitor className="w-3 h-3" />}
-                            className="flex-1 gap-2 rounded-md"
+                            className="flex-1 gap-2 rounded-md text-sm"
+                            title="Add Screen"
                             onClick={() => {
                               setSelectedCinema(theater);
                               setShowAddScreenModal(true);
@@ -239,7 +240,8 @@ const Theater = ({ cinemas, loading }: any) => {
                             variant="secondary"
                             size="sm"
                             icon={<Edit className="w-3 h-3" />}
-                            className="flex-1 gap-2 rounded-md"
+                            className="flex-1 gap-2 rounded-md text-sm"
+                            title="Edit cinema"
                             onClick={() => {
                               setSelectedCinema(theater);
                               setShowEditCinemaModal(true);
@@ -248,7 +250,8 @@ const Theater = ({ cinemas, loading }: any) => {
                           <Button
                             variant="primary"
                             size="sm"
-                            className="gap-2 rounded-md"
+                            className="gap-2 rounded-md text-sm"
+                            title="Delete cinema"
                             icon={<Trash2 className="w-3 h-3" />}
                             onClick={() => {
                               setSelectedCinema(theater);
