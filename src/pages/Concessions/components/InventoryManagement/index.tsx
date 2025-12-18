@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import Button from "../../../../components/shared/Button";
-import { Package2, TrendingUp, TrendingDown, Edit2, History, ArrowLeftRight } from "lucide-react";
+import { Package2, TrendingUp, TrendingDown, Edit2, History, ArrowLeftRight, MoreVertical } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Dropdown } from "antd";
 import { useAppDispatch, useAppSelector } from "../../../../store/hook";
 import { getAllInventories, deleteInventory } from "../../../../store/slices/inventory";
 import { getAllProducts } from "../../../../store/slices/product";
@@ -134,61 +134,64 @@ const InventoryManagement = () => {
         const product = getProductDetails(record.product_id) as any;
         return (
           <div className="flex gap-1 flex-wrap">
-            <Button
-              variant="secondary"
-              size="sm"
-              icon={<TrendingUp className="w-3 h-3" />}
-              className="rounded-md"
-              title="Stock In"
-              onClick={() => {
-                setSelectedItem({ ...record, productName: product?.name });
-                setShowStockInModal(true);
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: "1",
+                    label: "Stock In",
+                    icon: <TrendingUp className="w-4 h-4" />,
+                    onClick: () => {
+                      setSelectedItem({ ...record, productName: product?.name });
+                      setShowStockInModal(true);
+                    },
+                  },
+                  {
+                    key: "2",
+                    label: "Record Spoilage",
+                    icon: <TrendingDown className="w-4 h-4" />,
+                    onClick: () => {
+                      setSelectedItem({ ...record, productName: product?.name });
+                      setShowSpoilageModal(true);
+                    },
+                  },
+                  {
+                    key: "3",
+                    label: "Correct Stock",
+                    icon: <Edit2 className="w-4 h-4" />,
+                    onClick: () => {
+                      setSelectedItem({ ...record, productName: product?.name });
+                      setShowCorrectionModal(true);
+                    },
+                  },
+                  {
+                    key: "4",
+                    label: "Transfer Stock",
+                    icon: <ArrowLeftRight className="w-4 h-4" />,
+                    onClick: () => {
+                      setSelectedItem({ ...record, productName: product?.name });
+                      setShowTransferModal(true);
+                    },
+                  },
+                  {
+                    key: "5",
+                    label: "History",
+                    icon: <History className="w-4 h-4" />,
+                    onClick: () => {
+                      setSelectedItem({ ...record, productName: product?.name });
+                      setShowHistoryModal(true);
+                    },
+                  },
+                ],
               }}
-            />
-            <Button
-              variant="primary"
-              size="sm"
-              icon={<TrendingDown className="w-3 h-3" />}
-              className="rounded-md bg-yellow-600 hover:bg-yellow-700"
-              title="Spoilage"
-              onClick={() => {
-                setSelectedItem({ ...record, productName: product?.name });
-                setShowSpoilageModal(true);
-              }}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              icon={<Edit2 className="w-3 h-3" />}
-              className="rounded-md"
-              title="Correct"
-              onClick={() => {
-                setSelectedItem({ ...record, productName: product?.name });
-                setShowCorrectionModal(true);
-              }}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              icon={<ArrowLeftRight className="w-3 h-3" />}
-              className="rounded-md"
-              title="Transfer"
-              onClick={() => {
-                setSelectedItem({ ...record, productName: product?.name });
-                setShowTransferModal(true);
-              }}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              icon={<History className="w-3 h-3" />}
-              className="rounded-md"
-              title="History"
-              onClick={() => {
-                setSelectedItem({ ...record, productName: product?.name });
-                setShowHistoryModal(true);
-              }}
-            />
+              trigger={["click"]}
+            >
+              <Button
+                size="sm"
+                className="p-0 bg-transparent w-fit shadow-none text-black!"
+                icon={<MoreVertical className="" size={18} />}
+              />
+            </Dropdown>
           </div>
         );
       },

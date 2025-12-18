@@ -29,6 +29,7 @@ interface AddShowTimeProps {
   onCancel: () => void;
   editMode?: boolean;
   showTimeData?: any;
+  preSelectedMovieId?: string;
 }
 
 export default function AddShowtimeForm({
@@ -37,6 +38,7 @@ export default function AddShowtimeForm({
   onCancel,
   editMode,
   showTimeData,
+  preSelectedMovieId,
 }: AddShowTimeProps) {
   const dispatch = useAppDispatch();
   const { screensPage, screensLimit, screensByCinema } = useAppSelector(
@@ -48,7 +50,20 @@ export default function AddShowtimeForm({
 
   useEffect(() => {
     dispatch(getAllShowtimeStatuses({ page, limit }));
+    dispatch(getAllShowtimeStatuses({ page, limit }));
   }, [dispatch, page, limit]);
+
+  useEffect(() => {
+    if (editMode && showTimeData?.screen?.cinema_id) {
+       dispatch(
+          getAllScreen({
+             screensPage,
+             screensLimit,
+             cinema_id: showTimeData.screen.cinema_id,
+          })
+       );
+    }
+  }, [editMode, showTimeData, dispatch, screensPage, screensLimit]);
 
   const movieOptions = movies?.map((m) => ({
     label: m.title,
@@ -62,11 +77,20 @@ export default function AddShowtimeForm({
   }));
 
   const initialValues = {
-    movie_id: "",
-    cinema_id: "",
-    screen_id: "",
-    showtime_status_id: "",
-    schedules: [],
+    movie_id: editMode
+      ? showTimeData?.movie_id
+      : preSelectedMovieId || "",
+    cinema_id: editMode ? showTimeData?.screen?.cinema_id : "",
+    screen_id: editMode ? showTimeData?.screen_id : "",
+    showtime_status_id: editMode ? showTimeData?.showtime_status_id : "",
+    schedules: editMode
+      ? [
+          {
+            date: showTimeData?.show_date,
+            times: [showTimeData?.show_time?.substring(0, 5)], // "HH:MM:SS" -> "HH:MM"
+          },
+        ]
+      : [],
   };
 
   const { user } = useAppSelector((state) => state.accounts.data);
@@ -142,6 +166,7 @@ export default function AddShowtimeForm({
                 options={movieOptions}
                 defaultOption="Select movie"
                 required
+                disabled={!!preSelectedMovieId || editMode}
               />
 
               <ReusableSelect
@@ -161,7 +186,7 @@ export default function AddShowtimeForm({
                 }}
                 // onChange={(val) => setFieldValue("cinema_id", val)}
                 options={cinemaOptions}
-                defaultOption="Select screen"
+                defaultOption="Select cinema"
                 required
               />
             </div>

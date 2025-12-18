@@ -7,8 +7,8 @@ import {
   CardTitle,
 } from "../../../components/shared/Cards";
 import Button from "../../../components/shared/Button";
-import { Tag, Collapse } from "antd";
-import { Edit, Trash2, Monitor, ChevronDown } from "lucide-react";
+import { Collapse, Dropdown } from "antd";
+import { Edit, Trash2, Monitor, ChevronDown, MoreVertical } from "lucide-react";
 import { deleteCinema, getAllCinemas } from "../../../store/slices/cinema";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
@@ -120,17 +120,51 @@ const Theater = ({ cinemas, loading }: any) => {
                   className="hover:shadow-md transition-shadow relative"
                 >
                   <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between!">
                       <CardTitle className="font-sans">
                         {theater?.name}
                       </CardTitle>
-                      <Tag
-                        color={
-                          theater?.status === "Active" ? "green" : "orange"
-                        }
+                       <Dropdown
+                        menu={{
+                          items: [
+                            {
+                              key: "1",
+                              label: "Add Screen",
+                              icon: <Monitor className="w-4 h-4" />,
+                              onClick: () => {
+                                setSelectedCinema(theater);
+                                setShowAddScreenModal(true);
+                              },
+                            },
+                            {
+                              key: "2",
+                              label: "Edit Cinema",
+                              icon: <Edit className="w-4 h-4" />,
+                              onClick: () => {
+                                setSelectedCinema(theater);
+                                setShowEditCinemaModal(true);
+                              },
+                            },
+                            {
+                              key: "3",
+                              label: "Delete Cinema",
+                              danger: true,
+                              icon: <Trash2 className="w-4 h-4" />,
+                              onClick: () => {
+                                setSelectedCinema(theater);
+                                setShowDeleteCinemaModal(true);
+                              },
+                            },
+                          ],
+                        }}
+                        trigger={["click"]}
                       >
-                        {theater?.status}
-                      </Tag>
+                        <Button
+                          size="sm"
+                          className="p-0 bg-transparent w-fit shadow-none text-black!"
+                          icon={<MoreVertical className="" size={20} />}
+                        />
+                      </Dropdown>
                     </div>
                     <CardDescription className="font-serif">
                       <p>{theater?.location}</p>
@@ -189,26 +223,40 @@ const Theater = ({ cinemas, loading }: any) => {
                                       </p>
                                     </div>
                                     <div className="flex gap-1">
-                                      <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        className="gap-1 rounded-md p-1 h-7"
-                                        icon={<Edit className="w-3 h-3" />}
-                                        onClick={() => {
-                                          setSelectedScreen(screen);
-                                          setShowEditScreenModal(true);
+                                      <Dropdown
+                                        menu={{
+                                          items: [
+                                            {
+                                              key: "1",
+                                              label: "Edit Screen",
+                                              icon: <Edit className="w-4 h-4" />,
+                                              onClick: () => {
+                                                setSelectedScreen(screen);
+                                                setShowEditScreenModal(true);
+                                              },
+                                            },
+                                            {
+                                              key: "2",
+                                              label: "Delete Screen",
+                                              danger: true,
+                                              icon: <Trash2 className="w-4 h-4" />,
+                                              onClick: () => {
+                                                setSelectedScreen(screen);
+                                                setShowDeleteScreenModal(true);
+                                              },
+                                            },
+                                          ],
                                         }}
-                                      />
-                                      <Button
-                                        variant="primary"
-                                        size="sm"
-                                        className="gap-1 rounded-md p-1 h-7"
-                                        icon={<Trash2 className="w-3 h-3" />}
-                                        onClick={() => {
-                                          setSelectedScreen(screen);
-                                          setShowDeleteScreenModal(true);
-                                        }}
-                                      />
+                                        trigger={["click"]}
+                                      >
+                                        <Button
+                                          size="sm"
+                          className="p-0 bg-transparent w-fit shadow-none text-black!"
+                                          icon={
+                                            <MoreVertical className="" size={18} />
+                                          }
+                                        />
+                                      </Dropdown>
                                     </div>
                                   </div>
                                 ))
@@ -220,45 +268,6 @@ const Theater = ({ cinemas, loading }: any) => {
                             </div>
                           </Panel>
                         </Collapse>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="absolute bottom-3 left-0 right-0 px-2">
-                        <div className="flex gap-2 w-full">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            icon={<Monitor className="w-3 h-3" />}
-                            className="flex-1 gap-2 rounded-md text-sm"
-                            title="Add Screen"
-                            onClick={() => {
-                              setSelectedCinema(theater);
-                              setShowAddScreenModal(true);
-                            }}
-                          />
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            icon={<Edit className="w-3 h-3" />}
-                            className="flex-1 gap-2 rounded-md text-sm"
-                            title="Edit cinema"
-                            onClick={() => {
-                              setSelectedCinema(theater);
-                              setShowEditCinemaModal(true);
-                            }}
-                          />
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            className="gap-2 rounded-md text-sm"
-                            title="Delete cinema"
-                            icon={<Trash2 className="w-3 h-3" />}
-                            onClick={() => {
-                              setSelectedCinema(theater);
-                              setShowDeleteCinemaModal(true);
-                            }}
-                          />
-                        </div>
                       </div>
                     </div>
                   </CardContent>

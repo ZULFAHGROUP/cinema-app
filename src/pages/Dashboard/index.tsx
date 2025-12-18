@@ -24,15 +24,26 @@ import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { useEffect } from "react";
 import { getAllMovies } from "../../store/slices/movie";
+import { getAllAuditTrails } from "../../store/slices/extras";
+import { formatAuditActivity  } from "../../utils";
 
 function Dashboard() {
   const dispatch = useAppDispatch();
   const { limit, page } = useAppSelector((state) => state.movie);
   useEffect(() => {
-    dispatch(getAllMovies({ page, limit }));
+    dispatch(getAllMovies({ page, limit })).unwrap();
+    dispatch(
+    getAllAuditTrails({
+      page: 1,
+      limit: 5,
+    })
+  ).unwrap();
   }, [dispatch, page, limit]);
 
   const { movies } = useAppSelector((state) => state.movie);
+const { auditTrails, auditLoading } = useAppSelector(
+  (state) => state.extras
+);
 
   const dashboardStats = [
     {
@@ -112,32 +123,9 @@ function Dashboard() {
     },
   ];
 
-  const recentActivity = [
-    {
-      action: "New movie added",
-      details: "Spider-Man: No Way Home",
-      time: "2 hours ago",
-      type: "movie",
-    },
-    {
-      action: "Staff member created",
-      details: "John Doe - Cashier",
-      time: "4 hours ago",
-      type: "staff",
-    },
-    {
-      action: "Inventory updated",
-      details: "Popcorn stock replenished",
-      time: "6 hours ago",
-      type: "inventory",
-    },
-    {
-      action: "Report generated",
-      details: "Weekly sales summary",
-      time: "1 day ago",
-      type: "report",
-    },
-  ];
+  const recentActivity =
+  auditTrails?.map(formatAuditActivity) || [];
+
 
   return (
     <div className="">

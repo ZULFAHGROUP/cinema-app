@@ -12,7 +12,6 @@ const AuditTrail = () => {
   const { auditTrails, auditLoading, page, limit, total } = useAppSelector(
     (state) => state.extras
   );
-  console.log("audit component response is", auditTrails);
   useEffect(() => {
     dispatch(getAllAuditTrails({ page, limit }));
   }, [dispatch, page, limit]);

@@ -149,3 +149,45 @@ export const formatCurrency = (amount: number, currency = "NGN") => {
     currency,
   }).format(amount);
 };
+
+export const formatAuditActivity = (audit: any) => {
+  const userName = audit.user
+    ? `${audit.user.surname} ${audit.user.other_names}`
+    : "System";
+
+  let actionText = "";
+  let detailsText = "";
+
+  switch (audit.action) {
+    case "CREATE":
+      actionText = `${userName} created a ${audit.resource}`;
+      break;
+
+    case "UPDATE":
+      actionText = `${userName} updated a ${audit.resource}`;
+      break;
+
+    case "DELETE":
+      actionText = `${userName} deleted a ${audit.resource}`;
+      break;
+
+    default:
+      actionText = `${userName} performed an action`;
+  }
+
+  // Optional: extra friendly detail using metadata
+  if (audit.metadata?.body?.name) {
+    detailsText = `Name: ${audit.metadata.body.name}`;
+  } else if (audit.metadata?.params) {
+    detailsText = `Affected ${audit.resource}`;
+  } else {
+    detailsText = `Action on ${audit.resource}`;
+  }
+
+  return {
+    action: actionText,
+    details: detailsText,
+    time: humanDateAndTime(audit.created_at),
+  };
+};
+
