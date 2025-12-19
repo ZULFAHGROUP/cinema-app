@@ -11,11 +11,12 @@ import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { getAllShowtimes } from "../../store/slices/showtime";
 import { getAllCinemas } from "../../store/slices/cinema";
 import { getAllShowtimeStatuses } from "../../store/slices/showtimeStatus";
+import ReusableSelect from "../../components/shared/Select";
 
 function MoviesPage() {
   const [isAddMovieModalOpen, setIsAddMovieModalOpen] = useState(false);
   const [isAddShowtimeModalOpen, setIsAddShowtimeModalOpen] = useState(false);
-  const [selectedCinemaId] = useState<string>("");
+  const [selectedCinemaId, setSelectedCinemaId] = useState<string>("");
   const [preSelectedMovie, setPreSelectedMovie] = useState<any>(null);
 
   const { limit: classificationLimit, page: classificationPage } =
@@ -83,6 +84,21 @@ function MoviesPage() {
            <p className="text-sm font-serif text-muted-foreground mt-1">Manage movies and showtimes</p>
         </div>
         <div className="flex gap-2 ml-4 items-center">
+             {isAdmin && (
+               <div className="w-[300px]">
+                  <ReusableSelect
+                    label=""
+                    name="cinema_id"
+                    value={selectedCinemaId}
+                    onChange={(val: any) => setSelectedCinemaId(val)}
+                    options={allCinemas?.map((cinema: any) => ({
+                      label: cinema.name,
+                      value: cinema.cinema_id,
+                    }))}
+                    defaultOption="Select a cinema to see showtimes"
+                  />
+               </div>
+             )}
             <Button
               onClick={() => setIsAddMovieModalOpen(true)}
               className="gap-2 rounded-md"

@@ -12,7 +12,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy": "vite build && cd ./dist && mv index.html 200.html && surge ./ https://cinema-app.surge.sh"
+    "deploy": "vite build && cd ./dist && mv index.html 200.html && surge ./ https://shop-co.surge.sh"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.6.1",

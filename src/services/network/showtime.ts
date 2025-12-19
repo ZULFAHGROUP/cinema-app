@@ -22,8 +22,11 @@ const ShowTime = {
     return Axios.patch(`${urls.showtime}/${id}`, data);
   },
 
-  deleteShowtime: (id: string | number) => {
-    return Axios.delete(`${urls.showtime}/${id}`);
+  deleteShowtime: (id: string | number, cinema_id?: string) => {
+    const url = cinema_id
+      ? `${urls.showtime}/${id}?cinema_id=${cinema_id}`
+      : `${urls.showtime}/${id}`;
+    return Axios.delete(url);
   },
 };
 

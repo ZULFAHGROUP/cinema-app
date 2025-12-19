@@ -15,6 +15,7 @@ const urls = {
   inventory: "/inventory",
   price_rule: "/price-rule",
   audit: "/audit-trail",
+  user: "/user",
 };
 
 export default urls;

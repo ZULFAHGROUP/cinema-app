@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs } from "antd";
 import Button from "../../components/shared/Button";
 import { Users, Shield, Settings, Plus } from "lucide-react";
@@ -9,11 +9,22 @@ import AdminSettings from "./components/AdminSettings";
 import AddStaffForm from "./components/AddStaffForm";
 import AddRoleForm from "./components/AddRoleForm";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
+import { useAppDispatch, useAppSelector } from "../../store/hook";
+import { getAllRoles } from "../../store/slices/roles";
 
 function StaffPage() {
   const [activeTab, setActiveTab] = useState("staff");
   const [isAddStaffModalOpen, setIsAddStaffModalOpen] = useState(false);
   const [isAddRoleModalOpen, setIsAddRoleModalOpen] = useState(false);
+
+  const dispatch = useAppDispatch();
+  const { roles, roleLoading, page, limit, total } = useAppSelector(
+    (state) => state.role
+  );
+
+  useEffect(() => {
+    dispatch(getAllRoles({ page, limit })).unwrap();
+  }, [dispatch, page, limit]);
 
   const [staff, setStaff] = useState([
     {
@@ -62,44 +73,6 @@ function StaffPage() {
     },
   ]);
 
-  const [roles, setRoles] = useState([
-    {
-      id: 1,
-      name: "Manager",
-      description: "Full system access and staff management",
-      permissions: ["all"],
-      level: "Admin",
-    },
-    {
-      id: 2,
-      name: "Assistant Manager",
-      description: "Limited admin access and staff supervision",
-      permissions: ["staff", "reports", "tickets", "concessions", "movies"],
-      level: "Supervisor",
-    },
-    {
-      id: 3,
-      name: "Cashier",
-      description: "Ticket sales and customer service",
-      permissions: ["tickets", "concessions", "customers"],
-      level: "Staff",
-    },
-    {
-      id: 4,
-      name: "Usher",
-      description: "Theater operations and customer assistance",
-      permissions: ["theater", "customers"],
-      level: "Staff",
-    },
-    {
-      id: 5,
-      name: "Projectionist",
-      description: "Technical operations and movie management",
-      permissions: ["technical", "movies", "theater"],
-      level: "Technical",
-    },
-  ]);
-
   const handleAddStaff = (staffData: any) => {
     const newStaff = {
       id: staff.length + 1,
@@ -115,7 +88,7 @@ function StaffPage() {
       id: roles.length + 1,
       ...roleData,
     };
-    setRoles([...roles, newRole]);
+    // setRoles([...roles, newRole]);
     setIsAddRoleModalOpen(false);
   };
 
@@ -134,7 +107,7 @@ function StaffPage() {
   };
 
   const handleDeleteRole = (roleId: number) => {
-    setRoles(roles.filter((role) => role.id !== roleId));
+    // setRoles(roles.filter((role) => role.id !== roleId));
   };
 
   const tabItems = [

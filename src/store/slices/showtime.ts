@@ -56,9 +56,12 @@ export const updateShowtime = createAsyncThunk(
 
 export const deleteShowtime = createAsyncThunk(
   "showtime/delete",
-  async (id: string, { rejectWithValue }): Promise<ApiResponse> => {
+  async (
+    { id, cinema_id }: { id: string; cinema_id?: string },
+    { rejectWithValue }
+  ): Promise<ApiResponse> => {
     try {
-      const response = await ShowTime.deleteShowtime(id);
+      const response = await ShowTime.deleteShowtime(id, cinema_id);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({

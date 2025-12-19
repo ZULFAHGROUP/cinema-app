@@ -52,14 +52,28 @@ const Movies = ({ movies, showtimes, loading, onAddShowtime, cinemas }: any) => 
   };
 
   // Handle Delete Showtime
+  const { user } = useAppSelector((state) => state.accounts.data);
+  const isAdmin =
+    user?.role?.toLowerCase() === "admin" ||
+    user?.role?.toLowerCase() === "superadmin";
+
   const handleDeleteShowtime = async () => {
-      if (!selectedShowtime) return;
-      try {
-        const response = await dispatch(deleteShowtime(selectedShowtime?.showtime_id)).unwrap();
+    if (!selectedShowtime) return;
+    try {
+      const cinemaIdToUse = isAdmin
+        ? selectedShowtime?.screen?.cinema_id
+        : undefined;
+
+      const response = await dispatch(
+        deleteShowtime({
+          id: selectedShowtime?.showtime_id,
+          cinema_id: cinemaIdToUse,
+        })
+      ).unwrap();
         if (response.code === 200) {
             toast.success("Showtime deleted successfully");
             // Refresh showtimes
-            await dispatch(getAllShowtimes({ page: showtimePage, limit: showtimeLimit }));
+            await dispatch(getAllShowtimes({ page: showtimePage, limit: showtimeLimit,cinema_id: cinemaIdToUse, }));
             setShowDeleteShowtimeModal(false);
         }
       } catch (error: any) {

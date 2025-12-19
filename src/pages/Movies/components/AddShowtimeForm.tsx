@@ -86,7 +86,9 @@ export default function AddShowtimeForm({
     schedules: editMode
       ? [
           {
-            date: showTimeData?.show_date,
+            date: showTimeData?.show_date
+              ? new Date(showTimeData.show_date).toISOString().split("T")[0]
+              : "",
             times: [showTimeData?.show_time?.substring(0, 5)], // "HH:MM:SS" -> "HH:MM"
           },
         ]
