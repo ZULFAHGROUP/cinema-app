@@ -9,6 +9,7 @@ import { AppDispatch } from "../../../store/store";
 import { loginValidationSchema } from "../../../validations";
 import { allRoutes } from "../../../routes/allRoutes";
 import AuthLayout from "../../../components/shared/AuthLayout";
+import { toast } from "react-toastify";
 
 const initialValues = { email: "", password: "" };
 
@@ -26,8 +27,12 @@ const Login = () => {
         navigate("/dashboard");
       }
       resetForm();
-    } catch (error) {
-      console.error("Error logging in", error);
+    } catch (error :any) {
+      if(error.code === 'ERR_BAD_REQUEST'){
+        toast.error(`${error.message}. Confirm your email and password then try again`);
+      }else{
+        toast.error(error.message ||"Something went wrong");
+      }
     }
   }
 

@@ -14,6 +14,7 @@ import productCategoryReducer from './slices/productCat'
 import productReducer from './slices/product'
 import priceRuleReducer from './slices/priceRule'
 import inventoryReducer from './slices/inventory'
+import staffReducer from './slices/staff'
 
 export default combineReducers({
   accounts: accountReducer,
@@ -31,4 +32,5 @@ export default combineReducers({
   product: productReducer,
   priceRule: priceRuleReducer,
   inventory: inventoryReducer,
+  staff: staffReducer,
 });

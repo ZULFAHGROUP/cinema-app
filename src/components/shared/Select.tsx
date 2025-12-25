@@ -62,11 +62,15 @@ const ReusableSelect = ({
         mode={mode}
         showSearch={showSearch}
       >
-        <Select.Option value="">{defaultOption}</Select.Option>
+        <Select.Option value="">
+          {defaultOption}
+        </Select.Option>
         {options.map((option, index) => (
           <Select.Option key={index} value={option.value}>
             {option.label ||
-              option.value.charAt(0).toUpperCase() + option.value.slice(1)}
+              (option.value && typeof option.value === 'string'
+                ? option.value.charAt(0).toUpperCase() + option.value.slice(1)
+                : option.value)}
           </Select.Option>
         ))}
       </Select>

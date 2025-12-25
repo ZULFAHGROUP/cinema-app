@@ -16,6 +16,7 @@ const urls = {
   price_rule: "/price-rule",
   audit: "/audit-trail",
   user: "/user",
+  staff: "/user",
 };
 
 export default urls;

@@ -11,76 +11,35 @@ import AddRoleForm from "./components/AddRoleForm";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { getAllRoles } from "../../store/slices/roles";
+import { getAllStaff, deleteStaff } from "../../store/slices/staff";
 
 function StaffPage() {
   const [activeTab, setActiveTab] = useState("staff");
   const [isAddStaffModalOpen, setIsAddStaffModalOpen] = useState(false);
   const [isAddRoleModalOpen, setIsAddRoleModalOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<any>(null);
 
   const dispatch = useAppDispatch();
-  const { roles, roleLoading, page, limit, total } = useAppSelector(
+  const { roles, page: rolePage, limit: roleLimit } = useAppSelector(
     (state) => state.role
+  );
+  const { staff, page: staffPage, limit: staffLimit } = useAppSelector(
+    (state) => state.staff
   );
 
   useEffect(() => {
-    dispatch(getAllRoles({ page, limit })).unwrap();
-  }, [dispatch, page, limit]);
+    dispatch(getAllRoles({ page: rolePage, limit: roleLimit })).unwrap();
+  }, [dispatch, rolePage, roleLimit]);
 
-  const [staff, setStaff] = useState([
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      email: "sarah.johnson@cinema.com",
-      phone: "(555) 123-4567",
-      role: "Manager",
-      department: "Operations",
-      status: "Active",
-      hireDate: "2023-01-15",
-      schedule: "Full-time",
-    },
-    {
-      id: 2,
-      name: "Mike Chen",
-      email: "mike.chen@cinema.com",
-      phone: "(555) 234-5678",
-      role: "Cashier",
-      department: "Box Office",
-      status: "Active",
-      hireDate: "2023-03-20",
-      schedule: "Part-time",
-    },
-    {
-      id: 3,
-      name: "Emily Rodriguez",
-      email: "emily.rodriguez@cinema.com",
-      phone: "(555) 345-6789",
-      role: "Usher",
-      department: "Theater Operations",
-      status: "Active",
-      hireDate: "2023-06-10",
-      schedule: "Part-time",
-    },
-    {
-      id: 4,
-      name: "David Kim",
-      email: "david.kim@cinema.com",
-      phone: "(555) 456-7890",
-      role: "Projectionist",
-      department: "Technical",
-      status: "On Leave",
-      hireDate: "2022-11-05",
-      schedule: "Full-time",
-    },
-  ]);
+  useEffect(() => {
+    dispatch(getAllStaff({ page: staffPage, limit: staffLimit })).unwrap();
+  }, [dispatch, staffPage, staffLimit]);
 
-  const handleAddStaff = (staffData: any) => {
-    const newStaff = {
-      id: staff.length + 1,
-      ...staffData,
-      status: "Active",
-    };
-    setStaff([...staff, newStaff]);
+  const handleAddStaff = () => {
     setIsAddStaffModalOpen(false);
+    setSelectedStaff(null);
+    // Refresh staff list
+    dispatch(getAllStaff({ page: staffPage, limit: staffLimit }));
   };
 
   const handleAddRole = (roleData: any) => {
@@ -93,12 +52,21 @@ function StaffPage() {
   };
 
   const handleEditStaff = (staffId: number) => {
-    console.log("Edit staff:", staffId);
-    // Implement edit functionality
+    const staffToEdit = staff.find((s: any) => s.id === staffId);
+    if (staffToEdit) {
+      setSelectedStaff(staffToEdit);
+      setIsAddStaffModalOpen(true);
+    }
   };
 
-  const handleDeleteStaff = (staffId: number) => {
-    setStaff(staff.filter((member) => member.id !== staffId));
+  const handleDeleteStaff = async (staffId: number) => {
+    try {
+      await dispatch(deleteStaff(staffId.toString())).unwrap();
+      // Refresh staff list
+      dispatch(getAllStaff({ page: staffPage, limit: staffLimit }));
+    } catch (error) {
+      console.error("Failed to delete staff:", error);
+    }
   };
 
   const handleEditRole = (roleId: number) => {
@@ -210,13 +178,20 @@ function StaffPage() {
       {/* Add Staff Modal */}
       <DisplayModal
         open={isAddStaffModalOpen}
-        onClose={() => setIsAddStaffModalOpen(false)}
-        title="Add New Staff Member"
+        onClose={() => {
+          setIsAddStaffModalOpen(false);
+          setSelectedStaff(null);
+        }}
+        title={selectedStaff ? "Edit Staff Member" : "Add New Staff Member"}
       >
         <AddStaffForm
           roles={roles}
-          onSubmit={handleAddStaff}
-          onCancel={() => setIsAddStaffModalOpen(false)}
+          staffData={selectedStaff}
+          onSuccess={handleAddStaff}
+          onCancel={() => {
+            setIsAddStaffModalOpen(false);
+            setSelectedStaff(null);
+          }}
         />
       </DisplayModal>
 

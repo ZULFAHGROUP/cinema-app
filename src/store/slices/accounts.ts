@@ -43,7 +43,6 @@ export const login = createAsyncThunk(
     const data = {
       jwtToken: response.headers.authorization,
       user: response.data.data,
-      // jwtToken: response.data.data.token,
       status: response.status === 200,
     };
     return data;
