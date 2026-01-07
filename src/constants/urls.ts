@@ -17,6 +17,9 @@ const urls = {
   audit: "/audit-trail",
   user: "/user",
   staff: "/user",
+  permission: "/permission",
+  vat_config: "/vat-config",
+  role_permission: "/role-permission",
 };
 
 export default urls;

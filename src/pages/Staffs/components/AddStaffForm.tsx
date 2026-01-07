@@ -19,9 +19,10 @@ interface StaffData {
 
 interface AddStaffFormProps {
   roles: any[];
-  staffData?: StaffData | null; // 👈 presence = edit mode
+  staffData?: StaffData | null;
   onSuccess?: () => void;
   onCancel: () => void;
+  isEdit?: boolean;
 }
 
 const AddStaffForm = ({
@@ -29,15 +30,14 @@ const AddStaffForm = ({
   staffData,
   onSuccess,
   onCancel,
+  isEdit = false,
 }: AddStaffFormProps) => {
   const dispatch = useAppDispatch();
-  const isEditMode = Boolean(staffData?.id);
 
-const roleOptions = roles?.map((role) => ({
-  label: role.role_name,
-      value: role.role_name,
+  const roleOptions = roles?.map((role) => ({
+    label: role.role_name,
+    value: role.role_name,
   }));
-    
 
   const validationSchema = Yup.object({
     surname: Yup.string().required("Surname is required"),
@@ -45,7 +45,7 @@ const roleOptions = roles?.map((role) => ({
     email: Yup.string().email("Invalid email").required("Email is required"),
     phone: Yup.string().required("Phone number is required"),
     role_name: Yup.string().required("Role is required"),
-    password: isEditMode
+    password: isEdit
       ? Yup.string().notRequired()
       : Yup.string()
           .min(8, "Minimum 8 characters")
@@ -66,12 +66,14 @@ const roleOptions = roles?.map((role) => ({
       const payload = { ...values };
 
       // Remove password on edit if empty
-      if (isEditMode && !payload.password) {
+      if (isEdit && !payload.password) {
         delete payload.password;
       }
 
-      if (isEditMode) {
-        await dispatch(updateStaff({ id: staffData!.id!, data: payload })).unwrap();
+      if (isEdit) {
+        await dispatch(
+          updateStaff({ id: staffData!.id!, data: payload })
+        ).unwrap();
         toast.success("Staff updated successfully");
       } else {
         await dispatch(createStaff(payload)).unwrap();
@@ -166,7 +168,7 @@ const roleOptions = roles?.map((role) => ({
               required
             />
 
-            {!isEditMode && (
+            {!isEdit && (
               <Input
                 label="Password"
                 name="password"
@@ -190,10 +192,10 @@ const roleOptions = roles?.map((role) => ({
               disabled={isSubmitting}
               title={
                 isSubmitting
-                  ? isEditMode
+                  ? isEdit
                     ? "Updating..."
                     : "Creating..."
-                  : isEditMode
+                  : isEdit
                   ? "Update Staff"
                   : "Add Staff"
               }

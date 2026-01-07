@@ -187,4 +187,28 @@ export const transferInSchema = Yup.object({
   source_cinema_id: Yup.string().required("Source cinema is required"),
 });
 
+export const permissionSchema = Yup.object().shape({
+  permission_name: Yup.string().required("Permission name is required"),
+  description: Yup.string().required("Description is required"),
+});
+
+export const vatConfigSchema = Yup.object().shape({
+  name: Yup.string().required("VAT name is required"),
+  rate: Yup.number()
+    .required("Rate is required")
+    .min(0, "Rate must be at least 0")
+    .max(1, "Rate cannot exceed 1"),
+  is_global: Yup.boolean().required("Global status is required"),
+  priority: Yup.number()
+    .required("Priority is required")
+    .min(1, "Priority must be at least 1"),
+  effective_from: Yup.string().required("Effective from date is required"),
+  effective_to: Yup.string().nullable(),
+});
+
+export const rolePermissionSchema = Yup.object().shape({
+  role_id: Yup.string().required("Role is required"),
+  permission_id: Yup.string().required("Permission is required"),
+});
+
 

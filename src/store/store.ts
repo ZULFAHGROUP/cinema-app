@@ -30,6 +30,9 @@ const persistConfig = {
     "product",
     "priceRule",
     "inventory",
+    "permission",
+    "vatConfig",
+    "rolePermission",
   ],
 };
 

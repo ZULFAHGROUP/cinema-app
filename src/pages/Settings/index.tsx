@@ -6,6 +6,9 @@ import ShowtimeStatus from "./components/ShowtimeStatus";
 import Roles from "./components/Roles";
 import ProductCategory from "./components/ProductCategory";
 import PriceRule from "./components/PriceRule";
+import Permissions from "./components/Permissions";
+import VATConfig from "./components/VATConfig";
+import RolePermissions from "./components/RolePermissions";
 
 const Settings = () => {
   type SettingsNav =
@@ -14,7 +17,10 @@ const Settings = () => {
     | "showtime-status"
     | "roles"
     | "product-category"
-    | "price-rule";
+    | "price-rule"
+    | "permissions"
+    | "vat-config"
+    | "role-permission";
 
   const [currentScreen, setCurrentScreen] = useState<SettingsNav>(
     "movie-classification"
@@ -30,6 +36,9 @@ const Settings = () => {
     { name: "Roles", url: "roles" },
     { name: "Product Category", url: "product-category" },
     { name: "Price Rule", url: "price-rule" },
+    { name: "Permissions", url: "permissions" },
+    { name: "VAT Config", url: "vat-config" },
+    { name: "Role Permission", url: "role-permission" },
   ];
   return (
     <div className="min-h-screen flex flex-col md:flex-row gap-2">
@@ -55,8 +64,14 @@ const Settings = () => {
           <Roles />
         ) : currentScreen === "product-category" ? (
           <ProductCategory />
+        ) : currentScreen === "price-rule" ? (
+            <PriceRule />
+        ) : currentScreen === "permissions" ? (
+            <Permissions />
+        ) : currentScreen === "vat-config" ? (
+            <VATConfig />
         ) : (
-          <PriceRule />
+          <RolePermissions />
         )}
       </div>
     </div>

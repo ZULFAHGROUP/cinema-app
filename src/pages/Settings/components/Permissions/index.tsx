@@ -8,38 +8,42 @@ import Button from "../../../../components/shared/Button";
 import DisplayModal from "../../../../components/shared/Modal/DisplayModal";
 import ConfirmationModal from "../../../../components/shared/Modal/ConfirmationModal";
 import ReusableTable from "../../../../components/shared/Table";
-import RolesForm from "./components/RolesForm";
-import { deleteRole, getAllRoles } from "../../../../store/slices/roles";
+import PermissionsForm from "./components/PermissionsForm";
+import {
+  deletePermission,
+  getAllPermissions,
+} from "../../../../store/slices/permissions";
 import Loader from "../../../../components/shared/Loader";
+import { formatUserLabel } from "../../../../utils";
 
-const Roles = () => {
+const Permissions = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
   const dispatch = useAppDispatch();
-  const { roles, roleLoading, page, limit, total } = useAppSelector(
-    (state) => state.role
+  const { permissions, permissionLoading, page, limit, total } = useAppSelector(
+    (state) => state.permission
   );
 
   useEffect(() => {
-    dispatch(getAllRoles({ page, limit })).unwrap();
+    dispatch(getAllPermissions({ page, limit })).unwrap();
   }, [dispatch, page, limit]);
 
   const handleDelete = async () => {
     if (!selectedItem) return;
     try {
       const response = await dispatch(
-        deleteRole(selectedItem?.role_id)
+        deletePermission(selectedItem?.permission_id)
       ).unwrap();
       if (response.code === 200) {
         toast.success(response.message);
-        await dispatch(getAllRoles({ page, limit })).unwrap();
+        await dispatch(getAllPermissions({ page, limit })).unwrap();
         setShowDeleteModal(false);
       }
     } catch (error: any) {
-      toast.error(error?.response?.message || "Error deleting classification");
+      toast.error(error?.response?.message || "Error deleting permission");
       setShowDeleteModal(false);
     }
   };
@@ -74,13 +78,21 @@ const Roles = () => {
   const columns = [
     {
       title: "Name",
-      dataIndex: "role_name",
-      key: "role_name",
+      dataIndex: "permission_name",
+      key: "permission_name",
+      render: (_: any, record: any) =>
+        `${formatUserLabel(record.permission_name)}`,
     },
     {
       title: "Description",
       dataIndex: "description",
       key: "description",
+    },
+    {
+      title: "Created At",
+      dataIndex: "created_at",
+      key: "created_at",
+      render: (date: string) => new Date(date).toLocaleDateString(),
     },
     {
       title: "Actions",
@@ -97,7 +109,7 @@ const Roles = () => {
 
   const handleTableChange = (pagination: any) => {
     dispatch(
-      getAllRoles({
+      getAllPermissions({
         page: pagination.current,
         limit: pagination.pageSize,
       })
@@ -107,7 +119,7 @@ const Roles = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-semibold">Roles Settings</h2>
+        <h2 className="text-lg font-semibold">Permissions Settings</h2>
         <Button
           className="rounded-md"
           icon={<Plus className="w-4 h-4" />}
@@ -120,14 +132,15 @@ const Roles = () => {
         />
       </div>
 
-      {roleLoading ? (
+      {permissionLoading ? (
         <Loader rows={6} />
       ) : (
         <ReusableTable
-          data={roles || []}
+          data={permissions || []}
           columns={columns}
-          title="Roles"
-          searchField={["name"]}
+          title="Permissions"
+          showPagination={true}
+          searchField={["permission_name"]}
           paginationMode="backend"
           paginationProps={{
             total,
@@ -141,13 +154,13 @@ const Roles = () => {
       {/* Add / Edit Modal */}
       <DisplayModal
         open={showFormModal}
-        title={editMode ? "Edit Role" : "Add Role"}
+        title={editMode ? "Edit Permission" : "Add Permission"}
         onClose={() => setShowFormModal(false)}
       >
-        <RolesForm
+        <PermissionsForm
           onCancel={() => setShowFormModal(false)}
           editMode={editMode}
-          roleData={selectedItem}
+          permissionData={selectedItem}
         />
       </DisplayModal>
 
@@ -156,10 +169,10 @@ const Roles = () => {
         open={showDeleteModal}
         onCancel={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
-        content={`Are you sure that you want to delete this role, ${selectedItem?.name}`}
+        content={`Are you sure that you want to delete this permission: ${selectedItem?.permission_name}`}
       />
     </div>
   );
 };
 
-export default Roles;
+export default Permissions;

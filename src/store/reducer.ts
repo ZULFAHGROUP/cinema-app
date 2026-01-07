@@ -15,6 +15,9 @@ import productReducer from './slices/product'
 import priceRuleReducer from './slices/priceRule'
 import inventoryReducer from './slices/inventory'
 import staffReducer from './slices/staff'
+import permissionReducer from './slices/permissions'
+import vatConfigReducer from './slices/vatConfig'
+import rolePermissionReducer from './slices/rolePermissions'
 
 export default combineReducers({
   accounts: accountReducer,
@@ -33,4 +36,7 @@ export default combineReducers({
   priceRule: priceRuleReducer,
   inventory: inventoryReducer,
   staff: staffReducer,
+  permission: permissionReducer,
+  vatConfig: vatConfigReducer,
+  rolePermission: rolePermissionReducer,
 });

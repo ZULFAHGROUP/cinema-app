@@ -8,38 +8,39 @@ import Button from "../../../../components/shared/Button";
 import DisplayModal from "../../../../components/shared/Modal/DisplayModal";
 import ConfirmationModal from "../../../../components/shared/Modal/ConfirmationModal";
 import ReusableTable from "../../../../components/shared/Table";
-import RolesForm from "./components/RolesForm";
-import { deleteRole, getAllRoles } from "../../../../store/slices/roles";
+import VATConfigForm from "./components/VATConfigForm";
+import { deleteVatConfig, getAllVatConfigs } from "../../../../store/slices/vatConfig";
 import Loader from "../../../../components/shared/Loader";
+import { formatUserLabel } from "../../../../utils";
 
-const Roles = () => {
+const VATConfig = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
   const dispatch = useAppDispatch();
-  const { roles, roleLoading, page, limit, total } = useAppSelector(
-    (state) => state.role
+  const { vatConfigs, vatLoading, page, limit, total } = useAppSelector(
+    (state) => state.vatConfig
   );
 
   useEffect(() => {
-    dispatch(getAllRoles({ page, limit })).unwrap();
+    dispatch(getAllVatConfigs({ page, limit })).unwrap();
   }, [dispatch, page, limit]);
 
   const handleDelete = async () => {
     if (!selectedItem) return;
     try {
       const response = await dispatch(
-        deleteRole(selectedItem?.role_id)
+        deleteVatConfig(selectedItem?.vat_config_id)
       ).unwrap();
       if (response.code === 200) {
         toast.success(response.message);
-        await dispatch(getAllRoles({ page, limit })).unwrap();
+        await dispatch(getAllVatConfigs({ page, limit })).unwrap();
         setShowDeleteModal(false);
       }
     } catch (error: any) {
-      toast.error(error?.response?.message || "Error deleting classification");
+      toast.error(error?.response?.message || "Error deleting VAT config");
       setShowDeleteModal(false);
     }
   };
@@ -74,13 +75,33 @@ const Roles = () => {
   const columns = [
     {
       title: "Name",
-      dataIndex: "role_name",
-      key: "role_name",
+      dataIndex: "name",
+      key: "name",
+      render: (val: string) => formatUserLabel(val),
     },
     {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
+      title: "Rate",
+      dataIndex: "rate",
+      key: "rate",
+      render: (rate: number) => `${rate}`,
+    },
+    {
+        title: "Global",
+        dataIndex: "is_global",
+        key: "is_global",
+        render: (val: boolean) => (val ? "Yes" : "No"),
+    },
+    {
+        title: "Active",
+        dataIndex: "is_active",
+        key: "is_active",
+        render: (val: boolean) => (val ? "Yes" : "No"),
+    },
+    {
+      title: "Effective From",
+      dataIndex: "effective_from",
+      key: "effective_from",
+      render: (date: string) => new Date(date).toLocaleDateString(),
     },
     {
       title: "Actions",
@@ -97,7 +118,7 @@ const Roles = () => {
 
   const handleTableChange = (pagination: any) => {
     dispatch(
-      getAllRoles({
+      getAllVatConfigs({
         page: pagination.current,
         limit: pagination.pageSize,
       })
@@ -107,7 +128,7 @@ const Roles = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-semibold">Roles Settings</h2>
+        <h2 className="text-lg font-semibold">VAT Settings</h2>
         <Button
           className="rounded-md"
           icon={<Plus className="w-4 h-4" />}
@@ -120,13 +141,14 @@ const Roles = () => {
         />
       </div>
 
-      {roleLoading ? (
+      {vatLoading ? (
         <Loader rows={6} />
       ) : (
         <ReusableTable
-          data={roles || []}
+          data={vatConfigs || []}
           columns={columns}
-          title="Roles"
+          title="VAT Configurations"
+          showPagination={true}
           searchField={["name"]}
           paginationMode="backend"
           paginationProps={{
@@ -141,13 +163,13 @@ const Roles = () => {
       {/* Add / Edit Modal */}
       <DisplayModal
         open={showFormModal}
-        title={editMode ? "Edit Role" : "Add Role"}
+        title={editMode ? "Edit VAT Config" : "Add VAT Config"}
         onClose={() => setShowFormModal(false)}
       >
-        <RolesForm
+        <VATConfigForm
           onCancel={() => setShowFormModal(false)}
           editMode={editMode}
-          roleData={selectedItem}
+          vatData={selectedItem}
         />
       </DisplayModal>
 
@@ -156,10 +178,10 @@ const Roles = () => {
         open={showDeleteModal}
         onCancel={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
-        content={`Are you sure that you want to delete this role, ${selectedItem?.name}`}
+        content={`Are you sure that you want to delete this VAT config: ${selectedItem?.name}`}
       />
     </div>
   );
 };
 
-export default Roles;
+export default VATConfig;

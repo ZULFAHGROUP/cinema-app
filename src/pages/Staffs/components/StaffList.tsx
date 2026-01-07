@@ -1,48 +1,49 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Tag, Dropdown, Menu } from "antd";
+import { Dropdown, Menu } from "antd";
 import ReusableTable from "../../../components/shared/Table";
-import {
-  MoreHorizontal,
-  Edit,
-  Trash2,
-  Calendar,
-  UserCheck,
-} from "lucide-react";
+import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { useState } from "react";
+import DisplayModal from "../../../components/shared/Modal/DisplayModal";
+import ConfirmationModal from "../../../components/shared/Modal/ConfirmationModal";
+import { useAppDispatch, useAppSelector } from "../../../store/hook";
+import { toast } from "react-toastify";
+import { deleteStaff, getAllStaff } from "../../../store/slices/staff";
+import AddStaffForm from "./AddStaffForm";
+import { formatUserLabel } from "../../../utils";
 
 interface StaffListProps {
   staff: any[];
-  onEdit: (staffId: number) => void;
-  onDelete: (staffId: number) => void;
+  role: any;
 }
 
-export default function StaffList({ staff, onEdit, onDelete }: StaffListProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Active":
-        return "green";
-      case "On Leave":
-        return "orange";
-      case "Inactive":
-        return "red";
-      default:
-        return "default";
-    }
-  };
+export default function StaffList({ staff, role }: StaffListProps) {
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<any>(null);
+  // const getStatusColor = (status: string) => {
+  //   switch (status) {
+  //     case "Active":
+  //       return "green";
+  //     case "On Leave":
+  //       return "orange";
+  //     case "Inactive":
+  //       return "red";
+  //     default:
+  //       return "default";
+  //   }
+  // };
 
   const getMenu = (record: any) => (
     <Menu>
       <Menu.Item
         key="edit"
         icon={<Edit className="w-4 h-4" />}
-        onClick={() => onEdit(record.id)}
+        onClick={() => {
+          setShowEditModal(true);
+          setSelectedStaff(record);
+        }}
       >
         Edit Profile
-      </Menu.Item>
-      <Menu.Item key="schedule" icon={<Calendar className="w-4 h-4" />}>
-        View Schedule
-      </Menu.Item>
-      <Menu.Item key="permissions" icon={<UserCheck className="w-4 h-4" />}>
-        Permissions
       </Menu.Item>
       <Menu.Divider />
       <Menu.Item
@@ -50,11 +51,8 @@ export default function StaffList({ staff, onEdit, onDelete }: StaffListProps) {
         danger
         icon={<Trash2 className="w-4 h-4" />}
         onClick={() => {
-          if (
-            window.confirm(`Are you sure you want to remove ${record.name}?`)
-          ) {
-            onDelete(record.id);
-          }
+          setShowDeleteModal(true);
+          setSelectedStaff(record);
         }}
       >
         Remove Staff
@@ -62,12 +60,34 @@ export default function StaffList({ staff, onEdit, onDelete }: StaffListProps) {
     </Menu>
   );
 
+  const dispatch = useAppDispatch();
+  const { page, limit } = useAppSelector((state) => state.staff);
+
+  const handleDelete = async () => {
+    if (!selectedStaff) return;
+    try {
+      const response = await dispatch(
+        deleteStaff(selectedStaff?.surname)
+      ).unwrap();
+      if (response.code === 200) {
+        toast.success(response.message);
+        await dispatch(getAllStaff({ limit, page })).unwrap();
+        setShowDeleteModal(false);
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.message || "Error deleting classification");
+      setShowDeleteModal(false);
+    }
+  };
+
   const columns = [
     {
       title: "Name",
-      dataIndex: "name",
-      key: "name",
-      sorter: (a: any, b: any) => a.name.localeCompare(b.name),
+      dataIndex: "surname",
+      key: "surname",
+      render: (_: any, record: any) =>
+        `${record.surname} ${record.other_names}`,
+      sorter: (a: any, b: any) => a.surname.localeCompare(b.surname),
     },
     {
       title: "Email",
@@ -83,47 +103,30 @@ export default function StaffList({ staff, onEdit, onDelete }: StaffListProps) {
       title: "Role",
       dataIndex: "role",
       key: "role",
-      filters: [
-        { text: "Manager", value: "Manager" },
-        { text: "Cashier", value: "Cashier" },
-        { text: "Usher", value: "Usher" },
-        { text: "Projectionist", value: "Projectionist" },
-      ],
-      onFilter: (value: any, record: any) => record.role === value,
+      render: (role: any) =>
+        role ? `${formatUserLabel(role?.role_name)}` : "Role not available",
+      filters:
+        role?.map((r: any) => ({
+          text: r?.role_name,
+          value: r?.role_name,
+        })) || [],
+
+      onFilter: (value: any, record: any) => record.role.role_name === value,
     },
-    {
-      title: "Department",
-      dataIndex: "department",
-      key: "department",
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status: string) => (
-        <Tag color={getStatusColor(status)}>{status}</Tag>
-      ),
-      filters: [
-        { text: "Active", value: "Active" },
-        { text: "On Leave", value: "On Leave" },
-        { text: "Inactive", value: "Inactive" },
-      ],
-      onFilter: (value: any, record: any) => record.status === value,
-    },
-    {
-      title: "Schedule",
-      dataIndex: "schedule",
-      key: "schedule",
-      render: (schedule: string) => <Tag>{schedule}</Tag>,
-    },
-    {
-      title: "Hire Date",
-      dataIndex: "hireDate",
-      key: "hireDate",
-      sorter: (a: any, b: any) =>
-        new Date(a.hireDate).getTime() - new Date(b.hireDate).getTime(),
-      render: (date: string) => new Date(date).toLocaleDateString(),
-    },
+    //   {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   render: (status: string) => (
+    //     <Tag color={getStatusColor(status)}>{status}</Tag>
+    //   ),
+    //   filters: [
+    //     { text: "Active", value: "Active" },
+    //     { text: "On Leave", value: "On Leave" },
+    //     { text: "Inactive", value: "Inactive" },
+    //   ],
+    //   onFilter: (value: any, record: any) => record.status === value,
+    // },
     {
       title: "Actions",
       key: "actions",
@@ -138,14 +141,36 @@ export default function StaffList({ staff, onEdit, onDelete }: StaffListProps) {
   ];
 
   return (
-    <ReusableTable
-      data={staff}
-      columns={columns}
-      title="Staff Members"
-      searchField={["name", "email", "role", "department"]}
-      showSearch={true}
-      showPagination={true}
-      excludeColumns={["id"]}
-    />
+    <>
+      <ReusableTable
+        data={staff}
+        columns={columns}
+        title="Staff Members"
+        searchField={["name", "email", "role", "department"]}
+        showSearch={true}
+        showPagination={true}
+        excludeColumns={["id"]}
+      />
+      <DisplayModal
+        open={showEditModal}
+        title={"Edit Staff"}
+        onClose={() => setShowEditModal(false)}
+      >
+        <AddStaffForm
+          onCancel={() => setShowEditModal(false)}
+          isEdit={true}
+          staffData={selectedStaff}
+          roles={role}
+        />
+      </DisplayModal>
+
+      {/* Delete Confirmation */}
+      <ConfirmationModal
+        open={showDeleteModal}
+        onCancel={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        content={`Are you sure that you want to delete this staff, ${selectedStaff?.surname}`}
+      />
+    </>
   );
 }

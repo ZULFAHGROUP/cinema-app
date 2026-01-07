@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import { Edit, Trash2, Plus } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Plus } from "lucide-react";
+import { Dropdown, Menu } from "antd";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../../../store/hook";
 import {
@@ -46,6 +47,33 @@ const ScreenType = () => {
     }
   };
 
+  const getMenu = (record: any) => (
+    <Menu>
+      <Menu.Item
+        key="edit"
+        icon={<Edit className="w-4 h-4" />}
+        onClick={() => {
+          setSelectedItem(record);
+          setEditMode(true);
+          setShowFormModal(true);
+        }}
+      >
+        Edit
+      </Menu.Item>
+      <Menu.Item
+        key="delete"
+        danger
+        icon={<Trash2 className="w-4 h-4" />}
+        onClick={() => {
+          setSelectedItem(record);
+          setShowDeleteModal(true);
+        }}
+      >
+        Delete
+      </Menu.Item>
+    </Menu>
+  );
+
   const columns = [
     {
       title: "Name",
@@ -61,29 +89,11 @@ const ScreenType = () => {
       title: "Actions",
       key: "actions",
       render: (_: any, record: any) => (
-        <div className="flex gap-2 justify-">
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={<Edit className="w-3 h-3" />}
-            className="rounded-md"
-            onClick={() => {
-              setSelectedItem(record);
-              setEditMode(true);
-              setShowFormModal(true);
-            }}
-          />
-          <Button
-            variant="primary"
-            size="sm"
-            icon={<Trash2 className="w-3 h-3" />}
-            className="rounded-md"
-            onClick={() => {
-              setSelectedItem(record);
-              setShowDeleteModal(true);
-            }}
-          />
-        </div>
+        <Dropdown overlay={getMenu(record)} trigger={["click"]}>
+          <button className="p-2 hover:bg-gray-100 rounded">
+            <MoreHorizontal className="w-4 h-4" />
+          </button>
+        </Dropdown>
       ),
     },
   ];
