@@ -20,6 +20,7 @@ const urls = {
   permission: "/permission",
   vat_config: "/vat-config",
   role_permission: "/role-permission",
+  purchase_initiate: "/purchase/initiate",
 };
 
 export default urls;

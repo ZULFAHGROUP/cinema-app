@@ -28,6 +28,10 @@ const ShowTime = {
       : `${urls.showtime}/${id}`;
     return Axios.delete(url);
   },
+
+  getShowtimePrice: (id: string | number) => {
+    return Axios.get(`${urls.showtime}/${id}/price`);
+  },
 };
 
 export default ShowTime;

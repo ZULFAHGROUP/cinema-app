@@ -155,6 +155,10 @@ export const priceRuleSchema = Yup.object({
     .required("End time is required")
     .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, "Invalid time format (HH:MM:SS)"),
   cinema_id: Yup.string(), // Optional - admins can leave empty for general rules
+  product_ids: Yup.array()
+    .of(Yup.string())
+    .min(1, "At least one product must be selected")
+    .required("Products are required"),
 });
 
 // Inventory operation schemas

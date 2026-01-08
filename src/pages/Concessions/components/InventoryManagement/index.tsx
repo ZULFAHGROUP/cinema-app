@@ -86,21 +86,11 @@ const InventoryManagement = () => {
       key: "product_id",
       render: (productId: string) => {
         const product = getProductDetails(productId) as any;
-        console.log('product to render',product);
         return (
-          <div className="flex items-center gap-3">
-            {product?.product_image && (
-              <img
-                src={product.product_image}
-                alt={product.name}
-                className="w-12 h-12 object-cover rounded"
-              />
-            )}
-            <div>
+                        <div>
               <p className="font-medium">{product?.name || "Unknown Product"}</p>
               <p className="text-sm text-gray-500">{product?.product_category?.name}</p>
             </div>
-          </div>
         );
       },
     },

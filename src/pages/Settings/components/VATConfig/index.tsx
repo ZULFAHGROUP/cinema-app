@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import { MoreHorizontal, Edit, Trash2, Plus } from "lucide-react";
-import { Dropdown, Menu } from "antd";
+import { MoreVertical, Edit, Trash2, Plus } from "lucide-react";
+import { Dropdown } from "antd";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../../../store/hook";
 import Button from "../../../../components/shared/Button";
@@ -45,32 +45,6 @@ const VATConfig = () => {
     }
   };
 
-  const getMenu = (record: any) => (
-    <Menu>
-      <Menu.Item
-        key="edit"
-        icon={<Edit className="w-4 h-4" />}
-        onClick={() => {
-          setSelectedItem(record);
-          setEditMode(true);
-          setShowFormModal(true);
-        }}
-      >
-        Edit
-      </Menu.Item>
-      <Menu.Item
-        key="delete"
-        danger
-        icon={<Trash2 className="w-4 h-4" />}
-        onClick={() => {
-          setSelectedItem(record);
-          setShowDeleteModal(true);
-        }}
-      >
-        Delete
-      </Menu.Item>
-    </Menu>
-  );
 
   const columns = [
     {
@@ -107,10 +81,38 @@ const VATConfig = () => {
       title: "Actions",
       key: "actions",
       render: (_: any, record: any) => (
-        <Dropdown overlay={getMenu(record)} trigger={["click"]}>
-          <button className="p-2 hover:bg-gray-100 rounded">
-            <MoreHorizontal className="w-4 h-4" />
-          </button>
+        <Dropdown
+          menu={{
+            items: [
+              {
+                key: "edit",
+                label: "Edit",
+                icon: <Edit className="w-4 h-4" />,
+                onClick: () => {
+                  setSelectedItem(record);
+                  setEditMode(true);
+                  setShowFormModal(true);
+                },
+              },
+              {
+                key: "delete",
+                label: "Delete",
+                danger: true,
+                icon: <Trash2 className="w-4 h-4" />,
+                onClick: () => {
+                  setSelectedItem(record);
+                  setShowDeleteModal(true);
+                },
+              },
+            ],
+          }}
+          trigger={["click"]}
+        >
+          <Button
+            size="sm"
+            className="p-0 bg-transparent w-fit shadow-none text-black!"
+            icon={<MoreVertical size={18} />}
+          />
         </Dropdown>
       ),
     },

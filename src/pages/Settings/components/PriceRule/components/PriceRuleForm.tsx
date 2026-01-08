@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 import { priceRuleSchema } from "../../../../../validations";
 import { useEffect } from "react";
 import { getAllCinemas } from "../../../../../store/slices/cinema";
+import { getAllProducts } from "../../../../../store/slices/product";
 
 interface PriceRuleFormProps {
   onCancel: () => void;
@@ -42,6 +43,7 @@ const PriceRuleForm = ({
   const dispatch = useAppDispatch();
   const { page, limit } = useAppSelector((state) => state.priceRule);
   const { allCinemas } = useAppSelector((state) => state.cinema);
+  const { products } = useAppSelector((state) => state.product);
   const { user } = useAppSelector((state) => state.accounts.data);
   
   const userCinemaId = user?.cinema_id;
@@ -51,6 +53,7 @@ const PriceRuleForm = ({
     if (isAdmin) {
       dispatch(getAllCinemas({ page: 1, limit: 100 }));
     }
+    dispatch(getAllProducts({ page: 1, limit: 100 }));
   }, [dispatch, isAdmin]);
 
   const initialValues = {
@@ -63,6 +66,7 @@ const PriceRuleForm = ({
     start_time: priceRuleData?.start_time || "",
     end_time: priceRuleData?.end_time || "",
     cinema_id: priceRuleData?.cinema_id || (isAdmin ? "" : userCinemaId || ""),
+    product_ids: priceRuleData?.product_ids || [],
   };
 
   const cinemaOptions = [
@@ -256,6 +260,26 @@ const PriceRuleForm = ({
                 required
               />
             </div>
+            
+            {/* Products Selection */}
+            <ReusableSelect
+                label="Products"
+                name="product_ids"
+                mode="multiple"
+                value={values.product_ids}
+                onChange={(value) => setFieldValue("product_ids", value)}
+                options={products?.map((product: any) => ({
+                    label: product.name,
+                    value: product.product_id,
+                })) || []}
+                defaultOption="Select products"
+                error={
+                    touched.product_ids && typeof errors.product_ids === "string"
+                    ? errors.product_ids
+                    : undefined
+                }
+                required
+            />
 
             {/* Time Range */}
             <div className="grid grid-cols-2 gap-4">

@@ -45,7 +45,6 @@ const ProductCategoryForm = ({
       } else {
         response = await dispatch(createProductCategories(values)).unwrap();
       }
-      console.log("coming response", response);
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message);
         await dispatch(getAllProductCategories({ page, limit }));
@@ -53,7 +52,6 @@ const ProductCategoryForm = ({
         onCancel();
       }
     } catch (error: any) {
-      console.error("Error submitting role form", error);
       toast.error(error?.response?.message || "Something went wrong");
     }
   }

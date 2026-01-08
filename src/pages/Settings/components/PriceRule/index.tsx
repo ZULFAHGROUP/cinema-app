@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Button from "../../../../components/shared/Button";
-import { MoreHorizontal, Edit, Trash2, Plus } from "lucide-react";
-import { Dropdown, Menu } from "antd";
+import { Edit, Trash2, Plus, MoreVertical } from "lucide-react";
+import { Dropdown } from "antd";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../store/hook";
 import {
@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 import PriceRuleForm from "./components/PriceRuleForm";
 import ReusableTable from "../../../../components/shared/Table";
 import Loader from "../../../../components/shared/Loader";
+import { getHumanTime } from "../../../../utils";
 
 const DAYS_MAP: Record<number, string> = {
   0: "Sun",
@@ -77,33 +78,6 @@ const PriceRule = () => {
     }
   };
 
-  const getMenu = (record: any) => (
-    <Menu>
-      <Menu.Item
-        key="edit"
-        icon={<Edit className="w-4 h-4" />}
-        onClick={() => {
-          setSelectedItem(record);
-          setEditMode(true);
-          setShowFormModal(true);
-        }}
-      >
-        Edit
-      </Menu.Item>
-      <Menu.Item
-        key="delete"
-        danger
-        icon={<Trash2 className="w-4 h-4" />}
-        onClick={() => {
-          setSelectedItem(record);
-          setShowDeleteModal(true);
-        }}
-      >
-        Delete
-      </Menu.Item>
-    </Menu>
-  );
-
   const columns = [
     {
       title: "Name",
@@ -132,7 +106,7 @@ const PriceRule = () => {
       title: "Time Range",
       key: "time_range",
       render: (_: any, record: any) => 
-        `${record.start_time} - ${record.end_time}`,
+        `${getHumanTime(record.start_time)} - ${getHumanTime(record.end_time)}`,
     },
     {
       title: "Cinema",
@@ -148,11 +122,39 @@ const PriceRule = () => {
       title: "Actions",
       key: "actions",
       render: (_: any, record: any) => (
-        <Dropdown overlay={getMenu(record)} trigger={["click"]}>
-          <button className="p-2 hover:bg-gray-100 rounded">
-            <MoreHorizontal className="w-4 h-4" />
-          </button>
-        </Dropdown>
+                <Dropdown
+                  menu={{
+                    items: [
+                      {
+                        key: "edit",
+                        label: "Edit",
+                        icon: <Edit className="w-4 h-4" />,
+                        onClick: () => {
+                          setSelectedItem(record);
+                          setEditMode(true);
+                          setShowFormModal(true);
+                        },
+                      },
+                      {
+                        key: "delete",
+                        label: "Delete",
+                        danger: true,
+                        icon: <Trash2 className="w-4 h-4" />,
+                        onClick: () => {
+                          setSelectedItem(record);
+                          setShowDeleteModal(true);
+                        },
+                      },
+                    ],
+                  }}
+                  trigger={["click"]}
+                >
+                  <Button
+                    size="sm"
+                    className="p-0 bg-transparent w-fit shadow-none text-black!"
+                    icon={<MoreVertical size={18} />}
+                  />
+                </Dropdown>
       ),
     },
   ];

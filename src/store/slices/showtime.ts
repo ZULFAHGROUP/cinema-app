@@ -71,6 +71,18 @@ export const deleteShowtime = createAsyncThunk(
   }
 );
 
+export const getShowtimePrice = createAsyncThunk(
+  "showtime/getPrice",
+  async (id: string | number, { rejectWithValue }) => {
+    try {
+      const response = await ShowTime.getShowtimePrice(id);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data);
+    }
+  }
+);
+
 const showtimeSlice = createSlice({
   name: "showtime",
   initialState: {
@@ -80,6 +92,7 @@ const showtimeSlice = createSlice({
     page: 1,
     limit: 10,
     total: 0,
+    selectedShowtimePrice: null as any,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -107,6 +120,16 @@ const showtimeSlice = createSlice({
         state.showtimeLoading = false;
       })
       .addCase(deleteShowtime.fulfilled, (state) => {
+        state.showtimeLoading = false;
+      })
+      .addCase(getShowtimePrice.pending, (state) => {
+        state.showtimeLoading = true;
+      })
+      .addCase(getShowtimePrice.fulfilled, (state, action) => {
+        state.showtimeLoading = false;
+        state.selectedShowtimePrice = action.payload.data;
+      })
+      .addCase(getShowtimePrice.rejected, (state) => {
         state.showtimeLoading = false;
       });
   },

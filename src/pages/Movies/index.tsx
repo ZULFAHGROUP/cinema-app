@@ -11,6 +11,7 @@ import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { getAllShowtimes } from "../../store/slices/showtime";
 import { getAllCinemas } from "../../store/slices/cinema";
 import { getAllShowtimeStatuses } from "../../store/slices/showtimeStatus";
+import { getAllMovies } from "../../store/slices/movie";
 import ReusableSelect from "../../components/shared/Select";
 
 function MoviesPage() {
@@ -18,10 +19,11 @@ function MoviesPage() {
   const [isAddShowtimeModalOpen, setIsAddShowtimeModalOpen] = useState(false);
   const [selectedCinemaId, setSelectedCinemaId] = useState<string>("");
   const [preSelectedMovie, setPreSelectedMovie] = useState<any>(null);
+  const [showtimeLimitCount, setShowtimeLimitCount] = useState(10);
 
   const { limit: classificationLimit, page: classificationPage } =
     useAppSelector((state) => state.classification);
-  const { limit: showtimeLimit, page: showtimePage } = useAppSelector(
+  const { page: showtimePage } = useAppSelector(
     (state) => state.showtime
   );
   const { limit: statusLimit, page: statusPage } = useAppSelector(
@@ -30,6 +32,9 @@ function MoviesPage() {
   const { limit: cinemaLimit, page: cinemaPage } = useAppSelector(
     (state) => state.cinema
   );
+  const { limit: movieLimit, page: moviePage } = useAppSelector(
+    (state) => state.movie
+  );
   const { user } = useAppSelector((state) => state.accounts.data);
   const isAdmin =
     user?.role?.toLowerCase() === "admin" ||
@@ -37,6 +42,7 @@ function MoviesPage() {
 
   const dispatch = useAppDispatch();
   useEffect(() => {
+    dispatch(getAllMovies({ page: moviePage, limit: movieLimit }));
     dispatch(
       getAllClassifications({
         limit: classificationLimit,
@@ -45,13 +51,13 @@ function MoviesPage() {
     );
     dispatch(getAllShowtimeStatuses({ page: statusPage, limit: statusLimit }));
     dispatch(getAllCinemas({ page: cinemaPage, limit: cinemaLimit }));
-  }, [dispatch]);
+  }, [dispatch, moviePage, movieLimit]);
 
   useEffect(() => {
     const cinemaIdToUse = isAdmin ? selectedCinemaId : undefined;
     dispatch(
       getAllShowtimes({
-        limit: showtimeLimit,
+        limit: showtimeLimitCount,
         page: showtimePage,
         cinema_id: cinemaIdToUse,
       })
@@ -60,12 +66,12 @@ function MoviesPage() {
     dispatch,
     selectedCinemaId,
     isAdmin,
-    showtimeLimit,
+    showtimeLimitCount,
     showtimePage,
   ]);
 
   const { movies, moviesLoading } = useAppSelector((state) => state.movie);
-  const { showtimes, showtimeLoading } = useAppSelector(
+  const { showtimes, showtimeLoading, total: totalShowtimes } = useAppSelector(
     (state) => state.showtime
   );
   const { allCinemas } = useAppSelector((state) => state.cinema);
@@ -115,6 +121,8 @@ function MoviesPage() {
         showtimes={showtimes}
         onAddShowtime={handleAddShowtime}
         cinemas={allCinemas}
+        totalShowtimes={totalShowtimes}
+        onLoadMoreShowtimes={() => setShowtimeLimitCount(prev => prev + 10)}
       />
 
 

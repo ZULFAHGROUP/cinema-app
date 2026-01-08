@@ -1,188 +1,117 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../../components/shared/Button";
-import { Users, Plus } from "lucide-react";
+import { Users, Plus, Loader2 } from "lucide-react";
 import MovieSelection from "./components/MovieSelection";
 import ShowtimeSelection from "./components/ShowtimeSelection";
-import TicketQuantity from "./components/TicketQuantity";
-import SeatSelection from "./components/SeatSelection";
-import CustomerInfo from "./components/CustomerInfo";
-import Payment from "./components/Payment";
-import Confirmation from "./components/Confirmation";
+import PurchaseSelection from "./components/PurchaseSelection";
+import PaymentSummary from "./components/PaymentSummary";
+import PaymentSuccess from "./components/PaymentSuccess";
 import BookingSummary from "./components/BookingSummary";
 import StepIndicator from "./components/StepIndicator";
+import { useAppDispatch, useAppSelector } from "../../store/hook";
+import { getAllMovies } from "../../store/slices/movie";
+import { getAllShowtimes, getShowtimePrice } from "../../store/slices/showtime";
+import { getAvailableProducts } from "../../store/slices/product";
+import { initiatePurchase, resetPurchase } from "../../store/slices/purchase";
+import { toast } from "react-toastify";
+import { getHumanTime } from "../../utils";
 
 function TicketSalesPage() {
   const [currentStep, setCurrentStep] = useState("movie-selection");
   const [selectedMovie, setSelectedMovie] = useState<any>(null);
   const [selectedShowtime, setSelectedShowtime] = useState<any>(null);
-  const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
-  const [customerInfo, setCustomerInfo] = useState<any>({});
-  const [paymentInfo, setPaymentInfo] = useState<any>({});
-  const [ticketQuantity, setTicketQuantity] = useState({
-    adult: 2,
-    child: 0,
-    senior: 0,
-  });
+  const [ticketQuantity, setTicketQuantity] = useState(1);
+  const [selectedProducts, setSelectedProducts] = useState<any[]>([]);
 
-  const movies = [
-    {
-      id: 1,
-      title: "Spider-Man: No Way Home",
-      genre: "Action/Adventure",
-      duration: 148,
-      rating: "PG-13",
-      poster: "/spider-man-movie-poster.png",
-      showtimes: [
-        {
-          id: 1,
-          time: "10:00 AM",
-          theater: "Theater 1",
-          screen: "Screen A",
-          price: 12.99,
-          available: 120,
-        },
-        {
-          id: 2,
-          time: "1:30 PM",
-          theater: "Theater 1",
-          screen: "Screen A",
-          price: 12.99,
-          available: 95,
-        },
-        {
-          id: 3,
-          time: "5:00 PM",
-          theater: "Theater 2",
-          screen: "Screen B",
-          price: 15.99,
-          available: 180,
-        },
-        {
-          id: 4,
-          time: "8:30 PM",
-          theater: "Theater 2",
-          screen: "Screen B",
-          price: 15.99,
-          available: 160,
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: "Dune: Part Two",
-      genre: "Sci-Fi/Drama",
-      duration: 166,
-      rating: "PG-13",
-      poster: "/dune-part-two-poster.png",
-      showtimes: [
-        {
-          id: 5,
-          time: "11:00 AM",
-          theater: "Theater 3",
-          screen: "Screen C",
-          price: 14.99,
-          available: 100,
-        },
-        {
-          id: 6,
-          time: "2:30 PM",
-          theater: "Theater 1",
-          screen: "Screen A",
-          price: 12.99,
-          available: 85,
-        },
-        {
-          id: 7,
-          time: "6:00 PM",
-          theater: "Theater 2",
-          screen: "Screen B",
-          price: 15.99,
-          available: 140,
-        },
-        {
-          id: 8,
-          time: "9:30 PM",
-          theater: "Theater 3",
-          screen: "Screen C",
-          price: 14.99,
-          available: 110,
-        },
-      ],
-    },
-  ];
+  const dispatch = useAppDispatch();
+  const { movies, moviesLoading } = useAppSelector((state) => state.movie);
+  const { showtimes, selectedShowtimePrice } = useAppSelector((state) => state.showtime);
+  const { availableProducts } = useAppSelector((state) => state.product);
+  const { initiateLoading, initiateData } = useAppSelector((state) => state.purchase);
 
-  const totalTickets =
-    ticketQuantity.adult + ticketQuantity.child + ticketQuantity.senior;
-  const basePrice = selectedShowtime?.price || 0;
-  const totalPrice =
-    ticketQuantity.adult * basePrice +
-    ticketQuantity.child * (basePrice * 0.7) +
-    ticketQuantity.senior * (basePrice * 0.8);
+  useEffect(() => {
+    dispatch(getAllMovies({ page: 1, limit: 100 }));
+    dispatch(getAvailableProducts(undefined));
+  }, [dispatch]);
 
   const handleMovieSelect = (movie: any) => {
     setSelectedMovie(movie);
-    setSelectedShowtime(null);
+    dispatch(getAllShowtimes({ page: 1, limit: 100 })); // Ideally filter by movie_id if supported
     setCurrentStep("showtime-selection");
   };
 
-  const handleShowtimeSelect = (showtime: any) => {
+  const handleShowtimeSelect = async (showtime: any) => {
     setSelectedShowtime(showtime);
-    setCurrentStep("ticket-quantity");
-  };
-
-  const handleQuantityConfirm = () => {
-    if (totalTickets > 0) {
-      setCurrentStep("seat-selection");
+    try {
+      await dispatch(getShowtimePrice(showtime.showtime_id)).unwrap();
+      setCurrentStep("purchase-selection");
+    } catch (err) {
+      toast.error("Failed to fetch showtime price");
     }
   };
 
-  const handleSeatConfirm = (seats: string[]) => {
-    setSelectedSeats(seats);
-    setCurrentStep("customer-info");
+  const handlePurchaseConfirm = async () => {
+    const payload = {
+      showtime_id: selectedShowtime?.showtime_id,
+      ticket_quantity: ticketQuantity,
+      extra_products: selectedProducts.map(p => ({
+        product_id: p.product_id,
+        quantity: p.quantity
+      }))
+    };
+
+    try {
+      const resultAction = await dispatch(initiatePurchase(payload));
+      if (initiatePurchase.fulfilled.match(resultAction)) {
+        setCurrentStep("payment-summary");
+      } else {
+        toast.error("Failed to initiate purchase");
+      }
+    } catch (err) {
+      toast.error("An error occurred");
+    }
   };
 
-  const handleCustomerInfoSubmit = (info: any) => {
-    setCustomerInfo(info);
-    setCurrentStep("payment");
-  };
-
-  const handlePaymentComplete = (payment: any) => {
-    setPaymentInfo(payment);
-    setCurrentStep("confirmation");
+  const handlePay = () => {
+    if (initiateData?.authorization_url) {
+      window.location.href = initiateData.authorization_url;
+    }
   };
 
   const resetBooking = () => {
+    dispatch(resetPurchase());
     setCurrentStep("movie-selection");
     setSelectedMovie(null);
     setSelectedShowtime(null);
-    setSelectedSeats([]);
-    setCustomerInfo({});
-    setPaymentInfo({});
-    setTicketQuantity({ adult: 2, child: 0, senior: 0 });
+    setTicketQuantity(1);
+    setSelectedProducts([]);
   };
 
+  // Filter showtimes by selected movie
+  const filteredShowtimes = showtimes.filter((s: any) => s.movie_id === selectedMovie?.movie_id);
+
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-sans font-bold text-foreground">
+            <h1 className="text-3xl font-sans font-bold text-foreground">
               Ticket Sales
             </h1>
-            <p className="text-sm text-muted-foreground font-serif">
+            <p className="text-muted-foreground font-serif">
               Box office and online bookings
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1 border rounded-md">
-              <Users className="w-3 h-3" />
-              <span className="text-sm">Box Office Mode</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 border rounded-full text-sm font-sans font-medium">
+              <Users className="w-4 h-4" />
+              <span>Box Office Mode</span>
             </div>
             <Button
               onClick={resetBooking}
-              className="gap-2 rounded-md"
+              className="gap-2 rounded-full px-6"
               variant="outline"
               icon={<Plus className="w-4 h-4" />}
               title="New Sale"
@@ -194,78 +123,79 @@ function TicketSalesPage() {
         <StepIndicator currentStep={currentStep} />
 
         {/* Main Content Area */}
-        <div className="flex gap-6 mt-6">
-          <div className="flex-1">
-            {currentStep === "movie-selection" && (
-              <MovieSelection movies={movies} onSelect={handleMovieSelect} />
-            )}
+        <div className="flex flex-col lg:flex-row gap-8 mt-8">
+          <div className="flex-1 min-h-[500px]">
+            {moviesLoading ? (
+               <div className="flex items-center justify-center h-full">
+                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
+               </div>
+            ) : (
+              <>
+                {currentStep === "movie-selection" && (
+                  <MovieSelection movies={movies} onSelect={handleMovieSelect} />
+                )}
 
-            {currentStep === "showtime-selection" && selectedMovie && (
-              <ShowtimeSelection
-                movie={selectedMovie}
-                onSelect={handleShowtimeSelect}
-                onBack={() => setCurrentStep("movie-selection")}
-              />
-            )}
+                {currentStep === "showtime-selection" && selectedMovie && (
+                  <ShowtimeSelection
+                    movie={{ ...selectedMovie, showtimes: filteredShowtimes }}
+                    onSelect={handleShowtimeSelect}
+                    onBack={() => setCurrentStep("movie-selection")}
+                  />
+                )}
 
-            {currentStep === "ticket-quantity" && (
-              <TicketQuantity
-                basePrice={basePrice}
-                ticketQuantity={ticketQuantity}
-                setTicketQuantity={setTicketQuantity}
-                totalTickets={totalTickets}
-                totalPrice={totalPrice}
-                onConfirm={handleQuantityConfirm}
-                onBack={() => setCurrentStep("showtime-selection")}
-              />
-            )}
+                {currentStep === "purchase-selection" && (
+                  <PurchaseSelection
+                    showtime={{ ...selectedShowtime, price: selectedShowtimePrice?.price || 0 }}
+                    availableProducts={availableProducts}
+                    ticketQuantity={ticketQuantity}
+                    setTicketQuantity={setTicketQuantity}
+                    selectedProducts={selectedProducts}
+                    setSelectedProducts={setSelectedProducts}
+                    onConfirm={handlePurchaseConfirm}
+                    onBack={() => setCurrentStep("showtime-selection")}
+                  />
+                )}
 
-            {currentStep === "seat-selection" && (
-              <SeatSelection
-                totalTickets={totalTickets}
-                theater={selectedShowtime?.theater}
-                onConfirm={handleSeatConfirm}
-                onBack={() => setCurrentStep("ticket-quantity")}
-              />
-            )}
+                {currentStep === "payment-summary" && initiateData && (
+                  <PaymentSummary
+                    initiateData={initiateData}
+                    loading={initiateLoading}
+                    onPay={handlePay}
+                    onBack={() => setCurrentStep("purchase-selection")}
+                  />
+                )}
 
-            {currentStep === "customer-info" && (
-              <CustomerInfo
-                onSubmit={handleCustomerInfoSubmit}
-                onBack={() => setCurrentStep("seat-selection")}
-              />
-            )}
-
-            {currentStep === "payment" && (
-              <Payment
-                totalAmount={totalPrice}
-                onComplete={handlePaymentComplete}
-                onBack={() => setCurrentStep("customer-info")}
-              />
-            )}
-
-            {currentStep === "confirmation" && (
-              <Confirmation
-                movie={selectedMovie}
-                showtime={selectedShowtime}
-                seats={selectedSeats}
-                customer={customerInfo}
-                totalPrice={totalPrice}
-                onNewSale={resetBooking}
-              />
+                {currentStep === "confirmation" && (
+                  <PaymentSuccess
+                    bookingData={{
+                      bookingNumber: initiateData?.payment_reference || "N/A",
+                      movieTitle: selectedMovie?.title,
+                      theater: selectedShowtime?.screen?.cinema?.name || "N/A",
+                      screen: selectedShowtime?.screen?.name || "N/A",
+                      showtime: selectedShowtime ? getHumanTime(selectedShowtime.show_time) : "N/A",
+                      seats: [], // Seats are no longer part of the flow
+                      amountPaid: initiateData?.amount || 0,
+                      customerEmail: "customer@example.com", // Placeholder
+                      bookingDate: new Date().toLocaleDateString(),
+                    }}
+                    onNewBooking={resetBooking}
+                  />
+                )}
+              </>
             )}
           </div>
 
           {/* Booking Summary Sidebar */}
-          {currentStep !== "movie-selection" && (
-            <BookingSummary
-              selectedMovie={selectedMovie}
-              selectedShowtime={selectedShowtime}
-              ticketQuantity={ticketQuantity}
-              selectedSeats={selectedSeats}
-              totalTickets={totalTickets}
-              totalPrice={totalPrice}
-            />
+          {currentStep !== "movie-selection" && currentStep !== "confirmation" && currentStep !== "payment-summary" && (
+            <div className="lg:w-80">
+                <BookingSummary
+                selectedMovie={selectedMovie}
+                selectedShowtime={{ ...selectedShowtime, price: selectedShowtimePrice?.price || 0 }}
+                ticketQuantity={ticketQuantity}
+                selectedProducts={selectedProducts}
+                totalPrice={0} // This will be calculated in summary component or use initiate response
+                />
+            </div>
           )}
         </div>
       </div>

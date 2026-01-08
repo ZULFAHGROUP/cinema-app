@@ -68,10 +68,23 @@ export const deleteProduct = createAsyncThunk(
   }
 );
 
+export const getAvailableProducts = createAsyncThunk(
+  "product/getAvailable",
+  async (cinema_id: string | undefined, { rejectWithValue }) => {
+    try {
+      const response = await Product.availableProducts(cinema_id);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data);
+    }
+  }
+);
+
 const productSlice = createSlice({
   name: "product",
   initialState: {
     products: [],
+    availableProducts: [],
     productLoading: false,
     error: null,
     productPage: 1,
@@ -92,6 +105,16 @@ const productSlice = createSlice({
         state.productTotal = action.payload.total;
       })
       .addCase(getAllProducts.rejected, (state) => {
+        state.productLoading = false;
+      })
+      .addCase(getAvailableProducts.pending, (state) => {
+        state.productLoading = true;
+      })
+      .addCase(getAvailableProducts.fulfilled, (state, action) => {
+        state.productLoading = false;
+        state.availableProducts = action.payload.data || [];
+      })
+      .addCase(getAvailableProducts.rejected, (state) => {
         state.productLoading = false;
       })
       .addCase(createProduct.pending, (state) => {

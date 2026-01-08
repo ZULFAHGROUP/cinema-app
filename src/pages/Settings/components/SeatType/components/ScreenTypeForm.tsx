@@ -131,11 +131,11 @@ const ScreenTypeForm = ({
               title={
                 isSubmitting
                   ? editMode
-                    ? "Updating Seat Type..."
-                    : "Adding Seat Type..."
+                    ? "Updating Screen Type..."
+                    : "Adding Screen Type..."
                   : editMode
-                  ? "Update Seat Type"
-                  : "Add Seat Type"
+                  ? "Update Screen Type"
+                  : "Add Screen Type"
               }
             />
             <Button

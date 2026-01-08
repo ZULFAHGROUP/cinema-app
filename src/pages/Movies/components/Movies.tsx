@@ -21,7 +21,7 @@ import { toast } from "react-toastify";
 import ConfirmationModal from "../../../components/shared/Modal/ConfirmationModal";
 import { getHumanDate, getHumanTime } from "../../../utils";
 
-const Movies = ({ movies, showtimes, loading, onAddShowtime, cinemas }: any) => {
+const Movies = ({ movies, showtimes, loading, onAddShowtime, cinemas, totalShowtimes, onLoadMoreShowtimes }: any) => {
   const [isEditMovieModalOpen, setIsEditMovieModalOpen] = useState(false);
   const [isEditShowtimeModalOpen, setIsEditShowtimeModalOpen] = useState(false);
   
@@ -203,59 +203,71 @@ const Movies = ({ movies, showtimes, loading, onAddShowtime, cinemas }: any) => 
                   <div className="pt-2">
                     <p className="text-sm font-serif font-semibold mb-2">Showtimes</p>
                     {groupedShowtimes.length > 0 ? (
-                        <Collapse
-                            ghost
-                            items={groupedShowtimes.map((group: any) => ({
-                                key: group.cinemaName,
-                                label: <span className="text-xs font-bold text-slate-700">{group.cinemaName}</span>,
-                                children: (
-                                   <div className="flex flex-col gap-1">
-                                       {group.showtimes.map((st: any) => (
-                                           <div key={st.showtime_id} className="flex items-center justify-between bg-white border rounded px-2 py-1 text-xs">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-medium">{getHumanDate(st.show_date)}</span>
-                                                    <span className="text-slate-500">|</span>
-                                                    <span>{getHumanTime(st.show_time)}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                     <Tag className="mr-0" color={st.showtimeStatus?.name === 'Scheduled' ? 'blue' : 'default'}>
-                                                        {st.showtimeStatus?.name}
-                                                     </Tag>
-                                                     <Dropdown
-                                                        menu={{
-                                                            items: [
-                                                                {
-                                                                    key: '1',
-                                                                    label: 'Edit',
-                                                                    icon: <Edit className="w-3 h-3"/>,
-                                                                    onClick: () => {
-                                                                        setSelectedShowtime(st);
-                                                                        setIsEditShowtimeModalOpen(true);
+                        <>
+                            <Collapse
+                                ghost
+                                items={groupedShowtimes.map((group: any) => ({
+                                    key: group.cinemaName,
+                                    label: <span className="text-xs font-bold text-slate-700">{group.cinemaName}</span>,
+                                    children: (
+                                    <div className="flex flex-col gap-1">
+                                        {group.showtimes.map((st: any) => (
+                                            <div key={st.showtime_id} className="flex items-center justify-between bg-white border rounded px-2 py-1 text-xs">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-medium">{getHumanDate(st.show_date)}</span>
+                                                        <span className="text-slate-500">|</span>
+                                                        <span>{getHumanTime(st.show_time)}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Tag className="mr-0" color={st.showtimeStatus?.name === 'Scheduled' ? 'blue' : 'default'}>
+                                                            {st.showtimeStatus?.name}
+                                                        </Tag>
+                                                        <Dropdown
+                                                            menu={{
+                                                                items: [
+                                                                    {
+                                                                        key: '1',
+                                                                        label: 'Edit',
+                                                                        icon: <Edit className="w-3 h-3"/>,
+                                                                        onClick: () => {
+                                                                            setSelectedShowtime(st);
+                                                                            setIsEditShowtimeModalOpen(true);
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        key: '2',
+                                                                        label: 'Delete',
+                                                                        danger: true,
+                                                                        icon: <Trash2 className="w-3 h-3"/>,
+                                                                        onClick: () => {
+                                                                            setSelectedShowtime(st);
+                                                                            setShowDeleteShowtimeModal(true);
+                                                                        }
                                                                     }
-                                                                },
-                                                                {
-                                                                    key: '2',
-                                                                    label: 'Delete',
-                                                                    danger: true,
-                                                                    icon: <Trash2 className="w-3 h-3"/>,
-                                                                    onClick: () => {
-                                                                        setSelectedShowtime(st);
-                                                                        setShowDeleteShowtimeModal(true);
-                                                                    }
-                                                                }
-                                                            ]
-                                                        }}
-                                                        trigger={['click']}
-                                                     >
-                                                         <MoreVertical size={14} className="cursor-pointer text-slate-400 hover:text-slate-700"/>
-                                                     </Dropdown>
-                                                </div>
-                                           </div>
-                                       ))}
-                                   </div>
-                                )
-                            }))}
-                        />
+                                                                ]
+                                                            }}
+                                                            trigger={['click']}
+                                                        >
+                                                            <MoreVertical size={14} className="cursor-pointer text-slate-400 hover:text-slate-700"/>
+                                                        </Dropdown>
+                                                    </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    )
+                                }))}
+                            />
+                            {showtimes.length < totalShowtimes && (
+                                <div className="mt-2 text-center">
+                                    <button 
+                                        onClick={onLoadMoreShowtimes}
+                                        className="text-[10px] text- font-bold uppercase tracking-wider hover:underline flex items-center gap-1 mx-auto"
+                                    >
+                                        Load More Showtimes...
+                                    </button>
+                                </div>
+                            )}
+                        </>
                     ) : (
                         <p className="text-sm text-muted-foreground italic">No showtimes scheduled.</p>
                     )}

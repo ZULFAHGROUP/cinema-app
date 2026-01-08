@@ -5,10 +5,8 @@ interface StepIndicatorProps {
 const steps = [
   { key: "movie-selection", label: "Movie" },
   { key: "showtime-selection", label: "Showtime" },
-  { key: "ticket-quantity", label: "Tickets" },
-  { key: "seat-selection", label: "Seats" },
-  { key: "customer-info", label: "Customer" },
-  { key: "payment", label: "Payment" },
+  { key: "purchase-selection", label: "Purchase" },
+  { key: "payment-summary", label: "Payment" },
   { key: "confirmation", label: "Complete" },
 ];
 
