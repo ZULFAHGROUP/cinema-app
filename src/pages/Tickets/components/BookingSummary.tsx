@@ -54,7 +54,7 @@ export default function BookingSummary({
             <div className="flex justify-between items-center">
               <div>
                 <p className="font-sans font-medium text-sm">Tickets</p>
-                <p className="text-xs text-muted-foreground font-serif">{ticketQuantity} x ${selectedShowtime?.price || 0}</p>
+                <p className="text-xs text-muted-foreground font-serif">{ticketQuantity} x {formatCurrency(selectedShowtime?.price || 0)}</p>
               </div>
               <p className="font-sans font-bold text-sm">{formatCurrency(ticketQuantity * (selectedShowtime?.price || 0))}</p>
             </div>

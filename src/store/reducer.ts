@@ -20,7 +20,7 @@ import vatConfigReducer from './slices/vatConfig'
 import rolePermissionReducer from './slices/rolePermissions'
 import purchaseReducer from './slices/purchase'
 
-export default combineReducers({
+const appReducer = combineReducers({
   accounts: accountReducer,
   cinema: cinemaReducer,
   classification: classificationReducer,
@@ -42,3 +42,13 @@ export default combineReducers({
   rolePermission: rolePermissionReducer,
   purchase: purchaseReducer,
 });
+
+const rootReducer = (state: any, action: any) => {
+  if (action.type === "account/logout") {
+    // Check for the logout action type
+    state = undefined;
+  }
+  return appReducer(state, action);
+};
+
+export default rootReducer;

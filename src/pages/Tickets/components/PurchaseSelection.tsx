@@ -6,6 +6,8 @@ import { formatCurrency } from "../../../utils";
 interface PurchaseSelectionProps {
   showtime: any;
   availableProducts: any[];
+  totalAvailableProducts: number;
+  onLoadMoreProducts: () => void;
   ticketQuantity: number;
   setTicketQuantity: (q: number) => void;
   selectedProducts: { product_id: string; quantity: number; name: string; price: number }[];
@@ -17,6 +19,8 @@ interface PurchaseSelectionProps {
 export default function PurchaseSelection({
   showtime,
   availableProducts,
+  totalAvailableProducts,
+  onLoadMoreProducts,
   ticketQuantity,
   setTicketQuantity,
   selectedProducts,
@@ -132,6 +136,16 @@ export default function PurchaseSelection({
                   </div>
                 </div>
               ))
+            )}
+            {availableProducts.length < totalAvailableProducts && (
+                <div className="pt-2 text-center">
+                    <button 
+                        onClick={onLoadMoreProducts}
+                        className="text-[10px] cursor-pointer font-bold uppercase tracking-wider hover:underline"
+                    >
+                        Load More Concessions...
+                    </button>
+                </div>
             )}
           </div>
         </div>

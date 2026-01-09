@@ -1,18 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Button from "../../../components/shared/Button";
-import { getHumanTime } from "../../../utils";
+import { getHumanDate, getHumanTime } from "../../../utils";
 import { Calendar, MapPin } from "lucide-react";
 
 interface ShowtimeSelectionProps {
   movie: any;
   onSelect: (showtime: any) => void;
   onBack: () => void;
+  totalShowtimes: number;
+  onLoadMore: () => void;
 }
 
 export default function ShowtimeSelection({
   movie,
   onSelect,
   onBack,
+  totalShowtimes,
+  onLoadMore,
 }: ShowtimeSelectionProps) {
   return (
     <div className="space-y-8">
@@ -50,14 +54,14 @@ export default function ShowtimeSelection({
                 onClick={() => onSelect(showtime)}
             >
                 <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-primary/5 rounded-xl text-primary font-sans font-black text-xl group-hover:bg-primary group-hover:text-white transition-colors">
-                        {getHumanTime(showtime.show_time)}
+                    <div className="p-3 bg- rounded-xl text- font-sans font-black text-lg transition-colors">
+                        {getHumanTime(showtime.show_time)} • {getHumanDate(showtime.show_date)}
                     </div>
                 </div>
 
                 <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground font-serif">
-                        <MapPin className="w-4 h-4 text-primary" />
+                        <MapPin className="w-4 h-4 text-" />
                         <span>{showtime.screen?.cinema?.name} • {showtime.screen?.name}</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -73,6 +77,17 @@ export default function ShowtimeSelection({
             ))}
         </div>
       )}
+
+      {movie.showtimes.length < totalShowtimes && (
+          <div className="flex justify-center pt-4">
+            <button
+              onClick={onLoadMore}
+              className="text- cursor-pointer font-bold hover:underline"
+            >
+              Load More Showtimes...
+            </button>
+          </div>
+        )}
     </div>
   );
 }

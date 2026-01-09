@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from "react";
+import { Tag } from "antd";
 import { getAllAuditTrails } from "../../store/slices/extras";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import ReusableTable from "../../components/shared/Table";
 import Loader from "../../components/shared/Loader";
-import { humanDateAndTime } from "../../utils";
+import { formatUserLabel, humanDateAndTime } from "../../utils";
 
 const AuditTrail = () => {
   const dispatch = useAppDispatch();
@@ -40,9 +41,23 @@ const AuditTrail = () => {
       render: (user: any) => user?.email || "Email not available",
     },
     { title: "Description", dataIndex: "description", key: "description" },
-    { title: "Action", dataIndex: "action", key: "action" },
+    {
+      title: "Action",
+      dataIndex: "action",
+      key: "action",
+      render: (action: string) => {
+        let color = "default";
+        const act = action?.toUpperCase();
+        if (act?.includes("CREATE")) color = "green";
+        else if (act?.includes("UPDATE")) color = "blue";
+        else if (act?.includes("DELETE")) color = "red";
+        else if (act?.includes("LOGIN")) color = "cyan";
+        else if (act?.includes("LOGOUT")) color = "volcano";
+        return <Tag color={color}>{action}</Tag>;
+      },
+    },
     { title: "User Agent", dataIndex: "user_agent", key: "user_agent" },
-    { title: "Accessed Resource", dataIndex: "resource", key: "resource" },
+    { title: "Accessed Resource", dataIndex: "resource", key: "resource", render: (_:unknown, record: any) => formatUserLabel(record?.resource) || "Resource not available" },
     {
       title: "Time and Date",
       dataIndex: "created_at",

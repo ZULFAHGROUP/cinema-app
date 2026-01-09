@@ -23,23 +23,32 @@ function TicketSalesPage() {
   const [selectedShowtime, setSelectedShowtime] = useState<any>(null);
   const [ticketQuantity, setTicketQuantity] = useState(1);
   const [selectedProducts, setSelectedProducts] = useState<any[]>([]);
+  const [movieLimit, setMovieLimit] = useState(10);
+  const [showtimeLimit, setShowtimeLimit] = useState(10);
+  const [availableProductLimit, setAvailableProductLimit] = useState(10);
 
   const dispatch = useAppDispatch();
-  const { movies, moviesLoading } = useAppSelector((state) => state.movie);
-  const { showtimes, selectedShowtimePrice } = useAppSelector((state) => state.showtime);
-  const { availableProducts } = useAppSelector((state) => state.product);
+  const { movies, moviesLoading, total: totalMovies } = useAppSelector((state) => state.movie);
+  const { showtimes, selectedShowtimePrice, total: totalShowtimes } = useAppSelector((state) => state.showtime);
+  const { availableProducts, availableProductTotal } = useAppSelector((state) => state.product);
   const { initiateLoading, initiateData } = useAppSelector((state) => state.purchase);
 
   useEffect(() => {
-    dispatch(getAllMovies({ page: 1, limit: 100 }));
-    dispatch(getAvailableProducts(undefined));
-  }, [dispatch]);
+    dispatch(getAllMovies({ page: 1, limit: movieLimit }));
+    dispatch(getAvailableProducts({ page: 1, limit: availableProductLimit }));
+  }, [dispatch, movieLimit, availableProductLimit]);
 
   const handleMovieSelect = (movie: any) => {
     setSelectedMovie(movie);
-    dispatch(getAllShowtimes({ page: 1, limit: 100 })); // Ideally filter by movie_id if supported
+    dispatch(getAllShowtimes({ page: 1, limit: showtimeLimit })); // Ideally filter by movie_id if supported
     setCurrentStep("showtime-selection");
   };
+
+  useEffect(() => {
+    if (selectedMovie) {
+      dispatch(getAllShowtimes({ page: 1, limit: showtimeLimit }));
+    }
+  }, [dispatch, selectedMovie, showtimeLimit]);
 
   const handleShowtimeSelect = async (showtime: any) => {
     setSelectedShowtime(showtime);
@@ -55,10 +64,10 @@ function TicketSalesPage() {
     const payload = {
       showtime_id: selectedShowtime?.showtime_id,
       ticket_quantity: ticketQuantity,
-      extra_products: selectedProducts.map(p => ({
-        product_id: p.product_id,
-        quantity: p.quantity
-      }))
+      // extra_products: selectedProducts.map(p => ({
+      //   product_id: p.product_id,
+      //   quantity: p.quantity
+      // }))
     };
 
     try {
@@ -132,7 +141,12 @@ function TicketSalesPage() {
             ) : (
               <>
                 {currentStep === "movie-selection" && (
-                  <MovieSelection movies={movies} onSelect={handleMovieSelect} />
+                  <MovieSelection 
+                    movies={movies} 
+                    onSelect={handleMovieSelect} 
+                    totalMovies={totalMovies}
+                    onLoadMore={() => setMovieLimit(prev => prev + 10)}
+                  />
                 )}
 
                 {currentStep === "showtime-selection" && selectedMovie && (
@@ -140,6 +154,8 @@ function TicketSalesPage() {
                     movie={{ ...selectedMovie, showtimes: filteredShowtimes }}
                     onSelect={handleShowtimeSelect}
                     onBack={() => setCurrentStep("movie-selection")}
+                    totalShowtimes={totalShowtimes}
+                    onLoadMore={() => setShowtimeLimit(prev => prev + 10)}
                   />
                 )}
 
@@ -147,6 +163,8 @@ function TicketSalesPage() {
                   <PurchaseSelection
                     showtime={{ ...selectedShowtime, price: selectedShowtimePrice?.price || 0 }}
                     availableProducts={availableProducts}
+                    totalAvailableProducts={availableProductTotal}
+                    onLoadMoreProducts={() => setAvailableProductLimit(prev => prev + 10)}
                     ticketQuantity={ticketQuantity}
                     setTicketQuantity={setTicketQuantity}
                     selectedProducts={selectedProducts}

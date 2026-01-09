@@ -86,6 +86,7 @@ const PriceRuleForm = ({
       const payload = {
         ...values,
         cinema_id: values.cinema_id || undefined,
+        is_global: values.cinema_id === "",
       };
 
       if (editMode) {

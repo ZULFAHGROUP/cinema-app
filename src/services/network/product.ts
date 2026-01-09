@@ -22,10 +22,11 @@ const Product = {
     return Axios.delete(`${urls.product}/${id}`);
   },
 
-  availableProducts: (cinema_id?: string) => {
-    const url = cinema_id
-      ? `${urls.product_available}?cinema_id=${cinema_id}`
-      : urls.product_available;
+  availableProducts: (page: number, limit: number, cinema_id?: string) => {
+    let url = `${urls.product_available}?page=${page}&limit=${limit}`;
+    if (cinema_id) {
+      url += `&cinema_id=${cinema_id}`;
+    }
     return Axios.get(url);
   },
 };

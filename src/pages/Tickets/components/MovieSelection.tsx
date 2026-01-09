@@ -4,11 +4,15 @@ import { Clock, PlayCircle } from "lucide-react";
 interface MovieSelectionProps {
   movies: any[];
   onSelect: (movie: any) => void;
+  totalMovies: number;
+  onLoadMore: () => void;
 }
 
 export default function MovieSelection({
   movies,
   onSelect,
+  totalMovies,
+  onLoadMore,
 }: MovieSelectionProps) {
   return (
     <div className="space-y-6">
@@ -59,6 +63,17 @@ export default function MovieSelection({
           </div>
         ))}
       </div>
+
+      {movies.length < totalMovies && (
+        <div className="flex justify-center pt-4">
+          <button
+            onClick={onLoadMore}
+            className="text- cursor-pointer font-bold hover:underline"
+          >
+            Load More Movies...
+          </button>
+        </div>
+      )}
     </div>
   );
 }

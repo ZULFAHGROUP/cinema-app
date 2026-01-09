@@ -70,10 +70,16 @@ export const deleteProduct = createAsyncThunk(
 
 export const getAvailableProducts = createAsyncThunk(
   "product/getAvailable",
-  async (cinema_id: string | undefined, { rejectWithValue }) => {
+  async ({ page = 1, limit = 10, cinema_id }: { page?: number; limit?: number; cinema_id?: string },
+    { rejectWithValue }) => {
     try {
-      const response = await Product.availableProducts(cinema_id);
-      return response.data;
+      const response = await Product.availableProducts(page, limit, cinema_id);
+      return {
+        data: response.data.data.products,
+        page,
+        limit,
+        total: response.data.data.pagination.total,
+      };
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
     }
@@ -90,6 +96,9 @@ const productSlice = createSlice({
     productPage: 1,
     productLimit: 10,
     productTotal: 0,
+    availableProductPage: 1,
+    availableProductLimit: 10,
+    availableProductTotal: 0,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -113,6 +122,9 @@ const productSlice = createSlice({
       .addCase(getAvailableProducts.fulfilled, (state, action) => {
         state.productLoading = false;
         state.availableProducts = action.payload.data || [];
+        state.availableProductPage = action.payload.page;
+        state.availableProductLimit = action.payload.limit;
+        state.availableProductTotal = action.payload.total;
       })
       .addCase(getAvailableProducts.rejected, (state) => {
         state.productLoading = false;
