@@ -18,4 +18,5 @@ export const allRoutes = {
   reports: "/reporting",
   settings: "/settings",
   audit: "/audit",
+  paymentSuccess: "/payment-success",
 };

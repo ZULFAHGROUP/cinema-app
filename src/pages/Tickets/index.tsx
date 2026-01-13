@@ -6,7 +6,6 @@ import MovieSelection from "./components/MovieSelection";
 import ShowtimeSelection from "./components/ShowtimeSelection";
 import PurchaseSelection from "./components/PurchaseSelection";
 import PaymentSummary from "./components/PaymentSummary";
-import PaymentSuccess from "./components/PaymentSuccess";
 import BookingSummary from "./components/BookingSummary";
 import StepIndicator from "./components/StepIndicator";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
@@ -15,7 +14,6 @@ import { getAllShowtimes, getShowtimePrice } from "../../store/slices/showtime";
 import { getAvailableProducts } from "../../store/slices/product";
 import { initiatePurchase, resetPurchase } from "../../store/slices/purchase";
 import { toast } from "react-toastify";
-import { getHumanTime } from "../../utils";
 
 function TicketSalesPage() {
   const [currentStep, setCurrentStep] = useState("movie-selection");
@@ -64,10 +62,10 @@ function TicketSalesPage() {
     const payload = {
       showtime_id: selectedShowtime?.showtime_id,
       ticket_quantity: ticketQuantity,
-      // extra_products: selectedProducts.map(p => ({
-      //   product_id: p.product_id,
-      //   quantity: p.quantity
-      // }))
+      extra_products: selectedProducts.map(p => ({
+        product_id: p.product_id,
+        quantity: p.quantity
+      }))
     };
 
     try {
@@ -182,29 +180,12 @@ function TicketSalesPage() {
                     onBack={() => setCurrentStep("purchase-selection")}
                   />
                 )}
-
-                {currentStep === "confirmation" && (
-                  <PaymentSuccess
-                    bookingData={{
-                      bookingNumber: initiateData?.payment_reference || "N/A",
-                      movieTitle: selectedMovie?.title,
-                      theater: selectedShowtime?.screen?.cinema?.name || "N/A",
-                      screen: selectedShowtime?.screen?.name || "N/A",
-                      showtime: selectedShowtime ? getHumanTime(selectedShowtime.show_time) : "N/A",
-                      seats: [], // Seats are no longer part of the flow
-                      amountPaid: initiateData?.amount || 0,
-                      customerEmail: "customer@example.com", // Placeholder
-                      bookingDate: new Date().toLocaleDateString(),
-                    }}
-                    onNewBooking={resetBooking}
-                  />
-                )}
               </>
             )}
           </div>
 
           {/* Booking Summary Sidebar */}
-          {currentStep !== "movie-selection" && currentStep !== "confirmation" && currentStep !== "payment-summary" && (
+          {currentStep !== "movie-selection" && currentStep !== "payment-summary" && (
             <div className="lg:w-80">
                 <BookingSummary
                 selectedMovie={selectedMovie}

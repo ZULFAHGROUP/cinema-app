@@ -19,6 +19,7 @@ import permissionReducer from './slices/permissions'
 import vatConfigReducer from './slices/vatConfig'
 import rolePermissionReducer from './slices/rolePermissions'
 import purchaseReducer from './slices/purchase'
+import orderReducer from "./slices/order";
 
 const appReducer = combineReducers({
   accounts: accountReducer,
@@ -41,6 +42,7 @@ const appReducer = combineReducers({
   vatConfig: vatConfigReducer,
   rolePermission: rolePermissionReducer,
   purchase: purchaseReducer,
+  order: orderReducer,
 });
 
 const rootReducer = (state: any, action: any) => {

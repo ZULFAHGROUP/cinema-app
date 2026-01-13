@@ -21,6 +21,7 @@ const urls = {
   vat_config: "/vat-config",
   role_permission: "/role-permission",
   purchase_initiate: "/purchase/initiate",
+  order: "/orders",
 };
 
 export default urls;

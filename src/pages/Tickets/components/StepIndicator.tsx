@@ -7,7 +7,6 @@ const steps = [
   { key: "showtime-selection", label: "Showtime" },
   { key: "purchase-selection", label: "Purchase" },
   { key: "payment-summary", label: "Payment" },
-  { key: "confirmation", label: "Complete" },
 ];
 
 export default function StepIndicator({ currentStep }: StepIndicatorProps) {

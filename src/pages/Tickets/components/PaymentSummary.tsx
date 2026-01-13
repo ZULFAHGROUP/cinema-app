@@ -18,7 +18,6 @@ export default function PaymentSummary({
 }: PaymentSummaryProps) {
   if (!initiateData) return null;
 
-  const { breakdown } = initiateData;
 
   return (
     <div className="space-y-6 max-w-xl mx-auto">
@@ -42,10 +41,10 @@ export default function PaymentSummary({
           
           <div className="space-y-3 pt-2">
             <div className="flex justify-between items-center">
-              <span className="font-sans">Subtotal</span>
-              <span className="font-sans font-medium">{formatCurrency(breakdown.items_subtotal || 0)}</span>
+              <span className="font-sans">Total</span>
+              <span className="font-sans font-medium">{formatCurrency(initiateData.amount || 0)}</span>
             </div>
-            <div className="flex justify-between items-center">
+            {/* <div className="flex justify-between items-center">
               <span className="font-sans text-muted-foreground">VAT (7.5%)</span>
               <span className="font-sans text-muted-foreground">{formatCurrency(breakdown.vat_amount || 0)}</span>
             </div>
@@ -54,7 +53,7 @@ export default function PaymentSummary({
               <span className="text-2xl font-sans font-extrabold text-primary">
                 {formatCurrency(breakdown.grand_total || 0)}
               </span>
-            </div>
+            </div> */}
           </div>
         </div>
 

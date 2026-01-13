@@ -25,7 +25,8 @@ import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { useEffect } from "react";
 import { getAllMovies } from "../../store/slices/movie";
 import { getAllAuditTrails } from "../../store/slices/extras";
-import { formatAuditActivity  } from "../../utils";
+import { formatAuditActivity, formatCurrencyToNGN  } from "../../utils";
+import { getOrderStats } from "../../store/slices/order";
 
 function Dashboard() {
   const dispatch = useAppDispatch();
@@ -38,17 +39,21 @@ function Dashboard() {
       limit: 5,
     })
   ).unwrap();
+  dispatch(getOrderStats()).unwrap();
   }, [dispatch, page, limit]);
 
   const { movies } = useAppSelector((state) => state.movie);
-const { auditTrails, auditLoading } = useAppSelector(
+const { auditTrails } = useAppSelector(
   (state) => state.extras
+);
+const { orderStats } = useAppSelector(
+  (state) => state.order
 );
 
   const dashboardStats = [
     {
-      title: "Today's Sales",
-      value: "$12,450",
+      title: "Total Revenue",
+      value: formatCurrencyToNGN(orderStats?.totalRevenue) || 0,
       change: "+12%",
       icon: DollarSign,
       color: "text-green-600",
@@ -141,7 +146,7 @@ const { auditTrails, auditLoading } = useAppSelector(
                     <p className="text-sm font-serif text-muted-foreground">
                       {stat.title}
                     </p>
-                    <p className="text-2xl font-sans font-bold text-foreground">
+                    <p className="text-nowrap text-lg md:text-2xl font-sans font-bold text-foreground">
                       {stat.value}
                     </p>
                     <p

@@ -50,7 +50,6 @@ export default function AddShowtimeForm({
 
   useEffect(() => {
     dispatch(getAllShowtimeStatuses({ page, limit }));
-    dispatch(getAllShowtimeStatuses({ page, limit }));
   }, [dispatch, page, limit]);
 
   useEffect(() => {
@@ -95,10 +94,10 @@ export default function AddShowtimeForm({
       : [],
   };
 
-  const { user } = useAppSelector((state) => state.accounts.data);
-  const isAdmin =
-    user?.role?.toLowerCase() === "admin" ||
-    user?.role?.toLowerCase() === "superadmin";
+  // const { user } = useAppSelector((state) => state.accounts.data);
+  // const isAdmin =
+  //   user?.role?.toLowerCase() === "admin" ||
+  //   user?.role?.toLowerCase() === "superadmin";
 
   async function handleSubmit(values: any, { resetForm }: any) {
     try {
@@ -112,12 +111,12 @@ export default function AddShowtimeForm({
         toast.success(response.message);
 
         // Refresh showtime list - only pass cinema_id for admin users
-        const cinemaIdToUse = isAdmin ? values.cinema_id : undefined;
+        // const cinemaIdToUse = isAdmin ? values.cinema_id : undefined;
         await dispatch(
           getAllShowtimes({
             page: 1,
             limit: 10,
-            cinema_id: cinemaIdToUse,
+            // cinema_id: cinemaIdToUse,
           })
         );
 

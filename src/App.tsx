@@ -27,6 +27,7 @@ import SignageRoutes from "./routes/signageRoute";
 import ReportsRoutes from "./routes/reportsRoutes";
 import SettingsRoutes from "./routes/settingsRoutes";
 import AuditTrail from "./pages/AuditTrail";
+import PaymentSuccess from "./pages/SuccessPage/PaymentSuccess";
 
 const App = () => {
   return (
@@ -82,6 +83,7 @@ const App = () => {
                 />
                 <Route path={`${allRoutes.audit}/*`} element={<AuditTrail />} />
               </Route>
+              <Route path={allRoutes.paymentSuccess} element={<PaymentSuccess />} />
 
               {/*  404 Catch-All Route */}
               <Route path="*" element={<NotFound />} />

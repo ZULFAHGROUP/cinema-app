@@ -21,6 +21,7 @@ import AddProductForm from "./components/AddProductForm";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { getAllProducts } from "../../store/slices/product";
+import { getAllOrders } from "../../store/slices/order";
 
 function ConcessionsPage() {
   const [activeTab, setActiveTab] = useState("inventory");
@@ -33,7 +34,7 @@ function ConcessionsPage() {
     (state) => state.product
   );
   const { user } = useAppSelector((state) => state.accounts.data);
-
+const { orders,page,limit } = useAppSelector((state) => state.order);
   // Determine if user is admin
   const isAdmin = user?.role?.name?.toLowerCase() === "admin";
 
@@ -50,6 +51,7 @@ function ConcessionsPage() {
         })
       );
     }
+    dispatch(getAllOrders({page,limit}));
   }, [dispatch, productPage, productLimit, activeCinemaId]);
 
   const [cart, setCart] = useState<any[]>([]);
@@ -75,30 +77,6 @@ function ConcessionsPage() {
       contact: "Mike Chen",
       phone: "(555) 345-6789",
       email: "orders@sweetreats.com",
-    },
-  ];
-
-  const recentSales = [
-    {
-      id: 1,
-      items: "Large Popcorn, Medium Soda",
-      total: 14.98,
-      time: "2 minutes ago",
-      cashier: "Mike Chen",
-    },
-    {
-      id: 2,
-      items: "Candy Mix x2, Small Soda",
-      total: 14.97,
-      time: "5 minutes ago",
-      cashier: "Emily Rodriguez",
-    },
-    {
-      id: 3,
-      items: "Nachos, Large Soda",
-      total: 14.98,
-      time: "8 minutes ago",
-      cashier: "Mike Chen",
     },
   ];
 
@@ -159,7 +137,7 @@ function ConcessionsPage() {
           <BarChart3 className="w-4 h-4" /> Sales
         </span>
       ),
-      children: <Sales recentSales={recentSales} />,
+      children: <Sales recentSales={orders} />,
     },
     {
       key: "suppliers",

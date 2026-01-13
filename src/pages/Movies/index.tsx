@@ -12,12 +12,12 @@ import { getAllShowtimes } from "../../store/slices/showtime";
 import { getAllCinemas } from "../../store/slices/cinema";
 import { getAllShowtimeStatuses } from "../../store/slices/showtimeStatus";
 import { getAllMovies } from "../../store/slices/movie";
-import ReusableSelect from "../../components/shared/Select";
+// import ReusableSelect from "../../components/shared/Select";
 
 function MoviesPage() {
   const [isAddMovieModalOpen, setIsAddMovieModalOpen] = useState(false);
   const [isAddShowtimeModalOpen, setIsAddShowtimeModalOpen] = useState(false);
-  const [selectedCinemaId, setSelectedCinemaId] = useState<string>("");
+  // const [selectedCinemaId, setSelectedCinemaId] = useState<string>("");
   const [preSelectedMovie, setPreSelectedMovie] = useState<any>(null);
   const [showtimeLimitCount, setShowtimeLimitCount] = useState(10);
 
@@ -35,10 +35,10 @@ function MoviesPage() {
   const { limit: movieLimit, page: moviePage } = useAppSelector(
     (state) => state.movie
   );
-  const { user } = useAppSelector((state) => state.accounts.data);
-  const isAdmin =
-    user?.role?.toLowerCase() === "admin" ||
-    user?.role?.toLowerCase() === "superadmin";
+  // const { user } = useAppSelector((state) => state.accounts.data);
+  // const isAdmin =
+  //   user?.role?.toLowerCase() === "admin" ||
+  //   user?.role?.toLowerCase() === "superadmin";
 
   const dispatch = useAppDispatch();
   useEffect(() => {
@@ -54,18 +54,18 @@ function MoviesPage() {
   }, [dispatch, moviePage, movieLimit]);
 
   useEffect(() => {
-    const cinemaIdToUse = isAdmin ? selectedCinemaId : undefined;
+    // const cinemaIdToUse = isAdmin ? selectedCinemaId : undefined;
     dispatch(
       getAllShowtimes({
         limit: showtimeLimitCount,
         page: showtimePage,
-        cinema_id: cinemaIdToUse,
+        // cinema_id: cinemaIdToUse,
       })
     ).unwrap();
   }, [
     dispatch,
-    selectedCinemaId,
-    isAdmin,
+    // selectedCinemaId,
+    // isAdmin,
     showtimeLimitCount,
     showtimePage,
   ]);
@@ -90,7 +90,7 @@ function MoviesPage() {
            <p className="text-sm font-serif text-muted-foreground mt-1">Manage movies and showtimes</p>
         </div>
         <div className="flex gap-2 ml-4 items-center">
-             {isAdmin && (
+             {/* {isAdmin && (
                <div className="w-[300px]">
                   <ReusableSelect
                     label=""
@@ -104,7 +104,7 @@ function MoviesPage() {
                     defaultOption="Select a cinema to see showtimes"
                   />
                </div>
-             )}
+             )} */}
             <Button
               onClick={() => setIsAddMovieModalOpen(true)}
               className="gap-2 rounded-md"

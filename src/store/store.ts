@@ -33,6 +33,7 @@ const persistConfig = {
     "permission",
     "vatConfig",
     "rolePermission",
+    'order'
   ],
 };
 
