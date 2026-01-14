@@ -7,12 +7,19 @@ import {
   CardTitle,
 } from "../../../components/shared/Cards";
 import { DollarSign, ShoppingCart, TrendingUp } from "lucide-react";
-import { useAppSelector } from "../../../store/hook";
+import { useAppDispatch, useAppSelector } from "../../../store/hook";
+import ReusableTable from "../../../components/shared/Table";
+import { getAllOrders } from "../../../store/slices/order";
+import Loader from "../../../components/shared/Loader";
+import { formatCurrency } from "../../../utils";
 
-export default function Sales({ recentSales }: any) {
+export default function Sales({ recentSales,loading }: any) {
   const { orderStats } = useAppSelector(
     (state) => state.order
   );
+  const { page,limit,total } = useAppSelector((state) => state.order);
+  
+  const dispatch = useAppDispatch()
   const salesStats = [
     {
       icon: DollarSign,
@@ -33,6 +40,57 @@ export default function Sales({ recentSales }: any) {
       value: orderStats?.completedOrders,
     },
   ];
+
+const columns = [
+    {
+      title: "Order Type",
+      dataIndex: "order_type",
+      key: "order_type",
+          },
+    {
+      title: "Grand Total",
+      dataIndex: "grand_total",
+      key: "grand_total",
+      render: (grand_total: number) => <span className="font-semibold">{formatCurrency(grand_total)}</span>,
+    },
+    {
+      title: "Payment Status",
+      dataIndex: "payment_status",
+      key: "payment_status",
+      render:(payment_status: string) => <span className="capitalize">{payment_status.toLowerCase()}</span>
+    },
+    {
+      title: "Grand Total",
+      dataIndex: "vat_rate",
+      key: "vat_rate",
+      render: (vat_rate: number) => <span className="font-semibold">{vat_rate}</span>,
+    },
+    {
+      title: "Vat Amount",
+      dataIndex: "vat_amount",
+      key: "vat_amount",
+      render:(vat_amount: number) => <span className="capitalize">{formatCurrency(vat_amount)}</span>
+    },
+     {
+      title: "Cinema Details",
+      key: "cinema_id",
+      render:(_:unknown,record: any) => <div className=""><p>{record?.cinema?.name}</p><p className="text-sm">{record?.cinema?.location}</p></div>
+    },
+    {
+      title: "User",
+      key: "surname",
+      render:(_:unknown,record: any) => <div className=""><p>{record?.user?.surname} {record?.user?.other_names}</p><p className="text-xs">{record?.user?.email}</p><p className="text-xs">{record?.user?.phone}</p></div>
+    },
+     ];
+
+const handleTableChange = (pagination: any) => {
+    dispatch(
+      getAllOrders({
+        page: pagination.current,
+        limit: pagination.pageSize,
+      })
+    ).unwrap();
+  };
 
   return (
     <div className="space-y-6">
@@ -58,27 +116,31 @@ export default function Sales({ recentSales }: any) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-sans">Recent Sales</CardTitle>
+          <CardTitle className="font-sans">All Sales</CardTitle>
           <CardDescription className="font-serif">
-            Latest concession orders
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {recentSales.map((sale: any) => (
-              <div
-                key={sale.id}
-                className="flex items-center justify-between p-3 bg-muted rounded-lg"
-              >
-                <div>
-                  <p className="font-sans font-medium">{sale.items}</p>
-                  <p className="text-sm font-serif text-muted-foreground">
-                    {sale.time} • Cashier: {sale.cashier}
-                  </p>
-                </div>
-                <p className="font-sans font-bold">${sale.total}</p>
-              </div>
-            ))}
+          {loading ? (
+        <Loader rows={6} />
+      ) : (
+        <ReusableTable
+          data={recentSales || []}
+          columns={columns}
+          title="Orders"
+          searchField={["order_type"]}
+          excludeColumns={["order_id", "cinema_id", "created_at", "updated_at","user_id"]}
+          showPagination={true}
+          paginationMode="backend"
+          paginationProps={{
+            total,
+            current: page,
+            pageSize: limit,
+          }}
+          onTableChange={handleTableChange}
+        />
+      )}
           </div>
         </CardContent>
       </Card>

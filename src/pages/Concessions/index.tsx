@@ -34,7 +34,7 @@ function ConcessionsPage() {
     (state) => state.product
   );
   const { user } = useAppSelector((state) => state.accounts.data);
-const { orders,page,limit } = useAppSelector((state) => state.order);
+const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order);
   // Determine if user is admin
   const isAdmin = user?.role?.name?.toLowerCase() === "admin";
 
@@ -137,7 +137,7 @@ const { orders,page,limit } = useAppSelector((state) => state.order);
           <BarChart3 className="w-4 h-4" /> Sales
         </span>
       ),
-      children: <Sales recentSales={orders} />,
+      children: <Sales recentSales={orders} loading={orderLoading} />,
     },
     {
       key: "suppliers",
