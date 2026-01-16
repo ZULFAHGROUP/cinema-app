@@ -12,14 +12,24 @@ import ReusableTable from "../../../components/shared/Table";
 import { getAllOrders } from "../../../store/slices/order";
 import Loader from "../../../components/shared/Loader";
 import { formatCurrency } from "../../../utils";
+import { getAllCinemas } from "../../../store/slices/cinema";
+import { getCinemaOrders } from "../../../store/slices/order";
+import { useState, useEffect } from "react";
+import ReusableSelect from "../../../components/shared/Select";
 
 export default function Sales({ recentSales,loading }: any) {
   const { orderStats } = useAppSelector(
     (state) => state.order
   );
   const { page,limit,total } = useAppSelector((state) => state.order);
+  const { allCinemas } = useAppSelector((state) => state.cinema);
+  const [selectedCinema, setSelectedCinema] = useState("");
   
   const dispatch = useAppDispatch()
+  
+  useEffect(() => {
+    dispatch(getAllCinemas({ page: 1, limit: 100 }));
+  }, [dispatch]);
   const salesStats = [
     {
       icon: DollarSign,
@@ -84,12 +94,42 @@ const columns = [
      ];
 
 const handleTableChange = (pagination: any) => {
-    dispatch(
-      getAllOrders({
-        page: pagination.current,
-        limit: pagination.pageSize,
-      })
-    ).unwrap();
+    if (selectedCinema) {
+      dispatch(
+        getCinemaOrders({
+          cinemaId: selectedCinema,
+          page: pagination.current,
+          limit: pagination.pageSize,
+        })
+      ).unwrap();
+    } else {
+      dispatch(
+        getAllOrders({
+          page: pagination.current,
+          limit: pagination.pageSize,
+        })
+      ).unwrap();
+    }
+  };
+
+  const handleCinemaChange = (value: string) => {
+    setSelectedCinema(value);
+    if (value) {
+      dispatch(
+        getCinemaOrders({
+          cinemaId: value,
+          page: 1,
+          limit: 10,
+        })
+      ).unwrap();
+    } else {
+      dispatch(
+        getAllOrders({
+          page: 1,
+          limit: 10,
+        })
+      ).unwrap();
+    }
   };
 
   return (
@@ -118,6 +158,18 @@ const handleTableChange = (pagination: any) => {
         <CardHeader>
           <CardTitle className="font-sans">All Sales</CardTitle>
           <CardDescription className="font-serif">
+            <div className="w-full md:w-1/3">
+              <ReusableSelect
+                options={allCinemas.map((cinema: any) => ({
+                  label: cinema.name,
+                  value: cinema.cinema_id,
+                }))}
+                value={selectedCinema}
+                onChange={(val) => handleCinemaChange(val as string)}
+                defaultOption="Filter by Cinema"
+                showSearch={true}
+              />
+            </div>
           </CardDescription>
         </CardHeader>
         <CardContent>
