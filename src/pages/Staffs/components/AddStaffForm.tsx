@@ -6,7 +6,7 @@ import Button from "../../../components/shared/Button";
 import ReusableSelect from "../../../components/shared/Select";
 import { toast } from "react-toastify";
 import { useAppDispatch } from "../../../store/hook";
-import { createStaff, updateStaff } from "../../../store/slices/staff";
+import { createStaff, getGeneralStaff, getManagers, getPosCashiers, updateStaff } from "../../../store/slices/staff";
 
 interface StaffData {
   id?: string;
@@ -34,10 +34,14 @@ const AddStaffForm = ({
 }: AddStaffFormProps) => {
   const dispatch = useAppDispatch();
 
-  const roleOptions = roles?.map((role) => ({
+  const roleOptions = roles
+  ?.filter(
+    (role) => role.role_name?.toLowerCase() !== "customer"
+  ).map((role) => ({
     label: role.role_name,
     value: role.role_name,
   }));
+
 
   const validationSchema = Yup.object({
     surname: Yup.string().required("Surname is required"),
@@ -61,30 +65,34 @@ const AddStaffForm = ({
     role_name: staffData?.role_name || "",
   };
 
-  const handleSubmit = async (values: any, { setSubmitting }: any) => {
+  const handleSubmit = async (values: any, { resetForm }: { resetForm: () => void }) => {
     try {
       const payload = { ...values };
-
+let response
       // Remove password on edit if empty
       if (isEdit && !payload.password) {
         delete payload.password;
       }
 
       if (isEdit) {
-        await dispatch(
+       response = await dispatch(
           updateStaff({ id: staffData!.id!, data: payload })
         ).unwrap();
-        toast.success("Staff updated successfully");
       } else {
-        await dispatch(createStaff(payload)).unwrap();
-        toast.success("Staff added successfully");
+        response = await dispatch(createStaff(payload)).unwrap();
       }
+
+if(response.code === 200 || response.code === 201){
+          toast.success(response.message || (!isEdit ? "Staff added successfully" : "Staff updated successfully"));
+  dispatch(getManagers({ page: 1, limit: 100 }));
+    dispatch(getPosCashiers({ page: 1, limit: 100 }));
+    dispatch(getGeneralStaff({ page: 1, limit: 100 }));
+     resetForm();
+}
 
       onSuccess?.();
     } catch (error: any) {
       toast.error(error?.message || "Something went wrong");
-    } finally {
-      setSubmitting(false);
     }
   };
 

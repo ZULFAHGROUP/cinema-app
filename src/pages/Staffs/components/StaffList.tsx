@@ -5,18 +5,20 @@ import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
 import DisplayModal from "../../../components/shared/Modal/DisplayModal";
 import ConfirmationModal from "../../../components/shared/Modal/ConfirmationModal";
-import { useAppDispatch, useAppSelector } from "../../../store/hook";
+import { useAppDispatch } from "../../../store/hook";
 import { toast } from "react-toastify";
-import { deleteStaff, getAllStaff } from "../../../store/slices/staff";
+import { deleteStaff } from "../../../store/slices/staff";
 import AddStaffForm from "./AddStaffForm";
 import { formatUserLabel } from "../../../utils";
 
 interface StaffListProps {
   staff: any[];
   role: any;
+  onRefresh?: () => void;
+  staffTab: string
 }
 
-export default function StaffList({ staff, role }: StaffListProps) {
+export default function StaffList({ staff, role,staffTab, onRefresh }: StaffListProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
@@ -61,7 +63,6 @@ export default function StaffList({ staff, role }: StaffListProps) {
   );
 
   const dispatch = useAppDispatch();
-  const { page, limit } = useAppSelector((state) => state.staff);
 
   const handleDelete = async () => {
     if (!selectedStaff) return;
@@ -70,8 +71,13 @@ export default function StaffList({ staff, role }: StaffListProps) {
         deleteStaff(selectedStaff?.surname)
       ).unwrap();
       if (response.code === 200) {
+        // toast.success(response.message);
+        // await dispatch(getManagers({ limit, page })).unwrap(); // REMOVED hardcoded refresh
+        // setShowDeleteModal(false);
         toast.success(response.message);
-        await dispatch(getAllStaff({ limit, page })).unwrap();
+        if (onRefresh) {
+            onRefresh();
+        }
         setShowDeleteModal(false);
       }
     } catch (error: any) {
@@ -106,7 +112,9 @@ export default function StaffList({ staff, role }: StaffListProps) {
       render: (role: any) =>
         role ? `${formatUserLabel(role?.role_name)}` : "Role not available",
       filters:
-        role?.map((r: any) => ({
+        role?.filter(
+    (role:any) => role.role_name?.toLowerCase() !== "customer"
+  ).map((r: any) => ({
           text: r?.role_name,
           value: r?.role_name,
         })) || [],
@@ -145,7 +153,7 @@ export default function StaffList({ staff, role }: StaffListProps) {
       <ReusableTable
         data={staff}
         columns={columns}
-        title="Staff Members"
+        title={staffTab === 'managers'? "Managers List" : staffTab === "cashiers" ? "Cashiers List" : "General Staff List"}
         searchField={["name", "email", "role", "department"]}
         showSearch={true}
         showPagination={true}

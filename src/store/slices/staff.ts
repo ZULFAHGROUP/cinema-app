@@ -3,16 +3,47 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { ApiResponse } from "../../@types/common";
 import Staff from "../../services/network/staff";
 
-export const getAllStaff = createAsyncThunk(
-  "staff/getAll",
-  async (
-    { page = 1, limit = 10 }: { page?: number; limit?: number },
-    { rejectWithValue }
-  ) => {
+export const getManagers = createAsyncThunk(
+  "staff/getManagers",
+  async ({ page = 1, limit = 10 }: { page?: number; limit?: number }, { rejectWithValue }) => {
     try {
-      const response = await Staff.allStaff(page, limit);
+      const response = await Staff.getManagers(page, limit);
       return {
-        data: response.data.data.users,
+        data: response.data.data.managers,
+        page,
+        limit,
+        total: response.data.data.pagination.total,
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data);
+    }
+  }
+);
+
+export const getPosCashiers = createAsyncThunk(
+  "staff/getPosCashiers",
+  async ({ page = 1, limit = 10 }: { page?: number; limit?: number }, { rejectWithValue }) => {
+    try {
+      const response = await Staff.getPosCashiers(page, limit);
+      return {
+        data: response.data.data.posCashiers,
+        page,
+        limit,
+        total: response.data.data.pagination.total,
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data);
+    }
+  }
+);
+
+export const getGeneralStaff = createAsyncThunk(
+  "staff/getGeneralStaff",
+  async ({ page = 1, limit = 10 }: { page?: number; limit?: number }, { rejectWithValue }) => {
+    try {
+      const response = await Staff.getStaffs(page, limit);
+      return {
+        data: response.data.data.staffs,
         page,
         limit,
         total: response.data.data.pagination.total,
@@ -71,41 +102,71 @@ export const deleteStaff = createAsyncThunk(
 const staffSlice = createSlice({
   name: "staff",
   initialState: {
-    staff: [],
-    staffLoading: false,
+    managers: [],
+    cashiers: [],
+    generalStaff: [],
+    loading: false,
     error: null,
-    page: 1,
-    limit: 10,
-    total: 0,
+    managersPagination: { page: 1, limit: 10, total: 0 },
+    cashiersPagination: { page: 1, limit: 10, total: 0 },
+    staffPagination: { page: 1, limit: 10, total: 0 },
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(getAllStaff.pending, (state) => {
-        state.staffLoading = true;
+      // Managers
+      .addCase(getManagers.pending, (state) => {
+        state.loading = true;
       })
-      .addCase(getAllStaff.fulfilled, (state, action) => {
-        state.staffLoading = false;
-        state.staff = action.payload.data || [];
-        state.page = action.payload.page;
-        state.limit = action.payload.limit;
-        state.total = action.payload.total;
+      .addCase(getManagers.fulfilled, (state, action) => {
+        state.loading = false;
+        state.managers = action.payload.data || [];
+        state.managersPagination = {
+          page: action.payload.page,
+          limit: action.payload.limit,
+          total: action.payload.total,
+        };
       })
-      .addCase(getAllStaff.rejected, (state) => {
-        state.staffLoading = false;
+      .addCase(getManagers.rejected, (state) => {
+        state.loading = false;
       })
-      .addCase(createStaff.pending, (state) => {
-        state.staffLoading = true;
+      // Cashiers
+      .addCase(getPosCashiers.pending, (state) => {
+        state.loading = true;
       })
-      .addCase(createStaff.fulfilled, (state) => {
-        state.staffLoading = false;
+      .addCase(getPosCashiers.fulfilled, (state, action) => {
+        state.loading = false;
+        state.cashiers = action.payload.data || [];
+        state.cashiersPagination = {
+          page: action.payload.page,
+          limit: action.payload.limit,
+          total: action.payload.total,
+        };
       })
-      .addCase(updateStaff.fulfilled, (state) => {
-        state.staffLoading = false;
+      .addCase(getPosCashiers.rejected, (state) => {
+        state.loading = false;
       })
-      .addCase(deleteStaff.fulfilled, (state) => {
-        state.staffLoading = false;
-      });
+      // General Staff
+      .addCase(getGeneralStaff.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getGeneralStaff.fulfilled, (state, action) => {
+        state.loading = false;
+        state.generalStaff = action.payload.data || [];
+        state.staffPagination = {
+          page: action.payload.page,
+          limit: action.payload.limit,
+          total: action.payload.total,
+        };
+      })
+      .addCase(getGeneralStaff.rejected, (state) => {
+        state.loading = false;
+      })
+      // CUD operations
+      .addCase(createStaff.pending, (state) => { state.loading = true; })
+      .addCase(createStaff.fulfilled, (state) => { state.loading = false; })
+      .addCase(updateStaff.fulfilled, (state) => { state.loading = false; })
+      .addCase(deleteStaff.fulfilled, (state) => { state.loading = false; });
   },
 });
 

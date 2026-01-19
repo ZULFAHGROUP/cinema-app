@@ -5,17 +5,12 @@ import Button from "../../components/shared/Button";
 import {
   Package,
   BarChart3,
-  Truck,
-  TrendingUp,
   ShoppingCart,
   Plus,
   Minus,
 } from "lucide-react";
-// import Inventory from "./components/Inventory";
 import InventoryManagement from "./components/InventoryManagement";
 import Sales from "./components/Sales";
-import Suppliers from "./components/Suppliers";
-import Analytics from "./components/Analytics";
 import POSMode from "./components/PosMode";
 import AddProductForm from "./components/AddProductForm";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
@@ -55,30 +50,6 @@ const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order
   }, [dispatch, productPage, productLimit, activeCinemaId]);
 
   const [cart, setCart] = useState<any[]>([]);
-
-  const suppliers = [
-    {
-      id: 1,
-      name: "Snack Supply Co",
-      contact: "John Smith",
-      phone: "(555) 123-4567",
-      email: "orders@snacksupply.com",
-    },
-    {
-      id: 2,
-      name: "Beverage Distributors",
-      contact: "Sarah Johnson",
-      phone: "(555) 234-5678",
-      email: "sales@bevdist.com",
-    },
-    {
-      id: 3,
-      name: "Sweet Treats Inc",
-      contact: "Mike Chen",
-      phone: "(555) 345-6789",
-      email: "orders@sweetreats.com",
-    },
-  ];
 
   const addToCart = (product: any) => {
     const existingItem = cart.find((item) => item.id === product.id);
@@ -139,24 +110,24 @@ const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order
       ),
       children: <Sales recentSales={orders} loading={orderLoading} />,
     },
-    {
-      key: "suppliers",
-      label: (
-        <span className="flex items-center gap-2">
-          <Truck className="w-4 h-4" /> Suppliers
-        </span>
-      ),
-      children: <Suppliers suppliers={suppliers} />,
-    },
-    {
-      key: "analytics",
-      label: (
-        <span className="flex items-center gap-2">
-          <TrendingUp className="w-4 h-4" /> Analytics
-        </span>
-      ),
-      children: <Analytics products={products} />,
-    },
+    // {
+    //   key: "suppliers",
+    //   label: (
+    //     <span className="flex items-center gap-2">
+    //       <Truck className="w-4 h-4" /> Suppliers
+    //     </span>
+    //   ),
+    //   children: <Suppliers suppliers={suppliers} />,
+    // },
+    // {
+    //   key: "analytics",
+    //   label: (
+    //     <span className="flex items-center gap-2">
+    //       <TrendingUp className="w-4 h-4" /> Analytics
+    //     </span>
+    //   ),
+    //   children: <Analytics products={products} />,
+    // },
   ];
 
   return (

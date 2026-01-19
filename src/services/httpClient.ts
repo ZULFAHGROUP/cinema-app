@@ -34,7 +34,7 @@ const Axios: AxiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
     "X-Requested-With": "XMLHttpRequest",
-    // "ngrok-skip-browser-warning": "true",
+        // "ngrok-skip-browser-warning": "true",
     // "Access-Control-Allow-Origin": "*",
   },
   transformResponse: [(data) => transformResponse(data)],

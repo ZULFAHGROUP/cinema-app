@@ -2,17 +2,21 @@
 import { useState, useEffect } from "react";
 import { Tabs } from "antd";
 import Button from "../../components/shared/Button";
-import { Users, Settings, Plus } from "lucide-react";
+import { Users, Plus, ShieldCheck, BadgeDollarSign, Building2 } from "lucide-react";
 import StaffList from "./components/StaffList";
-import AdminSettings from "./components/AdminSettings";
 import AddStaffForm from "./components/AddStaffForm";
+import CinemaStaffAssignment from "./components/CinemaStaffAssignment";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { getAllRoles } from "../../store/slices/roles";
-import { getAllStaff } from "../../store/slices/staff";
+import { 
+  getManagers, 
+  getPosCashiers, 
+  getGeneralStaff 
+} from "../../store/slices/staff";
 
 function StaffPage() {
-  const [activeTab, setActiveTab] = useState("staff");
+  const [activeTab, setActiveTab] = useState("managers");
   const [isAddStaffModalOpen, setIsAddStaffModalOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
 
@@ -22,10 +26,11 @@ function StaffPage() {
     page: rolePage,
     limit: roleLimit,
   } = useAppSelector((state) => state.role);
+  
   const {
-    staff,
-    page: staffPage,
-    limit: staffLimit,
+    managers,
+    cashiers,
+    generalStaff,
   } = useAppSelector((state) => state.staff);
 
   useEffect(() => {
@@ -33,39 +38,74 @@ function StaffPage() {
   }, [dispatch, rolePage, roleLimit]);
 
   useEffect(() => {
-    dispatch(getAllStaff({ page: staffPage, limit: staffLimit })).unwrap();
-  }, [dispatch, staffPage, staffLimit]);
+    dispatch(getManagers({ page: 1, limit: 100 }));
+    dispatch(getPosCashiers({ page: 1, limit: 100 }));
+    dispatch(getGeneralStaff({ page: 1, limit: 100 }));
+  }, [dispatch]);
 
-  const handleAddStaff = () => {
+  const handleAddedStaff = () => {
     setIsAddStaffModalOpen(false);
     setSelectedStaff(null);
-    // Refresh staff list
-    dispatch(getAllStaff({ page: staffPage, limit: staffLimit }));
+    
   };
 
   const tabItems = [
     {
-      key: "staff",
+      key: "managers",
       label: (
         <span className="flex items-center gap-2">
-          <Users className="w-4 h-4" /> Staff Members
+          <ShieldCheck className="w-4 h-4" /> Managers
         </span>
       ),
       children: (
         <StaffList
-          staff={staff}
-                role={roles}
+          staff={managers}
+          role={roles}
+          staffTab="managers"
+          onRefresh={() => dispatch(getManagers({ page: 1, limit: 100 }))}
         />
       ),
     },
-        {
-      key: "settings",
+    {
+      key: "cashiers",
       label: (
         <span className="flex items-center gap-2">
-          <Settings className="w-4 h-4" /> Admin Settings
+          <BadgeDollarSign className="w-4 h-4" /> POS / Cashiers
         </span>
       ),
-      children: <AdminSettings />,
+      children: (
+        <StaffList
+          staff={cashiers}
+          role={roles}
+          staffTab="cashiers"
+          onRefresh={() => dispatch(getPosCashiers({ page: 1, limit: 100 }))}
+        />
+      ),
+    },
+    {
+      key: "staff",
+      label: (
+        <span className="flex items-center gap-2">
+          <Users className="w-4 h-4" /> General Staff
+        </span>
+      ),
+      children: (
+        <StaffList
+          staff={generalStaff}
+          role={roles}
+          staffTab="staff"
+          onRefresh={() => dispatch(getGeneralStaff({ page: 1, limit: 100 }))}
+        />
+      ),
+    },
+    {
+      key: "cinema-staff",
+      label: (
+        <span className="flex items-center gap-2">
+          <Building2 className="w-4 h-4" /> Cinema Staff
+        </span>
+      ),
+      children: <CinemaStaffAssignment />,
     },
   ];
 
@@ -79,11 +119,11 @@ function StaffPage() {
               Staff Management
             </h1>
             <p className="text-sm text-muted-foreground font-serif">
-              Manage staff accounts
+              Manage staff accounts and assignments
             </p>
           </div>
           <div className="flex gap-2">
-                        {activeTab === "staff" && (
+            {activeTab !== "cinema-staff" && (
               <Button
                 onClick={() => setIsAddStaffModalOpen(true)}
                 className="gap-2 rounded-md"
@@ -127,7 +167,7 @@ function StaffPage() {
         <AddStaffForm
           roles={roles}
           staffData={selectedStaff}
-          onSuccess={handleAddStaff}
+          onSuccess={handleAddedStaff}
           onCancel={() => {
             setIsAddStaffModalOpen(false);
             setSelectedStaff(null);

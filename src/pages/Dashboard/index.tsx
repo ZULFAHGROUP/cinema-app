@@ -27,6 +27,7 @@ import { getAllMovies } from "../../store/slices/movie";
 import { getAllAuditTrails } from "../../store/slices/extras";
 import { formatAuditActivity, formatCurrencyToNGN  } from "../../utils";
 import { getOrderStats } from "../../store/slices/order";
+import { allRoutes } from "../../routes/allRoutes";
 
 function Dashboard() {
   const dispatch = useAppDispatch();
@@ -88,43 +89,43 @@ const { orderStats } = useAppSelector(
       title: "Cinema Setup",
       description: "Manage theaters, screens & seating",
       icon: Settings,
-      href: "/cinema-setup",
+      href: allRoutes.cinema,
     },
     {
       title: "Movie Management",
       description: "Add movies, showtimes & ratings",
       icon: Film,
-      href: "/movies",
+      href: allRoutes.movies,
     },
     {
       title: "Staff Management",
       description: "Admin & staff accounts",
       icon: Users,
-      href: "/staff",
+      href: allRoutes.staffs,
     },
     {
       title: "Concessions",
       description: "Food, drinks & inventory",
       icon: ShoppingCart,
-      href: "/concessions",
+      href: allRoutes.concessions,
     },
     {
       title: "Customer Loyalty",
       description: "Points, rewards & members",
       icon: Gift,
-      href: "/loyalty",
+      href: allRoutes.customers,
     },
     {
       title: "Digital Signage",
       description: "Display management",
       icon: Monitor,
-      href: "/signage",
+      href: allRoutes.signage,
     },
     {
       title: "Reports & Analytics",
       description: "Sales & performance data",
       icon: BarChart3,
-      href: "/reports",
+      href: allRoutes.reports,
     },
   ];
 

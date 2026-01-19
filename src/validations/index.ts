@@ -74,7 +74,7 @@ export const showTimeValidationSchema = Yup.object({
   // price: Yup.number()
   //   .required("Price is required")
   //   .min(0.01, "Price must be greater than 0")
-  //   .max(100, "Price cannot exceed $100"),
+  //   .max(100, "Price cannot exceed ₦100"),
 });
 
 export const theaterValidationSchema = Yup.object({

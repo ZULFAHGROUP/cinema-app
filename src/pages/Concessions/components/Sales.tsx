@@ -35,7 +35,7 @@ export default function Sales({ recentSales,loading }: any) {
       icon: DollarSign,
       color: "primary",
       label: "Today's Sales",
-      value: "$1,247",
+      value: "₦1,247",
     },
     {
       icon: ShoppingCart,
