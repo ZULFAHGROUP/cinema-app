@@ -16,29 +16,35 @@ export default function StepIndicator({ currentStep }: StepIndicatorProps) {
     <div className="mb-6">
       <div className="flex items-center gap-2 text-sm overflow-x-auto">
         {steps.map((step, index) => (
-          <div key={step.key} className="flex items-center gap-2">
-            <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-serif flex-shrink-0 ${
-                currentStep === step.key
-                  ? "bg-primary text-primary-foreground"
-                  : index < currentIndex
-                  ? "bg-primary/20 text-primary"
-                  : "bg-muted text-muted-foreground"
-              }`}
-            >
-              {index + 1}
+          <div key={step.key} className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                  currentStep === step.key
+                    ? "bg-primary text-primary-foreground ring-4 ring-primary/20 scale-110 shadow-lg"
+                    : index < currentIndex
+                    ? "bg-primary text-primary-foreground opacity-80"
+                    : "bg-muted text-muted-foreground border border-border"
+                }`}
+              >
+                {index < currentIndex ? "✓" : index + 1}
+              </div>
+              <span
+                className={`font-sans whitespace-nowrap transition-colors duration-300 ${
+                  currentStep === step.key
+                    ? "text- font-bold text-base"
+                    : index < currentIndex
+                    ? "text-foreground font-medium"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {step.label}
+              </span>
             </div>
-            <span
-              className={`font-serif whitespace-nowrap ${
-                currentStep === step.key
-                  ? "text-foreground font-medium"
-                  : "text-muted-foreground"
-              }`}
-            >
-              {step.label}
-            </span>
             {index < steps.length - 1 && (
-              <div className="w-8 h-px bg-border flex-shrink-0" />
+              <div className={`w-12 h-1 rounded-full transition-colors duration-300 ${
+                index < currentIndex ? "bg-primary" : "bg-muted"
+              }`} />
             )}
           </div>
         ))}

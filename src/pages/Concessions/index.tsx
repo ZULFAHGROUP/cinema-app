@@ -5,13 +5,13 @@ import Button from "../../components/shared/Button";
 import {
   Package,
   BarChart3,
-  ShoppingCart,
+  // ShoppingCart,
   Plus,
-  Minus,
+  // Minus,
 } from "lucide-react";
 import InventoryManagement from "./components/InventoryManagement";
 import Sales from "./components/Sales";
-import POSMode from "./components/PosMode";
+// import POSMode from "./components/PosMode";
 import AddProductForm from "./components/AddProductForm";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
@@ -21,7 +21,7 @@ import { getAllOrders } from "../../store/slices/order";
 function ConcessionsPage() {
   const [activeTab, setActiveTab] = useState("inventory");
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
-  const [isPOSMode, setIsPOSMode] = useState(false);
+  // const [isPOSMode, setIsPOSMode] = useState(false);
   const [selectedCinemaId] = useState<string>(""); //setSelectedCinemaId
 
   const dispatch = useAppDispatch();
@@ -49,47 +49,48 @@ const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order
     dispatch(getAllOrders({page,limit}));
   }, [dispatch, productPage, productLimit, activeCinemaId]);
 
-  const [cart, setCart] = useState<any[]>([]);
+  // POS Mode - Commented out for now
+  // const [cart, setCart] = useState<any[]>([]);
 
-  const addToCart = (product: any) => {
-    const existingItem = cart.find((item) => item.id === product.id);
-    if (existingItem) {
-      setCart(
-        cart.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
-      );
-    } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
-    }
-  };
+  // const addToCart = (product: any) => {
+  //   const existingItem = cart.find((item) => item.id === product.id);
+  //   if (existingItem) {
+  //     setCart(
+  //       cart.map((item) =>
+  //         item.id === product.id
+  //           ? { ...item, quantity: item.quantity + 1 }
+  //           : item
+  //       )
+  //     );
+  //   } else {
+  //     setCart([...cart, { ...product, quantity: 1 }]);
+  //   }
+  // };
 
-  const removeFromCart = (productId: number) => {
-    setCart(cart.filter((item) => item.id !== productId));
-  };
+  // const removeFromCart = (productId: number) => {
+  //   setCart(cart.filter((item) => item.id !== productId));
+  // };
 
-  const updateCartQuantity = (productId: number, quantity: number) => {
-    if (quantity === 0) {
-      removeFromCart(productId);
-    } else {
-      setCart(
-        cart.map((item) =>
-          item.id === productId ? { ...item, quantity } : item
-        )
-      );
-    }
-  };
+  // const updateCartQuantity = (productId: number, quantity: number) => {
+  //   if (quantity === 0) {
+  //     removeFromCart(productId);
+  //   } else {
+  //     setCart(
+  //       cart.map((item) =>
+  //         item.id === productId ? { ...item, quantity } : item
+  //       )
+  //     );
+  //   }
+  // };
 
-  const getTotalPrice = () => {
-    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
-  };
+  // const getTotalPrice = () => {
+  //   return cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  // };
 
-  const processOrder = () => {
-    setCart([]);
-    alert("Order processed successfully!");
-  };
+  // const processOrder = () => {
+  //   setCart([]);
+  //   alert("Order processed successfully!");
+  // };
 
   const tabItems = [
     {
@@ -144,26 +145,46 @@ const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order
             </p>
           </div>
           <div className="flex gap-2">
-            <Button
+            {/* POS Mode Button - Commented out for now */}
+            {/* <Button
               onClick={() => setIsPOSMode(!isPOSMode)}
               className="gap-2 rounded-md"
               variant={isPOSMode ? "primary" : "outline"}
               icon={<ShoppingCart className="w-4 h-4" />}
               title={isPOSMode ? "Exit POS" : "POS Mode"}
+            /> */}
+            <Button
+              onClick={() => setIsAddProductModalOpen(true)}
+              className="gap-2 rounded-md"
+              icon={<Plus className="w-4 h-4" />}
+              title="Add Product"
             />
-            {!isPOSMode && (
-              <Button
-                onClick={() => setIsAddProductModalOpen(true)}
-                className="gap-2 rounded-md"
-                icon={<Plus className="w-4 h-4" />}
-                title="Add Product"
-              />
-            )}
           </div>
         </div>
 
         {/* Tabs and Content */}
-        {!isPOSMode ? (
+        <>
+          <div className="flex items-center flex-col md:flex-row justify-between mb-6">
+            <div className="flex-1">
+              <Tabs
+                activeKey={activeTab}
+                onChange={setActiveTab}
+                items={tabItems.map((item) => ({
+                  key: item.key,
+                  label: item.label,
+                }))}
+                className="concessions-tabs"
+              />
+            </div>
+          </div>
+
+          {/* Tab Content */}
+          <div className="tab-content">
+            {tabItems.find((item) => item.key === activeTab)?.children}
+          </div>
+        </>
+        {/* POS Mode UI - Commented out for now */}
+        {/* {!isPOSMode ? (
           <>
             <div className="flex items-center flex-col md:flex-row justify-between mb-6">
               <div className="flex-1">
@@ -179,7 +200,6 @@ const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order
               </div>
             </div>
 
-            {/* Tab Content */}
             <div className="tab-content">
               {tabItems.find((item) => item.key === activeTab)?.children}
             </div>
@@ -190,7 +210,6 @@ const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order
               <POSMode products={products} addToCart={addToCart} />
             </div>
 
-            {/* POS Cart Sidebar */}
             <div className="w-80 bg-card border-l border-border p-6 fixed right-0 top-0 h-full overflow-y-auto">
               <div className="space-y-4">
                 <h3 className="font-sans font-semibold text-lg">
@@ -264,7 +283,7 @@ const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order
               </div>
             </div>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Add Product Modal */}

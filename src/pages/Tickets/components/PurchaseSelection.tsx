@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Button from "../../../components/shared/Button";
-import { Plus, Minus, Info } from "lucide-react";
+import { Plus, Minus, Info, ArrowLeftIcon } from "lucide-react";
 import { formatCurrency } from "../../../utils";
 
 interface PurchaseSelectionProps {
@@ -14,6 +14,7 @@ interface PurchaseSelectionProps {
   setSelectedProducts: (products: any[]) => void;
   onConfirm: () => void;
   onBack: () => void;
+  isBoxOfficeMode: boolean;
 }
 
 export default function PurchaseSelection({
@@ -26,7 +27,7 @@ export default function PurchaseSelection({
   selectedProducts,
   setSelectedProducts,
   onConfirm,
-  onBack,
+  onBack, isBoxOfficeMode
 }: PurchaseSelectionProps) {
   
   const handleProductQuantity = (product: any, delta: number) => {
@@ -57,12 +58,15 @@ export default function PurchaseSelection({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          title="← Back"
-          className="rounded-md"
-        />
+        {isBoxOfficeMode ? "" : (
+          <Button
+            onClick={onBack}
+            variant="outline"
+            title="Back"
+            icon={<ArrowLeftIcon />}
+            className="rounded-md"
+          />
+        )}
         <h2 className="text-xl font-sans font-semibold text-foreground">Tickets & Concessions</h2>
       </div>
 

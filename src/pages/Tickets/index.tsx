@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import Button from "../../components/shared/Button";
+import ReusableSelect from "../../components/shared/Select";
+import Input from "../../components/shared/Input";
 import { Users, Plus, Loader2 } from "lucide-react";
 import MovieSelection from "./components/MovieSelection";
 import ShowtimeSelection from "./components/ShowtimeSelection";
@@ -14,6 +16,7 @@ import { getAllShowtimes, getShowtimePrice } from "../../store/slices/showtime";
 import { getAvailableProducts } from "../../store/slices/product";
 import { initiatePurchase, resetPurchase } from "../../store/slices/purchase";
 import { toast } from "react-toastify";
+import { getHumanTime } from "../../utils";
 
 function TicketSalesPage() {
   const [currentStep, setCurrentStep] = useState("movie-selection");
@@ -24,6 +27,7 @@ function TicketSalesPage() {
   const [movieLimit, setMovieLimit] = useState(10);
   const [showtimeLimit, setShowtimeLimit] = useState(10);
   const [availableProductLimit, setAvailableProductLimit] = useState(10);
+  const [isBoxOfficeMode, setIsBoxOfficeMode] = useState(false);
 
   const dispatch = useAppDispatch();
   const { movies, moviesLoading, total: totalMovies } = useAppSelector((state) => state.movie);
@@ -112,10 +116,13 @@ function TicketSalesPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 border rounded-full text-sm font-sans font-medium">
-              <Users className="w-4 h-4" />
-              <span>Box Office Mode</span>
-            </div>
+            <Button
+              onClick={() => setIsBoxOfficeMode(!isBoxOfficeMode)}
+              className="gap-2 rounded-full px-6"
+              variant={isBoxOfficeMode ? "primary" : "outline"}
+              icon={<Users className="w-4 h-4" />}
+              title={isBoxOfficeMode ? "Exit Box Office" : "Box Office Mode"}
+            />
             <Button
               onClick={resetBooking}
               className="gap-2 rounded-full px-6"
@@ -126,8 +133,8 @@ function TicketSalesPage() {
           </div>
         </div>
 
-        {/* Step Indicator */}
-        <StepIndicator currentStep={currentStep} />
+        {/* Step Indicator - Hidden in Box Office Mode */}
+        {!isBoxOfficeMode && <StepIndicator currentStep={currentStep} />}
 
         {/* Main Content Area */}
         <div className="flex flex-col lg:flex-row gap-8 mt-8">
@@ -138,54 +145,150 @@ function TicketSalesPage() {
                </div>
             ) : (
               <>
-                {currentStep === "movie-selection" && (
-                  <MovieSelection 
-                    movies={movies} 
-                    onSelect={handleMovieSelect} 
-                    totalMovies={totalMovies}
-                    onLoadMore={() => setMovieLimit(prev => prev + 10)}
-                  />
-                )}
+                {/* Box Office Mode - Form-Based Interface */}
+                {isBoxOfficeMode ? (
+                  <div className="max-w-4xl">
+                    <div className="bg-card border rounded-2xl p-8 shadow-sm space-y-6">
+                      <h2 className="text-2xl font-sans font-bold mb-6">Quick Sale</h2>
+                      
+                      {/* Movie Selection */}
+                      <ReusableSelect
+                        label="Select Movie"
+                        value={selectedMovie?.movie_id || ""}
+                        onChange={(value) => {
+                          const movie = movies.find((m: any) => m.movie_id === value);
+                          setSelectedMovie(movie);
+                          setSelectedShowtime(null);
+                        }}
+                        options={movies.map((movie: any) => ({
+                          value: movie.movie_id,
+                          label: movie.title
+                        }))}
+                        defaultOption="Choose a movie"
+                        showSearch={true}
+                      />
 
-                {currentStep === "showtime-selection" && selectedMovie && (
-                  <ShowtimeSelection
-                    movie={{ ...selectedMovie, showtimes: filteredShowtimes }}
-                    onSelect={handleShowtimeSelect}
-                    onBack={() => setCurrentStep("movie-selection")}
-                    totalShowtimes={totalShowtimes}
-                    onLoadMore={() => setShowtimeLimit(prev => prev + 10)}
-                  />
-                )}
+                      {/* Showtime Selection */}
+                      <ReusableSelect
+                        label="Select Showtime"
+                        value={selectedShowtime?.showtime_id || ""}
+                        onChange={async (value) => {
+                          const showtime = filteredShowtimes.find((s: any) => s.showtime_id === value);
+                          setSelectedShowtime(showtime);
+                          if (showtime) {
+                              try {
+                                await dispatch(getShowtimePrice(showtime.showtime_id)).unwrap();
+                              } catch (err) {
+                                toast.error("Failed to fetch showtime price");
+                              }
+                          }
+                        }}
+                        options={filteredShowtimes.map((showtime: any) => ({
+                          value: showtime.showtime_id,
+                          label: `${getHumanTime(showtime.show_time)} - ${showtime.screen?.name} (${showtime.screen?.cinema?.name})`
+                        }))}
+                        defaultOption="Choose a showtime"
+                        disabled={!selectedMovie}
+                        showSearch={true}
+                      />
 
-                {currentStep === "purchase-selection" && (
-                  <PurchaseSelection
-                    showtime={{ ...selectedShowtime, price: selectedShowtimePrice?.price || 0 }}
-                    availableProducts={availableProducts}
-                    totalAvailableProducts={availableProductTotal}
-                    onLoadMoreProducts={() => setAvailableProductLimit(prev => prev + 10)}
-                    ticketQuantity={ticketQuantity}
-                    setTicketQuantity={setTicketQuantity}
-                    selectedProducts={selectedProducts}
-                    setSelectedProducts={setSelectedProducts}
-                    onConfirm={handlePurchaseConfirm}
-                    onBack={() => setCurrentStep("showtime-selection")}
-                  />
-                )}
+                      {/* Ticket Quantity */}
+                      <Input
+                        label="Number of Tickets"
+                        type="number"
+                        value={ticketQuantity}
+                        onChange={(e) => setTicketQuantity(Number(e.target.value))}
+                        disabled={!selectedShowtime}
+                        min={1}
+                        placeholder="Enter quantity"
+                      />
 
-                {currentStep === "payment-summary" && initiateData && (
-                  <PaymentSummary
-                    initiateData={initiateData}
-                    loading={initiateLoading}
-                    onPay={handlePay}
-                    onBack={() => setCurrentStep("purchase-selection")}
-                  />
+                      {/* Products/Concessions Selection */}
+                      {selectedShowtime && (
+                        <div className="border-t pt-6">
+                          <PurchaseSelection
+                            showtime={{ ...selectedShowtime, price: selectedShowtimePrice?.price || 0 }}
+                            availableProducts={availableProducts}
+                            totalAvailableProducts={availableProductTotal}
+                            onLoadMoreProducts={() => setAvailableProductLimit(prev => prev + 10)}
+                            ticketQuantity={ticketQuantity}
+                            isBoxOfficeMode={isBoxOfficeMode}
+                            setTicketQuantity={setTicketQuantity}
+                            selectedProducts={selectedProducts}
+                            setSelectedProducts={setSelectedProducts}
+                            onConfirm={handlePurchaseConfirm}
+                            onBack={() => {}}
+                          />
+                        </div>
+                      )}
+
+                      {/* Payment Summary */}
+                      {currentStep === "payment-summary" && initiateData && (
+                        <div className="border-t pt-6">
+                          <PaymentSummary
+                            initiateData={initiateData}
+                            loading={initiateLoading}
+                            onPay={handlePay}
+                            onBack={() => setCurrentStep("purchase-selection")}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* Normal Step-by-Step Mode */
+                  <>
+                    {currentStep === "movie-selection" && (
+                      <MovieSelection 
+                        movies={movies} 
+                        onSelect={handleMovieSelect} 
+                        totalMovies={totalMovies}
+                        onLoadMore={() => setMovieLimit(prev => prev + 10)}
+                      />
+                    )}
+
+                    {currentStep === "showtime-selection" && selectedMovie && (
+                      <ShowtimeSelection
+                        movie={{ ...selectedMovie, showtimes: filteredShowtimes }}
+                        onSelect={handleShowtimeSelect}
+                        onBack={() => setCurrentStep("movie-selection")}
+                        totalShowtimes={totalShowtimes}
+                        onLoadMore={() => setShowtimeLimit(prev => prev + 10)}
+                      />
+                    )}
+
+                    {currentStep === "purchase-selection" && (
+                      <PurchaseSelection
+                        showtime={{ ...selectedShowtime, price: selectedShowtimePrice?.price || 0 }}
+                        availableProducts={availableProducts}
+                        totalAvailableProducts={availableProductTotal}
+                        onLoadMoreProducts={() => setAvailableProductLimit(prev => prev + 10)}
+                        ticketQuantity={ticketQuantity}
+                        setTicketQuantity={setTicketQuantity}
+                        selectedProducts={selectedProducts}
+                        setSelectedProducts={setSelectedProducts}
+                        onConfirm={handlePurchaseConfirm}
+                        isBoxOfficeMode={isBoxOfficeMode}
+                        onBack={() => setCurrentStep("showtime-selection")}
+                      />
+                    )}
+
+                    {currentStep === "payment-summary" && initiateData && (
+                      <PaymentSummary
+                        initiateData={initiateData}
+                        loading={initiateLoading}
+                        onPay={handlePay}
+                        onBack={() => setCurrentStep("purchase-selection")}
+                      />
+                    )}
+                  </>
                 )}
               </>
             )}
           </div>
 
-          {/* Booking Summary Sidebar */}
-          {currentStep !== "movie-selection" && currentStep !== "payment-summary" && (
+          {/* Booking Summary Sidebar - Always visible in Box Office Mode */}
+          {(isBoxOfficeMode && selectedMovie) || (currentStep !== "movie-selection" && currentStep !== "payment-summary") ? (
             <div className="lg:w-80">
                 <BookingSummary
                 selectedMovie={selectedMovie}
@@ -195,7 +298,7 @@ function TicketSalesPage() {
                 totalPrice={0} // This will be calculated in summary component or use initiate response
                 />
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

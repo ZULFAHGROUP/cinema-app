@@ -10,7 +10,6 @@ import {
   Gift,
   Monitor,
   TrendingUp,
-  DollarSign,
   Star,
 } from "lucide-react";
 import {
@@ -56,7 +55,7 @@ const { orderStats } = useAppSelector(
       title: "Total Revenue",
       value: formatCurrencyToNGN(orderStats?.totalRevenue) || 0,
       change: "+12%",
-      icon: DollarSign,
+      icon: '₦',
       color: "text-green-600",
     },
     {
