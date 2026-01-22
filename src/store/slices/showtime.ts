@@ -86,7 +86,7 @@ export const getShowtimePrice = createAsyncThunk(
 const showtimeSlice = createSlice({
   name: "showtime",
   initialState: {
-    showtimes: [],
+    showtimes: [] as any[],
     showtimeLoading: false,
     error: null,
     page: 1,

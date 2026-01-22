@@ -71,7 +71,7 @@ export const deleteMovie = createAsyncThunk(
 const movieSlice = createSlice({
   name: "movie",
   initialState: {
-    movies: [],
+    movies: [] as any[],
     moviesLoading: false,
     error: null,page:1,limit:10,total:0
   },
