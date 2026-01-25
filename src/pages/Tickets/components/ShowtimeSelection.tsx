@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Button from "../../../components/shared/Button";
-import { getHumanDate, getHumanTime } from "../../../utils";
+import { getHumanDate, getHumanTime, getImageUrl } from "../../../utils";
 import { Calendar, MapPin } from "lucide-react";
 
 interface ShowtimeSelectionProps {
@@ -29,7 +29,7 @@ export default function ShowtimeSelection({
         />
         <div className="flex gap-4 items-center">
             <div className="w-12 h-16 bg-muted rounded-md overflow-hidden shrink-0">
-                <img src={movie.poster_url || movie.poster || "/placeholder.svg"} className="w-full h-full object-cover" alt="" />
+                <img src={getImageUrl(movie.poster_url || movie.poster)} className="w-full h-full object-cover" alt="" />
             </div>
             <div>
                  <h2 className="text-2xl font-sans font-bold text-foreground">

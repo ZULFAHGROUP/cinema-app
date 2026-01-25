@@ -25,8 +25,8 @@ function ConcessionsPage() {
   const [selectedCinemaId] = useState<string>(""); //setSelectedCinemaId
 
   const dispatch = useAppDispatch();
-  const { products, productPage, productLimit } = useAppSelector(
-    (state) => state.product
+  const { productPage, productLimit } = useAppSelector(
+    (state) => state.product //products
   );
   const { user } = useAppSelector((state) => state.accounts.data);
 const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order);

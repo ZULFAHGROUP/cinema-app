@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Clock, PlayCircle } from "lucide-react";
+import { getImageUrl } from "../../../utils";
 
 interface MovieSelectionProps {
   movies: any[];
@@ -30,7 +30,7 @@ export default function MovieSelection({
           >
             <div className="relative aspect-[2/3] overflow-hidden">
               <img
-                src={movie.poster_url || movie.poster || "/placeholder.svg"}
+                src={getImageUrl(movie.poster_url || movie.poster)}
                 alt={movie.title}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />

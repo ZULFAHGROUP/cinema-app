@@ -18,7 +18,7 @@ import { toast } from "react-toastify";
 import PriceRuleForm from "./components/PriceRuleForm";
 import ReusableTable from "../../../../components/shared/Table";
 import Loader from "../../../../components/shared/Loader";
-import { getHumanTime } from "../../../../utils";
+import { formatCurrency, getHumanTime } from "../../../../utils";
 
 const DAYS_MAP: Record<number, string> = {
   0: "Sun",
@@ -83,12 +83,13 @@ const PriceRule = () => {
       title: "Name",
       dataIndex: "name",
       key: "name",
+            render: (name: string) => <p className="capitalize">{name}</p>,
     },
     {
       title: "Price",
       dataIndex: "price",
       key: "price",
-    //   render: (price: number) => `$${price.toFixed(2)}`,
+      render: (price: number) => <p>{formatCurrency(price)}</p>,
     },
     {
       title: "Priority",
@@ -100,13 +101,28 @@ const PriceRule = () => {
       dataIndex: "day_of_week",
       key: "day_of_week",
       render: (days: number[]) => 
-        days.map((d) => DAYS_MAP[d]).join(", "),
+        days.map((d) => DAYS_MAP[d]).join(", ") || "All",
     },
     {
       title: "Time Range",
       key: "time_range",
       render: (_: any, record: any) => 
-        `${getHumanTime(record.start_time)} - ${getHumanTime(record.end_time)}`,
+        `${getHumanTime(record.start_time)} - ${getHumanTime(record.end_time)}` || "All",
+    },{
+      title: "Products",
+      key: "products",
+      render: (_: any, record: any) => 
+        record?.products?.map((product: any) => product.name).join(", ") || "Not set",
+    },{
+      title: "Movies",
+      key: "movies",
+      render: (_: any, record: any) => 
+        record?.movie?.title || "All",
+    },{
+      title: "Screen Type",
+      key: "screen_type",
+      render: (_: any, record: any) => 
+        record?.screenType?.name || "All",
     },
     {
       title: "Cinema",
@@ -211,7 +227,7 @@ const PriceRule = () => {
       ) : (
         <ReusableTable
           data={priceRules || []}
-          columns={columns}
+          columns={columns as any}
           title="Price Rules"
           searchField={["name"]}
           excludeColumns={["price_rule_id", "movie_id", "screen_type_id"]}
@@ -233,6 +249,8 @@ const PriceRule = () => {
         onClose={() => setShowFormModal(false)}
         width={800}
       >
+        <p className="text-sm text-gray-600">Note: If no cinema is selected, the price rule will be applied to all cinemas.</p>
+        <p className="text-sm text-gray-600 mb-4">Price rule can be set based on movie, screen type,and  day of week.</p>
         <PriceRuleForm
           onCancel={() => setShowFormModal(false)}
           editMode={editMode}

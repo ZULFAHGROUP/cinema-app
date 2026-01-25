@@ -61,8 +61,8 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
         ? movieData.cast
         : movieData.cast.split(",").map((c: string) => c.trim())
       : [],
-    poster_url: movieData?.poster_url || "",
-    trailer_url: movieData?.trailer_url || "",
+    poster: null,
+    // trailer_url: movieData?.trailer_url || "",
     language: movieData?.language || "",
     movie_classification_id: movieData?.movie_classification_id || "",
   };
@@ -73,24 +73,36 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
   ) {
     try {
       let response;
-      const formattedValues = {
-        ...values,
-        duration: parseInt(values.duration),
-        rating: parseFloat(values.rating),
-        genres: values.genres.join(","),
-        cast: values.cast.join(","),
-      };
+      const formData = new FormData();
+
+      // Append all fields to FormData
+      formData.append("title", values.title);
+      formData.append("director", values.director);
+      formData.append("duration", values.duration.toString());
+      formData.append("rating", values.rating.toString());
+      formData.append("release_date", values.release_date);
+      formData.append("language", values.language);
+      formData.append("description", values.description);
+      formData.append("genres", values.genres.join(","));
+      formData.append("cast", values.cast.join(","));
+
+      if (!editMode) {
+        formData.append("movie_classification_id", values.movie_classification_id);
+      }
+
+      if (values.poster) {
+        formData.append("poster", values.poster);
+      }
 
       if (editMode && movieData?.movie_id) {
-        delete formattedValues.movie_classification_id;
         response = await dispatch(
           updateMovie({
             id: movieData.movie_id,
-            data: formattedValues,
+            data: formData,
           })
         ).unwrap();
       } else {
-        response = await dispatch(createMovie(formattedValues)).unwrap();
+        response = await dispatch(createMovie(formData)).unwrap();
       }
 
       if (response.code === 200 || response.code === 201) {
@@ -253,18 +265,31 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
             </div>
 
             <div className="space-y-4">
-              <Input
-                label="Poster URL"
-                name="poster_url"
-                value={values.poster_url}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.poster_url ? (errors.poster_url as string) : ""}
-                placeholder="https://example.com/poster.jpg"
-                required
-              />
+              
+              <Input 
+              label="Poster"
+               type="file"
+      name="poster"
+      accept="image/*"
+      onChange={(event) => {
+        const file = event.target.files?.[0];
+        if (file) {
+          console.log("File selected:", file.name, file.size, file.type);
+          setFieldValue("poster", file);
+        } else {
+          setFieldValue("poster", null);
+        }
+      }}
+                  className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:
+                    file:text-sm file:font-semibold
+                    file:bg-primary/10 file:text-primary
+                    hover:file:bg-primary/20"
+                    error={touched.poster ? (errors.poster as string) : ''}
+                />
 
-              <Input
+              {/* <Input
                 label="Trailer URL"
                 name="trailer_url"
                 value={values.trailer_url}
@@ -274,7 +299,7 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
                   touched.trailer_url ? (errors.trailer_url as string) : ""
                 }
                 placeholder="https://youtube.com/watch?v=example"
-              />
+              /> */}
             </div>
           </div>
 

@@ -57,10 +57,16 @@ export const addMovieValidationSchema = Yup.object({
     .of(Yup.string().min(2, "Actor name must be at least 2 characters"))
     .min(1, "At least one cast member is required")
     .required("Cast is required"),
-  poster_url: Yup.string()
-    // .required("Poster URL is required")
-    .url("Must be a valid URL"),
-  trailer_url: Yup.string().url("Must be a valid URL"),
+  poster: Yup.mixed()
+    .test("fileType", "Unsupported file format", (value: any) => {
+      if (!value) return true;
+      return ["image/jpeg", "image/png", "image/webp"].includes(value.type);
+    })
+    .test("fileSize", "File size too large (max 5MB)", (value: any) => {
+      if (!value) return true;
+      return value.size <= 5 * 1024 * 1024;
+    }),
+  // trailer_url: Yup.string().url("Must be a valid URL"),
   language: Yup.string().required("Language is required"),
   movie_classification_id: Yup.string().required("Classification is required"),
 });
@@ -139,27 +145,41 @@ export const priceRuleSchema = Yup.object({
   price: Yup.number()
     .required("Price is required")
     .min(0.01, "Price must be greater than 0"),
-  screen_type_id: Yup.string().required("Screen type is required"),
-  movie_id: Yup.string().required("Movie is required"),
+  screen_type_id: Yup.string(),
+  movie_id: Yup.string(),
   priority: Yup.number()
     .required("Priority is required")
     .min(1, "Priority must be at least 1"),
   day_of_week: Yup.array()
-    .of(Yup.number().min(0).max(6))
-    .min(1, "At least one day must be selected")
-    .required("Days of week are required"),
+    .of(Yup.number().min(0).max(6)),
   start_time: Yup.string()
-    .required("Start time is required")
-    .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, "Invalid time format (HH:MM:SS)"),
+    .when("day_of_week", {
+      is: (val: any[]) => val && val.length > 0,
+      then: (schema) => schema.required("Start time is required when days are selected"),
+    })
+    .test("format", "Invalid time format (HH:MM:SS)", (value) => {
+      if (!value) return true;
+      return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(value);
+    }),
   end_time: Yup.string()
-    .required("End time is required")
-    .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, "Invalid time format (HH:MM:SS)"),
+    .when("day_of_week", {
+      is: (val: any[]) => val && val.length > 0,
+      then: (schema) => schema.required("End time is required when days are selected"),
+    })
+    .test("format", "Invalid time format (HH:MM:SS)", (value) => {
+      if (!value) return true;
+      return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(value);
+    }),
   cinema_id: Yup.string(), // Optional - admins can leave empty for general rules
   product_ids: Yup.array()
-    .of(Yup.string())
-    .min(1, "At least one product must be selected")
-    .required("Products are required"),
-});
+    .of(Yup.string()),
+}).test(
+  "at-least-one-selection",
+  "At least one of Movie, Screen Type, or Day of Week must be selected",
+  (values) => {
+    return !!(values.movie_id || values.screen_type_id || (values.day_of_week && values.day_of_week.length > 0));
+  }
+);
 
 // Inventory operation schemas
 export const inventoryOperationSchema = Yup.object({

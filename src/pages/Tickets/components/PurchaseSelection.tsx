@@ -27,7 +27,7 @@ export default function PurchaseSelection({
   selectedProducts,
   setSelectedProducts,
   onConfirm,
-  onBack, isBoxOfficeMode
+  onBack, isBoxOfficeMode,
 }: PurchaseSelectionProps) {
   
   const handleProductQuantity = (product: any, delta: number) => {
@@ -80,7 +80,8 @@ export default function PurchaseSelection({
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
             <div>
               <p className="font-sans font-semibold">Ticket</p>
-              <p className="text-sm text-muted-foreground font-serif">Price per ticket: {formatCurrency(showtime?.price || 0)}</p>
+              <p>Price per ticket: {formatCurrency(showtime?.price || 0)}</p>
+              <p className="text-xs">Concessions: {showtime?.products?.map((product: any) => product.name).join(", ") || "No concessions"}</p>
             </div>
             <div className="flex items-center gap-4">
               <button

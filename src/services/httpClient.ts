@@ -9,6 +9,7 @@ import store from "../store/store";
 import { logout } from "../store/slices/accounts";
 import { ApiResponse } from "../@types/common";
 import { toast } from "react-toastify";
+import { cleanEmptyStrings } from "../utils";
 
 const transformResponse = (data: string): ApiResponse | any => {
   let response: ApiResponse | any = data;
@@ -34,9 +35,7 @@ const Axios: AxiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
     "X-Requested-With": "XMLHttpRequest",
-        // "ngrok-skip-browser-warning": "true",
-    // "Access-Control-Allow-Origin": "*",
-  },
+   },
   transformResponse: [(data) => transformResponse(data)],
 });
 
@@ -47,6 +46,11 @@ Axios.interceptors.request.use(
 
     if (jwtToken) {
            config.headers?.set("Authorization", `Bearer ${jwtToken}`);
+    }
+
+    // Clean empty strings from request data if it's an object
+    if (config.data && typeof config.data === "object" && !(config.data instanceof FormData)) {
+      config.data = cleanEmptyStrings(config.data);
     }
 
     return config;

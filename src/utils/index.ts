@@ -199,3 +199,35 @@ export const formatUserLabel = (value?: string): string => {
     .toLowerCase()
     .replace(/\b\w/g, (c) => c.toUpperCase());
 };
+
+export const cleanEmptyStrings = (obj: any): any => {
+  if (Array.isArray(obj)) {
+    return obj
+      .map((item) => cleanEmptyStrings(item))
+      .filter((item) => item !== "");
+  }
+
+  if (typeof obj === "object" && obj !== null) {
+    // Skip cleaning for File and Blob objects
+    if (obj instanceof File || obj instanceof Blob) {
+      return obj;
+    }
+
+    return Object.fromEntries(
+      Object.entries(obj)
+        .map(([key, value]) => [key, cleanEmptyStrings(value)])
+        .filter(([_, value]) => value !== "")
+    );
+  }
+
+  return obj;
+};
+
+export const getImageUrl = (path: string | null | undefined): string => {
+  if (!path) return "/placeholder.svg";
+  if (path.startsWith("http")) return path;
+  
+  // Get API base URL and remove /api/v1 if it exists
+  const baseUrl = import.meta.env.VITE_APP_API_BASE_URL?.replace(/\/api\/v1\/?$/, "") || "";
+  return `${baseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
+};

@@ -115,7 +115,7 @@ const PriceRuleForm = ({
   }
 
   return (
-    <Formik
+   <Formik
       enableReinitialize
       initialValues={initialValues}
       validationSchema={priceRuleSchema}
@@ -132,6 +132,11 @@ const PriceRuleForm = ({
         handleSubmit,
       }) => (
         <Form onSubmit={handleSubmit}>
+          {errors && (errors as any).atLeastOneSelection && (
+            <div className="bg-red-50 text-red-700 p-3 rounded-md text-sm mb-4 border border-red-100">
+               {(errors as any).atLeastOneSelection}
+            </div>
+          )}
           <div className="space-y-4">
             {/* Name and Price */}
             <div className="grid grid-cols-2 gap-4">
@@ -185,7 +190,6 @@ const PriceRuleForm = ({
                     ? errors.movie_id
                     : undefined
                 }
-                required
               />
 
               <ReusableSelect
@@ -203,7 +207,6 @@ const PriceRuleForm = ({
                     ? errors.screen_type_id
                     : undefined
                 }
-                required
               />
             </div>
 
@@ -258,7 +261,6 @@ const PriceRuleForm = ({
                     ? errors.day_of_week
                     : undefined
                 }
-                required
               />
             </div>
             
@@ -279,7 +281,6 @@ const PriceRuleForm = ({
                     ? errors.product_ids
                     : undefined
                 }
-                required
             />
 
             {/* Time Range */}
@@ -297,7 +298,7 @@ const PriceRuleForm = ({
                     ? errors.start_time
                     : undefined
                 }
-                required
+                required={values.day_of_week && values.day_of_week.length > 0}
               />
 
               <Input
@@ -313,7 +314,7 @@ const PriceRuleForm = ({
                     ? errors.end_time
                     : undefined
                 }
-                required
+                required={values.day_of_week && values.day_of_week.length > 0}
               />
             </div>
           </div>

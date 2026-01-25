@@ -19,7 +19,7 @@ import { deleteMovie, getAllMovies } from "../../../store/slices/movie";
 import { deleteShowtime, getAllShowtimes } from "../../../store/slices/showtime";
 import { toast } from "react-toastify";
 import ConfirmationModal from "../../../components/shared/Modal/ConfirmationModal";
-import { getHumanDate, getHumanTime } from "../../../utils";
+import { getHumanDate, getHumanTime, getImageUrl } from "../../../utils";
 
 const Movies = ({ movies, showtimes, loading, onAddShowtime, cinemas, totalShowtimes, onLoadMoreShowtimes }: any) => {
   const [isEditMovieModalOpen, setIsEditMovieModalOpen] = useState(false);
@@ -118,7 +118,7 @@ const Movies = ({ movies, showtimes, loading, onAddShowtime, cinemas, totalShowt
             >
               <div className="aspect-3/3 relative">
                 <img
-                  src={movie.poster_url || "/placeholder.svg"}
+                  src={getImageUrl(movie.poster_url)}
                   alt={movie.title}
                   className="w-full h-full object-cover"
                 />

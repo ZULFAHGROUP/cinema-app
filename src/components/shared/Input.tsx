@@ -65,7 +65,7 @@ const Input = ({
           <AntInput
             type={type}
             placeholder={placeholder}
-            value={value}
+            value={type === "file" ? undefined : value}
             disabled={disabled}
             readOnly={readOnly}
             required={required}
