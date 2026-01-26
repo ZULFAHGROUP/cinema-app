@@ -118,9 +118,10 @@ const Movies = ({ movies, showtimes, loading, onAddShowtime, cinemas, totalShowt
             >
               <div className="aspect-3/3 relative">
                 <img
-                  src={getImageUrl(movie.poster_url)}
+                  src={getImageUrl(movie.poster_url || movie.poster)}
                   alt={movie.title}
                   className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
                 />
               </div>
               <CardHeader>

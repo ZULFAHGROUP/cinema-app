@@ -227,7 +227,14 @@ export const getImageUrl = (path: string | null | undefined): string => {
   if (!path) return "/placeholder.svg";
   if (path.startsWith("http")) return path;
   
-  // Get API base URL and remove /api/v1 if it exists
-  const baseUrl = import.meta.env.VITE_APP_API_BASE_URL?.replace(/\/api\/v1\/?$/, "") || "";
-  return `${baseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
+  // Get API base URL, trim it, and remove /api/v1 if it exists
+  const rawBaseUrl = import.meta.env.VITE_APP_API_BASE_URL || "";
+  const baseUrl = rawBaseUrl.trim().replace(/\/api\/v1\/?$/, "");
+  
+  const fullUrl = `${baseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
+  
+  // Troubleshooting log
+  console.log(`[getImageUrl] Path: ${path} -> Full URL: ${fullUrl}`);
+  
+  return fullUrl;
 };

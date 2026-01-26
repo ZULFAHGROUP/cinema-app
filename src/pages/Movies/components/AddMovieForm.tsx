@@ -264,9 +264,50 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
               />
             </div>
 
+<div className="space-y-4">
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Poster {!editMode && <span className="text-red-500">*</span>}
+    </label>
+    <input
+      type="file"
+      name="poster"
+      accept="image/*"
+      onChange={(event) => {
+        const file = event.target.files?.[0];
+        if (file) {
+          console.log("File selected:", file.name, file.size, file.type);
+          setFieldValue("poster", file);
+        } else {
+          setFieldValue("poster", null);
+        }
+      }}
+      className="block w-full text-sm text-gray-500
+        file:mr-4 file:py-2 file:px-4
+        file:rounded-full file:border-0
+        file:text-sm file:font-semibold
+        file:bg-primary/10 file:text-primary
+        hover:file:bg-primary/20"
+    />
+    {touched.poster && errors.poster && (
+      <p className="mt-1 text-sm text-red-600">{errors.poster as string}</p>
+    )}
+    {values.poster && (
+      <p className="mt-2 text-sm text-gray-600">
+        Selected: {(values.poster as File).name}
+      </p>
+    )}
+    {editMode && movieData?.poster && !values.poster && (
+      <p className="mt-2 text-sm text-gray-600">
+        Current poster: {movieData.poster}
+      </p>
+    )}
+  </div>
+</div>
+
             <div className="space-y-4">
               
-              <Input 
+              {/* <Input 
               label="Poster"
                type="file"
       name="poster"
@@ -287,7 +328,7 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
                     file:bg-primary/10 file:text-primary
                     hover:file:bg-primary/20"
                     error={touched.poster ? (errors.poster as string) : ''}
-                />
+                /> */}
 
               {/* <Input
                 label="Trailer URL"

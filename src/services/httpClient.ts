@@ -33,7 +33,6 @@ const Axios: AxiosInstance = axios.create({
   timeout: 120 * 1000,
   // withCredentials: true, // Use `withCredentials` instead of `credentials`
   headers: {
-    "Content-Type": "application/json",
     "X-Requested-With": "XMLHttpRequest",
    },
   transformResponse: [(data) => transformResponse(data)],

@@ -29,7 +29,12 @@ export default function ShowtimeSelection({
         />
         <div className="flex gap-4 items-center">
             <div className="w-12 h-16 bg-muted rounded-md overflow-hidden shrink-0">
-                <img src={getImageUrl(movie.poster_url || movie.poster)} className="w-full h-full object-cover" alt="" />
+                <img 
+                  src={getImageUrl(movie.poster_url || movie.poster)} 
+                  className="w-full h-full object-cover" 
+                  alt="" 
+                  referrerPolicy="no-referrer"
+                />
             </div>
             <div>
                  <h2 className="text-2xl font-sans font-bold text-foreground">
