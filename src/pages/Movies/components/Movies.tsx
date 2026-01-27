@@ -118,7 +118,7 @@ const Movies = ({ movies, showtimes, loading, onAddShowtime, cinemas, totalShowt
             >
               <div className="aspect-3/3 relative">
                 <img
-                  src={getImageUrl(movie.poster_url || movie.poster)}
+                  src={getImageUrl(movie.poster_url)}
                   alt={movie.title}
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
