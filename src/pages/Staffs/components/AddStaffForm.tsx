@@ -6,15 +6,17 @@ import Button from "../../../components/shared/Button";
 import ReusableSelect from "../../../components/shared/Select";
 import { toast } from "react-toastify";
 import { useAppDispatch } from "../../../store/hook";
-import { createStaff, getGeneralStaff, getManagers, getPosCashiers, updateStaff } from "../../../store/slices/staff";
+import { changeStaffRole, createStaff, getGeneralStaff, getManagers, getPosCashiers, updateStaff } from "../../../store/slices/staff";
+import { BUILT_IN_ROLES } from "../../../constants";
 
 interface StaffData {
-  id?: string;
+  admin_id?: string;
   surname: string;
   other_names: string;
   email: string;
   phone: string;
-  role_name: string;
+  is_active?: boolean;
+  roles?: { role_id: string; role_name: string }[];
 }
 
 interface AddStaffFormProps {
@@ -34,13 +36,14 @@ const AddStaffForm = ({
 }: AddStaffFormProps) => {
   const dispatch = useAppDispatch();
 
+  // New accounts take one of the built-in roles; existing ones can move to any role.
   const roleOptions = roles
-  ?.filter(
-    (role) => role.role_name?.toLowerCase() !== "customer"
-  ).map((role) => ({
-    label: role.role_name,
-    value: role.role_name,
-  }));
+    ?.filter((role) => isEdit || BUILT_IN_ROLES.includes(role.role_name))
+    .map((role) => ({
+      label: role.role_name,
+      value: role.role_name,
+    }));
+  const currentRoles = staffData?.roles || [];
 
 
   const validationSchema = Yup.object({
@@ -62,33 +65,45 @@ const AddStaffForm = ({
     email: staffData?.email || "",
     phone: staffData?.phone || "",
     password: "",
-    role_name: staffData?.role_name || "",
+    role_name: currentRoles[0]?.role_name || "",
+    is_active: staffData?.is_active ?? true,
   };
 
   const handleSubmit = async (values: any, { resetForm }: { resetForm: () => void }) => {
     try {
-      const payload = { ...values };
-let response
-      // Remove password on edit if empty
-      if (isEdit && !payload.password) {
-        delete payload.password;
-      }
+      let response;
 
       if (isEdit) {
-       response = await dispatch(
-          updateStaff({ id: staffData!.id!, data: payload })
+        // Email can't change, and roles are assigned separately from the profile.
+        const { surname, other_names, phone, is_active, role_name } = values;
+        response = await dispatch(
+          updateStaff({ id: staffData!.admin_id!, data: { surname, other_names, phone, is_active } })
         ).unwrap();
+
+        const newRole = roles.find((role) => role.role_name === role_name);
+        if (newRole && !currentRoles.some((role) => role.role_id === newRole.role_id)) {
+          await dispatch(
+            changeStaffRole({
+              admin_id: staffData!.admin_id!,
+              role_id: newRole.role_id,
+              previous_role_ids: currentRoles.map((role) => role.role_id),
+            })
+          ).unwrap();
+        }
       } else {
-        response = await dispatch(createStaff(payload)).unwrap();
+        const { surname, other_names, email, phone, password, role_name } = values;
+        response = await dispatch(
+          createStaff({ surname, other_names, email, phone, password, role_name })
+        ).unwrap();
       }
 
-if(response.code === 200 || response.code === 201){
-          toast.success(response.message || (!isEdit ? "Staff added successfully" : "Staff updated successfully"));
-  dispatch(getManagers({ page: 1, limit: 100 }));
-    dispatch(getPosCashiers({ page: 1, limit: 100 }));
-    dispatch(getGeneralStaff({ page: 1, limit: 100 }));
-     resetForm();
-}
+      if (response.code === 200 || response.code === 201) {
+        toast.success(response.message || (!isEdit ? "Staff added successfully" : "Staff updated successfully"));
+        dispatch(getManagers({ page: 1, limit: 50 }));
+        dispatch(getPosCashiers({ page: 1, limit: 50 }));
+        dispatch(getGeneralStaff({ page: 1, limit: 50 }));
+        resetForm();
+      }
 
       onSuccess?.();
     } catch (error: any) {
@@ -148,6 +163,7 @@ if(response.code === 200 || response.code === 201){
               onChange={handleChange}
               onBlur={handleBlur}
               error={touched.email && errors.email ? errors.email : ""}
+              disabled={isEdit}
               required
               placeholder="johndoe@example.com"
             />
@@ -175,6 +191,19 @@ if(response.code === 200 || response.code === 201){
               }
               required
             />
+
+            {isEdit && (
+              <ReusableSelect
+                label="Status"
+                name="is_active"
+                value={values.is_active ? "active" : "inactive"}
+                onChange={(value) => setFieldValue("is_active", value === "active")}
+                options={[
+                  { label: "Active", value: "active" },
+                  { label: "Deactivated", value: "inactive" },
+                ]}
+              />
+            )}
 
             {!isEdit && (
               <Input

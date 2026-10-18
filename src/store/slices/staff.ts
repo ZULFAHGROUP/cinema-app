@@ -9,7 +9,7 @@ export const getManagers = createAsyncThunk(
     try {
       const response = await Staff.getManagers(page, limit);
       return {
-        data: response.data.data.managers,
+        data: response.data.data.admins,
         page,
         limit,
         total: response.data.data.pagination.total,
@@ -26,7 +26,7 @@ export const getPosCashiers = createAsyncThunk(
     try {
       const response = await Staff.getPosCashiers(page, limit);
       return {
-        data: response.data.data.posCashiers,
+        data: response.data.data.admins,
         page,
         limit,
         total: response.data.data.pagination.total,
@@ -43,7 +43,7 @@ export const getGeneralStaff = createAsyncThunk(
     try {
       const response = await Staff.getStaffs(page, limit);
       return {
-        data: response.data.data.staffs,
+        data: response.data.data.admins,
         page,
         limit,
         total: response.data.data.pagination.total,
@@ -62,7 +62,8 @@ export const createStaff = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -79,8 +80,27 @@ export const updateStaff = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
+    }
+  }
+);
+
+/** Swaps a staff member's role: adds the new one first, since everyone must keep one. */
+export const changeStaffRole = createAsyncThunk(
+  "staff/changeRole",
+  async (
+    { admin_id, role_id, previous_role_ids }: { admin_id: string; role_id: string; previous_role_ids: string[] },
+    { rejectWithValue }
+  ) => {
+    try {
+      await Staff.assignRole({ admin_id, role_id });
+      for (const previousRoleId of previous_role_ids) {
+        await Staff.removeRole({ admin_id, role_id: previousRoleId });
+      }
+    } catch (error: any) {
+      return rejectWithValue({ message: error.message });
     }
   }
 );
@@ -93,7 +113,8 @@ export const deleteStaff = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }

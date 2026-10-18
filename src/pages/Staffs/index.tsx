@@ -38,9 +38,9 @@ function StaffPage() {
   }, [dispatch, rolePage, roleLimit]);
 
   useEffect(() => {
-    dispatch(getManagers({ page: 1, limit: 100 }));
-    dispatch(getPosCashiers({ page: 1, limit: 100 }));
-    dispatch(getGeneralStaff({ page: 1, limit: 100 }));
+    dispatch(getManagers({ page: 1, limit: 50 }));
+    dispatch(getPosCashiers({ page: 1, limit: 50 }));
+    dispatch(getGeneralStaff({ page: 1, limit: 50 }));
   }, [dispatch]);
 
   const handleAddedStaff = () => {
@@ -62,7 +62,7 @@ function StaffPage() {
           staff={managers}
           role={roles}
           staffTab="managers"
-          onRefresh={() => dispatch(getManagers({ page: 1, limit: 100 }))}
+          onRefresh={() => dispatch(getManagers({ page: 1, limit: 50 }))}
         />
       ),
     },
@@ -78,7 +78,7 @@ function StaffPage() {
           staff={cashiers}
           role={roles}
           staffTab="cashiers"
-          onRefresh={() => dispatch(getPosCashiers({ page: 1, limit: 100 }))}
+          onRefresh={() => dispatch(getPosCashiers({ page: 1, limit: 50 }))}
         />
       ),
     },
@@ -94,7 +94,7 @@ function StaffPage() {
           staff={generalStaff}
           role={roles}
           staffTab="staff"
-          onRefresh={() => dispatch(getGeneralStaff({ page: 1, limit: 100 }))}
+          onRefresh={() => dispatch(getGeneralStaff({ page: 1, limit: 50 }))}
         />
       ),
     },

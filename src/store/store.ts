@@ -23,7 +23,6 @@ const persistConfig = {
     "showtimeStatus",
     "movie",
     "showtime",
-    "seat",
     "role",
     "extras",
     "productCat",

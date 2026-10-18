@@ -1,22 +1,27 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import urls from "../../constants/urls";
 import Axios from "../httpClient";
 
+export interface SeatLayoutRow {
+  row: string;
+  seats: number;
+  seat_type?: string;
+  disabled?: number[];
+}
+
 const Seats = {
-  allSeat: () => {
-    return Axios.get(urls.seat);
+  /** The screen's seat map, including deactivated seats. */
+  getScreenSeats: (screenId: string) => {
+    return Axios.get(`${urls.screen}/${screenId}/seats`);
   },
 
-  createSeat: (data: any) => {
-    return Axios.post(urls.seat, data);
+  /** Replaces the layout; seats are matched by label, so re-sending updates in place. */
+  saveScreenSeats: (screenId: string, rows: SeatLayoutRow[]) => {
+    return Axios.put(`${urls.screen}/${screenId}/seats`, { rows });
   },
 
-  updateSeat: (id: string | number, data: any) => {
-    return Axios.patch(`${urls.seat}/${id}`, data);
-  },
-
-  deleteSeat: (id: string | number) => {
-    return Axios.delete(`${urls.seat}/${id}`);
+  /** Each seat for a showtime with its status: available, held or sold. */
+  getShowtimeSeats: (showtimeId: string) => {
+    return Axios.get(`${urls.showtime}/${showtimeId}/seats`);
   },
 };
 

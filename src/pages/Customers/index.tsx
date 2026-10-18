@@ -22,7 +22,7 @@
     const { customers, loading } = useAppSelector((state) => state.customer);
 
     useEffect(() => {
-        dispatch(getAllCustomers({ page: 1, limit: 100 }));
+        dispatch(getAllCustomers({ page: 1, limit: 50 }));
     }, [dispatch]);
 
     // Placeholder rewards data (convert to slice later if needed)

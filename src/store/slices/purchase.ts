@@ -4,12 +4,16 @@ import Purchase from "../../services/network/purchase";
 
 export const initiatePurchase = createAsyncThunk(
   "purchase/initiate",
-  async (payload: any, { rejectWithValue }) => {
+  async (
+    { payload, idempotencyKey }: { payload: any; idempotencyKey: string },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await Purchase.initiate(payload);
+      const response = await Purchase.initiate(payload, idempotencyKey);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data);
+      // 409: not enough seats, or a chosen seat was just taken.
+      return rejectWithValue({ message: error.message, statusCode: error.response?.status });
     }
   }
 );

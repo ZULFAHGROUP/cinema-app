@@ -10,12 +10,14 @@ export const getAllRolePermissions = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
+      // Every role with its permission names, unpaginated: [{ role_name, permissions }]
       const response = await RolePermissions.allRolePermissions(page, limit);
+      const roles = response.data.data || [];
       return {
-        data: response.data.data.rolePermissions,
+        data: roles,
         page,
         limit,
-        total: response.data.data.pagination.total,
+        total: roles.length,
       };
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
@@ -31,7 +33,8 @@ export const createRolePermission = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }

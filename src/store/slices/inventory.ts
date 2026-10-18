@@ -23,23 +23,6 @@ export const getAllInventories = createAsyncThunk(
   }
 );
 
-export const updateInventory = createAsyncThunk(
-  "inventory/update",
-  async (
-    { id, data: payload }: { id: string; data: any },
-    { rejectWithValue }
-  ): Promise<ApiResponse> => {
-    try {
-      const response = await Inventory.updateInventory(id, payload);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue({
-        message: error.response?.data || error.message,
-      }) as any;
-    }
-  }
-);
-
 export const deleteInventory = createAsyncThunk(
   "inventory/delete",
   async (id: string, { rejectWithValue }): Promise<ApiResponse> => {
@@ -48,7 +31,8 @@ export const deleteInventory = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -70,15 +54,16 @@ export const getInventoryHistory = createAsyncThunk(
 export const stockIn = createAsyncThunk(
   "inventory/stockIn",
   async (
-    { id, data }: { id: string; data: any },
+    { id, data, idempotencyKey }: { id: string; data: any; idempotencyKey: string },
     { rejectWithValue }
   ): Promise<ApiResponse> => {
     try {
-      const response = await Inventory.stockIn(id, data);
+      const response = await Inventory.stockIn(id, data, idempotencyKey);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -87,15 +72,16 @@ export const stockIn = createAsyncThunk(
 export const recordSpoilage = createAsyncThunk(
   "inventory/spoilage",
   async (
-    { id, data }: { id: string; data: any },
+    { id, data, idempotencyKey }: { id: string; data: any; idempotencyKey: string },
     { rejectWithValue }
   ): Promise<ApiResponse> => {
     try {
-      const response = await Inventory.recordSpoilage(id, data);
+      const response = await Inventory.recordSpoilage(id, data, idempotencyKey);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -104,15 +90,16 @@ export const recordSpoilage = createAsyncThunk(
 export const correctInventory = createAsyncThunk(
   "inventory/correction",
   async (
-    { id, data }: { id: string; data: any },
+    { id, data, idempotencyKey }: { id: string; data: any; idempotencyKey: string },
     { rejectWithValue }
   ): Promise<ApiResponse> => {
     try {
-      const response = await Inventory.correctInventory(id, data);
+      const response = await Inventory.correctInventory(id, data, idempotencyKey);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -121,32 +108,24 @@ export const correctInventory = createAsyncThunk(
 export const transferOut = createAsyncThunk(
   "inventory/transferOut",
   async (
-    { id, data }: { id: string; data: { quantity: number; reason: string; destination_cinema_id: string } },
+    {
+      id,
+      data,
+      idempotencyKey,
+    }: {
+      id: string;
+      data: { quantity: number; reason?: string; destination_cinema_id: string; destination_inventory_id: string };
+      idempotencyKey: string;
+    },
     { rejectWithValue }
   ): Promise<ApiResponse> => {
     try {
-      const response = await Inventory.transferOut(id, data);
+      const response = await Inventory.transferOut(id, data, idempotencyKey);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
-      }) as any;
-    }
-  }
-);
-
-export const transferIn = createAsyncThunk(
-  "inventory/transferIn",
-  async (
-    { id, data }: { id: string; data: { quantity: number; reason: string; source_cinema_id: string } },
-    { rejectWithValue }
-  ): Promise<ApiResponse> => {
-    try {
-      const response = await Inventory.transferIn(id, data);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -199,12 +178,6 @@ const inventorySlice = createSlice({
         state.loading = false;
       })
       .addCase(transferOut.fulfilled, (state) => {
-        state.loading = false;
-      })
-      .addCase(transferIn.fulfilled, (state) => {
-        state.loading = false;
-      })
-      .addCase(updateInventory.fulfilled, (state) => {
         state.loading = false;
       })
       .addCase(deleteInventory.fulfilled, (state) => {

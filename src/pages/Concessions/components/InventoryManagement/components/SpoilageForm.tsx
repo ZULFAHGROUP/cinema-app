@@ -5,6 +5,8 @@ import Button from "../../../../../components/shared/Button";
 import { useAppDispatch, useAppSelector } from "../../../../../store/hook";
 import { recordSpoilage, getAllInventories } from "../../../../../store/slices/inventory";
 import { toast } from "react-toastify";
+import { useState } from "react";
+import { newIdempotencyKey } from "../../../../../services/httpClient";
 import { inventoryOperationSchema } from "../../../../../validations";
 
 interface SpoilageFormProps {
@@ -17,6 +19,8 @@ interface SpoilageFormProps {
 
 const SpoilageForm = ({ onCancel, inventoryId, productName, currentStock, cinema_id }: SpoilageFormProps) => {
   const dispatch = useAppDispatch();
+  // One key per opened form, reused if the user retries after an error.
+  const [idempotencyKey] = useState(newIdempotencyKey);
   const { page, limit } = useAppSelector((state) => state.inventory);
   const { user } = useAppSelector((state) => state.accounts.data);
   const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "superadmin";
@@ -31,6 +35,7 @@ const SpoilageForm = ({ onCancel, inventoryId, productName, currentStock, cinema
       const response = await dispatch(
         recordSpoilage({
           id: inventoryId,
+          idempotencyKey,
           data: {
             quantity: Number(values.quantity),
             reason: values.reason, cinema_id: cinema_id
@@ -47,7 +52,7 @@ const SpoilageForm = ({ onCancel, inventoryId, productName, currentStock, cinema
         onCancel();
       }
     } catch (error: any) {
-      toast.error(error?.response?.message || "Something went wrong");
+      toast.error(error?.message || "Something went wrong");
     }
   }
 

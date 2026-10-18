@@ -16,17 +16,22 @@ const transformResponse = (data: string): ApiResponse | any => {
 
   try {
     response = JSON.parse(data);
-  } catch (e) {
-    // If JSON parsing fails, return the raw data
-    console.log(e);
+  } catch {
+    // Not JSON: return the raw data
   }
 
-  if (typeof response === "object" && response.status === false) {
-    throw new Error(response.message || "An error occurred");
-  }
-
+  // Errors ({ status: false }) are rejected by the response interceptor, which
+  // keeps error.response intact (status code, message) for callers.
   return response;
 };
+
+/** A key for one user action; reuse it when retrying that same action. */
+export const newIdempotencyKey = (): string => crypto.randomUUID();
+
+/** Config for endpoints that require an Idempotency-Key header. */
+export const withIdempotencyKey = (key: string = newIdempotencyKey()) => ({
+  headers: { "Idempotency-Key": key },
+});
 
 const Axios: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_APP_API_BASE_URL,
@@ -43,8 +48,8 @@ Axios.interceptors.request.use(
     const state = store.getState();
     const { jwtToken } = state.accounts.data;
 
-    if (jwtToken) {
-           config.headers?.set("Authorization", `Bearer ${jwtToken}`);
+    if (jwtToken && !config.headers?.has("Authorization")) {
+      config.headers?.set("Authorization", `Bearer ${jwtToken}`);
     }
 
     // Clean empty strings from request data if it's an object
@@ -66,9 +71,19 @@ Axios.interceptors.response.use(
       return Promise.reject(response);
     }
 
+    // The API returns { status, message, data }; callers check `code` for the HTTP status.
+    if (response.data && typeof response.data === "object") {
+      response.data.code = response.status;
+    }
+
     return response;
   },
-  async (error: AxiosError) => {
+  async (error: AxiosError<ApiResponse>) => {
+    // Surface the API's message ("Invalid Email and/or Password") instead of axios's generic one.
+    if (error.response?.data?.message) {
+      error.message = error.response.data.message;
+    }
+
     if (error.response?.status === 401) {
       store.dispatch(logout());
       sessionStorage.removeItem("persist:root");

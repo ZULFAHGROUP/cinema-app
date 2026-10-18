@@ -3,7 +3,7 @@ import { Formik, Form } from "formik";
 import Button from "../../../../../components/shared/Button";
 import Select from "../../../../../components/shared/Select";
 import { toast } from "react-toastify";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../store/hook";
 import { rolePermissionSchema } from "../../../../../validations";
 import {
@@ -11,7 +11,7 @@ import {
   getAllRolePermissions,
 } from "../../../../../store/slices/rolePermissions";
 import { getAllRoles } from "../../../../../store/slices/roles";
-import { getAllPermissions } from "../../../../../store/slices/permissions";
+import Permissions from "../../../../../services/network/permissions";
 import { formatUserLabel } from "../../../../../utils";
 
 interface RolePermissionsFormProps {
@@ -25,12 +25,28 @@ const RolePermissionsForm = ({
   const { page, limit } = useAppSelector((state) => state.rolePermission);
   
   const { roles } = useAppSelector((state) => state.role);
-  const { permissions } = useAppSelector((state) => state.permission);
+  const [permissions, setPermissions] = useState<any[]>([]);
 
   useEffect(() => {
-    dispatch(getAllRoles({ page: 1, limit: 100 }));
-    dispatch(getAllPermissions({ page: 1, limit: 100 }));
+    dispatch(getAllRoles({ page: 1, limit: 50 }));
   }, [dispatch]);
+
+  // The API returns at most 50 per page and there are more permissions than that.
+  useEffect(() => {
+    const loadAllPermissions = async () => {
+      const all: any[] = [];
+      for (let page = 1; ; page++) {
+        const response = await Permissions.allPermissions(page, 50);
+        const { permissions: batch, pagination } = response.data.data;
+        all.push(...batch);
+        if (!pagination.hasNextPage) break;
+      }
+      setPermissions(all);
+    };
+    loadAllPermissions().catch((error: any) =>
+      toast.error(error?.message || "Could not load permissions")
+    );
+  }, []);
 
   const initialValues = {
     role_id: "",
@@ -51,8 +67,7 @@ const RolePermissionsForm = ({
         onCancel();
       }
     } catch (error: any) {
-      console.error("Error submitting Role-Permission form", error);
-      toast.error(error?.response?.message || "Something went wrong");
+      toast.error(error?.message || "Something went wrong");
     }
   }
 

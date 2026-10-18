@@ -31,7 +31,8 @@ export const createShowtimeStatus = createAsyncThunk(
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -48,7 +49,8 @@ export const updateShowtimeStatus = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -62,7 +64,8 @@ export const deleteShowtimeStatus = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }

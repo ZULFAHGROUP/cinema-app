@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Dropdown, Menu } from "antd";
+import { Dropdown, Menu, Tag } from "antd";
 import ReusableTable from "../../../components/shared/Table";
 import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -68,7 +68,7 @@ export default function StaffList({ staff, role,staffTab, onRefresh }: StaffList
     if (!selectedStaff) return;
     try {
       const response = await dispatch(
-        deleteStaff(selectedStaff?.surname)
+        deleteStaff(selectedStaff?.admin_id)
       ).unwrap();
       if (response.code === 200) {
         // toast.success(response.message);
@@ -81,7 +81,7 @@ export default function StaffList({ staff, role,staffTab, onRefresh }: StaffList
         setShowDeleteModal(false);
       }
     } catch (error: any) {
-      toast.error(error?.response?.message || "Error deleting classification");
+      toast.error(error?.message || "Error deleting staff");
       setShowDeleteModal(false);
     }
   };
@@ -107,19 +107,34 @@ export default function StaffList({ staff, role,staffTab, onRefresh }: StaffList
     },
     {
       title: "Role",
-      dataIndex: "role",
-      key: "role",
-      render: (role: any) =>
-        role ? `${formatUserLabel(role?.role_name)}` : "Role not available",
+      dataIndex: "roles",
+      key: "roles",
+      render: (roles: any[]) =>
+        roles?.length
+          ? roles.map((r) => formatUserLabel(r.role_name)).join(", ")
+          : "Role not available",
       filters:
-        role?.filter(
-    (role:any) => role.role_name?.toLowerCase() !== "customer"
-  ).map((r: any) => ({
+        role?.map((r: any) => ({
           text: r?.role_name,
           value: r?.role_name,
         })) || [],
 
-      onFilter: (value: any, record: any) => record.role.role_name === value,
+      onFilter: (value: any, record: any) =>
+        record.roles?.some((r: any) => r.role_name === value),
+    },
+    {
+      title: "Cinema",
+      dataIndex: "cinema",
+      key: "cinema",
+      render: (cinema: any) => cinema?.name || "All cinemas",
+    },
+    {
+      title: "Status",
+      dataIndex: "is_active",
+      key: "is_active",
+      render: (isActive: boolean) => (
+        <Tag color={isActive ? "green" : "red"}>{isActive ? "Active" : "Deactivated"}</Tag>
+      ),
     },
     //   {
     //   title: "Status",
@@ -154,7 +169,7 @@ export default function StaffList({ staff, role,staffTab, onRefresh }: StaffList
         data={staff}
         columns={columns}
         title={staffTab === 'managers'? "Managers List" : staffTab === "cashiers" ? "Cashiers List" : "General Staff List"}
-        searchField={["name", "email", "role", "department"]}
+        searchField={["surname", "other_names", "email", "phone"]}
         showSearch={true}
         showPagination={true}
         excludeColumns={["id"]}
@@ -169,6 +184,7 @@ export default function StaffList({ staff, role,staffTab, onRefresh }: StaffList
           isEdit={true}
           staffData={selectedStaff}
           roles={role}
+          onSuccess={() => setShowEditModal(false)}
         />
       </DisplayModal>
 

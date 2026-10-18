@@ -104,9 +104,10 @@ export default function CustomersList({
   const columns = [
     {
       title: "Name",
-      dataIndex: "name",
+      dataIndex: "surname",
       key: "name",
-      sorter: (a: any, b: any) => a.name.localeCompare(b.name),
+      render: (_: unknown, record: any) => `${record.surname} ${record.other_names}`,
+      sorter: (a: any, b: any) => a.surname.localeCompare(b.surname),
     },
     {
       title: "Email",

@@ -5,11 +5,16 @@ import Input from "../../../components/shared/Input";
 import Button from "../../../components/shared/Button";
 import AuthLayout from "../../../components/shared/AuthLayout";
 import { resetPasswordValidationSchema } from "../../../validations";
+import Accounts from "../../../services/network/accounts";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import { allRoutes } from "../../../routes/allRoutes";
 
 const ResetPassword = () => {
   const [phase, setPhase] = useState(1);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputsRef = useRef<any>([]);
+  const navigate = useNavigate();
 
   const handleOtpChange = (value: any, index: number) => {
     if (value.length > 1) return;
@@ -41,18 +46,28 @@ const ResetPassword = () => {
     values: any,
     { resetForm }: { resetForm: () => void }
   ) => {
+    if (!email) {
+      toast.error("Start password recovery with your email first");
+      navigate(allRoutes.forgetPassword);
+      return;
+    }
+
     try {
-      const payload = {
+      const response = await Accounts.completeForgetPassword({
         email,
         otp: otp.join(""),
         password: values.password,
         confirmPassword: values.confirmPassword,
-      };
-
-      console.log("FINAL SUBMIT:", payload);
+      });
+      localStorage.removeItem("recoveryEmail");
+      toast.success(response.data.message);
       resetForm();
-    } catch (err) {
-      console.log(err);
+      navigate(`${allRoutes.auth}/login`);
+    } catch (error: any) {
+      // A wrong or expired code: go back and enter it again.
+      toast.error(error?.message || "Something went wrong");
+      setOtp(["", "", "", "", "", ""]);
+      setPhase(1);
     }
   };
 

@@ -5,6 +5,8 @@ import Button from "../../../../../components/shared/Button";
 import { useAppDispatch, useAppSelector } from "../../../../../store/hook";
 import { correctInventory, getAllInventories } from "../../../../../store/slices/inventory";
 import { toast } from "react-toastify";
+import { useState } from "react";
+import { newIdempotencyKey } from "../../../../../services/httpClient";
 import { inventoryOperationSchema } from "../../../../../validations";
 
 interface CorrectionFormProps {
@@ -16,6 +18,8 @@ interface CorrectionFormProps {
 
 const CorrectionForm = ({ onCancel, inventoryId, productName, currentStock, cinema_id }: CorrectionFormProps) => {
   const dispatch = useAppDispatch();
+  // One key per opened form, reused if the user retries after an error.
+  const [idempotencyKey] = useState(newIdempotencyKey);
   const { page, limit } = useAppSelector((state) => state.inventory);
   const { user } = useAppSelector((state) => state.accounts.data);
   const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "superadmin";
@@ -30,6 +34,7 @@ const CorrectionForm = ({ onCancel, inventoryId, productName, currentStock, cine
       const response = await dispatch(
         correctInventory({
           id: inventoryId,
+          idempotencyKey,
           data: {
             quantity: Number(values.quantity),
             reason: values.reason,
@@ -47,7 +52,7 @@ const CorrectionForm = ({ onCancel, inventoryId, productName, currentStock, cine
         onCancel();
       }
     } catch (error: any) {
-      toast.error(error?.response?.message || "Something went wrong");
+      toast.error(error?.message || "Something went wrong");
     }
   }
 

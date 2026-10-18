@@ -70,7 +70,7 @@ const columns = [
       render:(payment_status: string) => <span className="capitalize">{payment_status.toLowerCase()}</span>
     },
     {
-      title: "Grand Total",
+      title: "VAT Rate",
       dataIndex: "vat_rate",
       key: "vat_rate",
       render: (vat_rate: number) => <span className="font-semibold">{vat_rate}</span>,
@@ -89,7 +89,7 @@ const columns = [
     {
       title: "User",
       key: "surname",
-      render:(_:unknown,record: any) => <div className=""><p>{record?.user?.surname} {record?.user?.other_names}</p><p className="text-xs">{record?.user?.email}</p><p className="text-xs">{record?.user?.phone}</p></div>
+      render:(_:unknown,record: any) => record?.user ? <div className=""><p>{record.user.surname} {record.user.other_names}</p><p className="text-xs">{record.user.email}</p><p className="text-xs">{record.user.phone}</p></div> : "Counter sale"
     },
      ];
 

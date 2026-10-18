@@ -31,7 +31,8 @@ export const createPriceRule = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -48,7 +49,8 @@ export const updatePriceRule = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -62,7 +64,8 @@ export const deletePriceRule = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }

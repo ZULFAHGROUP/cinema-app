@@ -5,6 +5,8 @@ import Button from "../../../../../components/shared/Button";
 import { useAppDispatch, useAppSelector } from "../../../../../store/hook";
 import { stockIn, getAllInventories } from "../../../../../store/slices/inventory";
 import { toast } from "react-toastify";
+import { useState } from "react";
+import { newIdempotencyKey } from "../../../../../services/httpClient";
 import { inventoryOperationSchema } from "../../../../../validations";
 
 interface StockInFormProps {
@@ -16,6 +18,8 @@ interface StockInFormProps {
 
 const StockInForm = ({ onCancel, inventoryId, productName,cinema_id }: StockInFormProps) => {
   const dispatch = useAppDispatch();
+  // One key per opened form, reused if the user retries after an error.
+  const [idempotencyKey] = useState(newIdempotencyKey);
   const { page, limit } = useAppSelector((state) => state.inventory);
   const { user } = useAppSelector((state) => state.accounts.data);
   const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "superadmin";
@@ -30,6 +34,7 @@ const StockInForm = ({ onCancel, inventoryId, productName,cinema_id }: StockInFo
       const response = await dispatch(
         stockIn({
           id: inventoryId,
+          idempotencyKey,
           data: {
             quantity: Number(values.quantity),
             reason: values.reason,
@@ -47,7 +52,7 @@ const StockInForm = ({ onCancel, inventoryId, productName,cinema_id }: StockInFo
         onCancel();
       }
     } catch (error: any) {
-      toast.error(error?.response?.message || "Something went wrong");
+      toast.error(error?.message || "Something went wrong");
     }
   }
 

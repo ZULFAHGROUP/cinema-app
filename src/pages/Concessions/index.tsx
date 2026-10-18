@@ -5,12 +5,14 @@ import Button from "../../components/shared/Button";
 import {
   Package,
   BarChart3,
+  RotateCcw,
   // ShoppingCart,
   Plus,
   // Minus,
 } from "lucide-react";
 import InventoryManagement from "./components/InventoryManagement";
 import Sales from "./components/Sales";
+import Refunds from "./components/Refunds";
 // import POSMode from "./components/PosMode";
 import AddProductForm from "./components/AddProductForm";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
@@ -31,7 +33,7 @@ function ConcessionsPage() {
   const { user } = useAppSelector((state) => state.accounts.data);
 const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order);
   // Determine if user is admin
-  const isAdmin = user?.role?.name?.toLowerCase() === "admin";
+  const isAdmin = user?.role?.toLowerCase() === "admin";
 
   // Use selected cinema for admin, undefined for others (backend uses auth token)
   const activeCinemaId = isAdmin ? selectedCinemaId : undefined;
@@ -110,6 +112,15 @@ const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order
         </span>
       ),
       children: <Sales recentSales={orders} loading={orderLoading} />,
+    },
+    {
+      key: "refunds",
+      label: (
+        <span className="flex items-center gap-2">
+          <RotateCcw className="w-4 h-4" /> Refunds
+        </span>
+      ),
+      children: <Refunds />,
     },
     // {
     //   key: "suppliers",

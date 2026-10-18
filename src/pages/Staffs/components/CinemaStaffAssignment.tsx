@@ -58,7 +58,7 @@ export default function CinemaStaffAssignment() {
 
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [staffToDelete, setStaffToDelete] = useState<{cinemaId: string, userId: string, name: string} | null>(null);
+  const [staffToDelete, setStaffToDelete] = useState<{cinemaId: string, adminId: string, name: string} | null>(null);
 
   useEffect(() => {
     dispatch(getAllCinemas({ page: cinemaPage , limit: cinemaLimit }));
@@ -67,8 +67,8 @@ export default function CinemaStaffAssignment() {
     dispatch(getCinemaStaff({ page: cinemaStaffPage, limit: cinemaStaffLimit }));
   }, [dispatch]);
 
-  const handleDeleteClick = (cinemaId: string, userId: string, name: string) => {
-      setStaffToDelete({ cinemaId, userId, name });
+  const handleDeleteClick = (cinemaId: string, adminId: string, name: string) => {
+      setStaffToDelete({ cinemaId, adminId, name });
       setShowDeleteModal(true);
   };
 
@@ -77,7 +77,7 @@ export default function CinemaStaffAssignment() {
 
     try {
       await dispatch(
-        removeCinemaStaff({ cinema_id: staffToDelete.cinemaId, user_id: staffToDelete.userId })
+        removeCinemaStaff({ cinema_id: staffToDelete.cinemaId, admin_id: staffToDelete.adminId })
       ).unwrap();
       toast.success("Staff removed successfully");
       dispatch(getCinemaStaff({ page: cinemaStaffPage, limit: cinemaStaffLimit }));
@@ -100,7 +100,7 @@ export default function CinemaStaffAssignment() {
       render: (_: any, record: any) => (
         <div className="flex flex-col text-left">
              <span className="font-medium">
-                {record.user ? `${record.user.surname} ${record.user.other_names}` : `${record.surname} ${record.other_names}`}
+                {record.admin ? `${record.admin.surname} ${record.admin.other_names}` : "Unknown staff"}
             </span>
         </div>
       ),
@@ -109,7 +109,7 @@ export default function CinemaStaffAssignment() {
       title: "Email",
       key: "email",
       render: (_: any, record: any) => (
-          <span className="text-gray-500">{record.user ? record.user.email : record.email}</span>
+          <span className="text-gray-500">{record.admin?.email}</span>
       )
     },
     {
@@ -128,9 +128,9 @@ export default function CinemaStaffAssignment() {
       title: "Action",
       key: "action",
       render: (_: any, record: any) => {
-        const name = record.user ? `${record.user.surname} ${record.user.other_names}` : `${record.surname} ${record.other_names}`;
+        const name = record.admin ? `${record.admin.surname} ${record.admin.other_names}` : "this staff member";
         return (
-          <Button   className="bg-transparent text-red-500! shadow-none!"  title="Remove"   icon={<Trash2 size={16} />}     onClick={() => handleDeleteClick(record.cinema_id, record.id || record.user_id, name)}
+          <Button   className="bg-transparent text-red-500! shadow-none!"  title="Remove"   icon={<Trash2 size={16} />}     onClick={() => handleDeleteClick(record.cinema_id, record.admin_id, name)}
 />
                    );
       },
@@ -162,17 +162,15 @@ export default function CinemaStaffAssignment() {
     }
   };
 
-  const isAssigned = (userId: string, cinemaId: string) => {
-     return cinemaStaffList.some((staff: any) => 
-        (staff.user_id === userId || staff.id === userId) && 
-        (staff.cinema_id === cinemaId) 
-     );
-  };
+  // A staff member works at one cinema at a time.
+  const isAssigned = (staff: any) =>
+    Boolean(staff.cinema) ||
+    cinemaStaffList.some((assignment: any) => assignment.admin_id === staff.admin_id);
 
-  const handleAssign = async (userId: string, cinemaId: string, onSuccess?: () => void) => {
+  const handleAssign = async (adminId: string, cinemaId: string, onSuccess?: () => void) => {
     try {
      const response = await dispatch(
-        assignCinemaStaff({ cinema_id: cinemaId, user_id: userId })
+        assignCinemaStaff({ cinema_id: cinemaId, admin_id: adminId })
       ).unwrap();
     if (response.code === 200 || response.code === 201){
        toast.success("Staff assigned successfully");
@@ -216,7 +214,7 @@ export default function CinemaStaffAssignment() {
         }}
         onTableChange={handlePaginationChange}
         showSearch={true}
-        searchField={["user.surname", "user.email", "cinema.name"]}
+        searchField={["admin.surname", "admin.email", "cinema.name"]}
       />
 
       {/* Assignment Modal */}
@@ -269,7 +267,8 @@ export default function CinemaStaffAssignment() {
                        label="Select Role"
                        name="role_name"
                        value={values.role_name}
-                       options={roles?.map((role: any) => ({
+                       // Admin-role staff work across all cinemas and can't be assigned one.
+                       options={roles?.filter((role: any) => role.role_name !== "Admin").map((role: any) => ({
                          label: role.role_name,
                          value: role.role_name,
                        })) || []}
@@ -296,20 +295,19 @@ export default function CinemaStaffAssignment() {
                             <List.Item
                                 actions={[
                                 <Button
-                                title={isAssigned(item.user_id, values.cinema_id) ? "Assigned" : "Assign"}               
-                                variant="primary"                  
+                                title={isAssigned(item) ? "Assigned" : "Assign"}
+                                variant="primary"
                                 icon={<UserPlus size={16} />}
                                 className="rounded-md"
-                                onClick={() => handleAssign(item.user_id, values.cinema_id, resetForm)}
-                                loading={assignmentLoading && isAssigned(item.user_id, values.cinema_id)}
-                                disabled={assignmentLoading||!values.cinema_id || isAssigned(item.user_id, values.cinema_id)}
+                                onClick={() => handleAssign(item.admin_id, values.cinema_id, resetForm)}
+                                disabled={assignmentLoading || !values.cinema_id || isAssigned(item)}
                                 />
                                 ]}
                                 className="bg-white mb-2 rounded border px-3 py-2"
                             >
                                 <List.Item.Meta
                                 title={`${item.surname} ${item.other_names}`}
-                                description={item.email}
+                                description={item.cinema ? `${item.email} · ${item.cinema.name}` : item.email}
                                 />
                             </List.Item>
                             )}

@@ -27,18 +27,20 @@ const AuditTrail = () => {
   };
 
   const columns = [
+    // Staff actions are recorded under `admin`, customer actions under `user`.
     {
       title: "Name",
-      dataIndex: "user",
-      key: "user",
-      render: (user: any) =>
-        user ? `${user?.surname}  ${user?.other_names}` : "Name not available",
+      key: "actor_name",
+      render: (_: unknown, record: any) => {
+        const actor = record.admin || record.user;
+        return actor ? `${actor.surname} ${actor.other_names}` : "Name not available";
+      },
     },
     {
       title: "Email",
-      dataIndex: "user",
-      key: "user",
-      render: (user: any) => user?.email || "Email not available",
+      key: "actor_email",
+      render: (_: unknown, record: any) =>
+        (record.admin || record.user)?.email || "Email not available",
     },
     { title: "Description", dataIndex: "description", key: "description" },
     {

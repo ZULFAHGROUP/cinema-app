@@ -278,12 +278,15 @@ const InventoryManagement = () => {
         onClose={() => setShowStockInModal(false)}
         width={600}
       >
-        <StockInForm
-          onCancel={() => setShowStockInModal(false)}
-          inventoryId={selectedItem?.inventory_id}
-          productName={selectedItem?.productName}
-          cinema_id={selectedCinemaId}
-        />
+        {/* Mounted only while open: each opening gets a fresh Idempotency-Key. */}
+        {showStockInModal && (
+          <StockInForm
+            onCancel={() => setShowStockInModal(false)}
+            inventoryId={selectedItem?.inventory_id}
+            productName={selectedItem?.productName}
+            cinema_id={selectedCinemaId}
+          />
+        )}
       </DisplayModal>
 
       {/* Spoilage Modal */}
@@ -293,13 +296,16 @@ const InventoryManagement = () => {
         onClose={() => setShowSpoilageModal(false)}
         width={600}
       >
-        <SpoilageForm
-          onCancel={() => setShowSpoilageModal(false)}
-          inventoryId={selectedItem?.inventory_id}
-          productName={selectedItem?.productName}
-          currentStock={selectedItem?.quantity}
-          cinema_id={selectedCinemaId}
-        />
+        {/* Mounted only while open: each opening gets a fresh Idempotency-Key. */}
+        {showSpoilageModal && (
+          <SpoilageForm
+            onCancel={() => setShowSpoilageModal(false)}
+            inventoryId={selectedItem?.inventory_id}
+            productName={selectedItem?.productName}
+            currentStock={selectedItem?.quantity}
+            cinema_id={selectedCinemaId}
+          />
+        )}
       </DisplayModal>
 
       {/* Correction Modal */}
@@ -309,13 +315,16 @@ const InventoryManagement = () => {
         onClose={() => setShowCorrectionModal(false)}
         width={600}
       >
-        <CorrectionForm
-          onCancel={() => setShowCorrectionModal(false)}
-          inventoryId={selectedItem?.inventory_id}
-          productName={selectedItem?.productName}
-          currentStock={selectedItem?.quantity}         
-           cinema_id={selectedCinemaId}
-        />
+        {/* Mounted only while open: each opening gets a fresh Idempotency-Key. */}
+        {showCorrectionModal && (
+          <CorrectionForm
+            onCancel={() => setShowCorrectionModal(false)}
+            inventoryId={selectedItem?.inventory_id}
+            productName={selectedItem?.productName}
+            currentStock={selectedItem?.quantity}         
+             cinema_id={selectedCinemaId}
+          />
+        )}
       </DisplayModal>
 
       {/* Transfer Modal */}
@@ -325,12 +334,13 @@ const InventoryManagement = () => {
         onClose={() => setShowTransferModal(false)}
         width={600}
       >
-        <TransferForm
-          onCancel={() => setShowTransferModal(false)}
-          inventoryId={selectedItem?.inventory_id}
-          productName={selectedItem?.productName}
-          currentStock={selectedItem?.quantity}
-        />
+        {/* Mounted only while open: each opening gets a fresh Idempotency-Key. */}
+        {showTransferModal && (
+          <TransferForm
+            onCancel={() => setShowTransferModal(false)}
+            inventory={selectedItem}
+          />
+        )}
       </DisplayModal>
 
       {/* History Modal */}

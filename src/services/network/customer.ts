@@ -4,7 +4,7 @@ import Axios from "../httpClient";
 
 const Customer = {
   getCustomers: (page: number, limit: number) => {
-    return Axios.get(`${urls.user}/customers?page=${page}&limit=${limit}`);
+    return Axios.get(`${urls.customers}?page=${page}&limit=${limit}`);
   },
 };
 
