@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
+import { Input, Pagination, Select } from "antd";
 import Button from "../../components/shared/Button";
-import { Film } from "lucide-react";
+import { CalendarClock, CalendarDays, Clapperboard, Film, PauseCircle } from "lucide-react";
+import StatCards from "../../components/shared/StatCards";
+import { MovieFilters } from "../../services/network/movie";
+import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 import Movies from "./components/Movies";
 import AddMovieForm from "./components/AddMovieForm";
 import AddShowtimeForm from "./components/AddShowtimeForm";
@@ -20,6 +24,9 @@ function MoviesPage() {
   // const [selectedCinemaId, setSelectedCinemaId] = useState<string>("");
   const [preSelectedMovie, setPreSelectedMovie] = useState<any>(null);
   const [showtimeLimitCount, setShowtimeLimitCount] = useState(10);
+  const [filters, setFilters] = useState<MovieFilters>({});
+  const [searchText, setSearchText] = useState("");
+  const search = useDebouncedValue(searchText.trim());
 
   const { limit: classificationLimit, page: classificationPage } =
     useAppSelector((state) => state.classification);
@@ -41,8 +48,16 @@ function MoviesPage() {
   //   user?.role?.toLowerCase() === "superadmin";
 
   const dispatch = useAppDispatch();
+
+  // Back to page 1 whenever a filter or the search changes.
   useEffect(() => {
-    dispatch(getAllMovies({ page: moviePage, limit: movieLimit }));
+    dispatch(
+      getAllMovies({ page: 1, limit: movieLimit, filters: { ...filters, search: search || undefined } })
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, filters, search]);
+
+  useEffect(() => {
     dispatch(
       getAllClassifications({
         limit: classificationLimit,
@@ -51,7 +66,8 @@ function MoviesPage() {
     );
     dispatch(getAllShowtimeStatuses({ page: statusPage, limit: statusLimit }));
     dispatch(getAllCinemas({ page: cinemaPage, limit: cinemaLimit }));
-  }, [dispatch, moviePage, movieLimit]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch]);
 
   useEffect(() => {
     // const cinemaIdToUse = isAdmin ? selectedCinemaId : undefined;
@@ -70,10 +86,49 @@ function MoviesPage() {
     showtimePage,
   ]);
 
-  const { movies, moviesLoading } = useAppSelector((state) => state.movie);
-  const { showtimes, showtimeLoading, total: totalShowtimes } = useAppSelector(
-    (state) => state.showtime
-  );
+  const { movies, moviesLoading, total: totalMovies, stats: movieStats, filters: movieFilters } =
+    useAppSelector((state) => state.movie);
+  const {
+    showtimes,
+    showtimeLoading,
+    total: totalShowtimes,
+    stats: showtimeStats,
+  } = useAppSelector((state) => state.showtime);
+  const { classifications } = useAppSelector((state) => state.classification);
+
+  const toggleActive = (value: boolean) =>
+    setFilters((f) => ({ ...f, is_active: f.is_active === value ? undefined : value }));
+
+  const statItems = [
+    {
+      label: "Movies",
+      value: movieStats?.total_movies ?? 0,
+      icon: Film,
+      onClick: () => setFilters((f) => ({ ...f, is_active: undefined })),
+    },
+    {
+      label: "Now showing",
+      value: movieStats?.active_movies ?? 0,
+      hint: `${movieStats?.inactive_movies ?? 0} inactive`,
+      icon: Clapperboard,
+      tone: "good" as const,
+      onClick: () => toggleActive(true),
+      active: filters.is_active === true,
+    },
+    {
+      label: "Showtimes today",
+      value: showtimeStats?.today ?? 0,
+      icon: CalendarDays,
+      tone: "info" as const,
+    },
+    {
+      label: "Upcoming showtimes",
+      value: showtimeStats?.upcoming ?? 0,
+      hint: `${showtimeStats?.total_showtimes ?? 0} scheduled in total`,
+      icon: CalendarClock,
+      tone: "warning" as const,
+    },
+  ];
   const { allCinemas } = useAppSelector((state) => state.cinema);
 
   const handleAddShowtime = (movie: any) => {
@@ -114,6 +169,44 @@ function MoviesPage() {
         </div>
       </div>
 
+      <div className="space-y-4 mb-6">
+        <StatCards items={statItems} loading={moviesLoading} />
+        <div className="flex flex-wrap gap-3 items-center">
+          <Input.Search
+            allowClear
+            placeholder="Search title, director, cast or genre"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="w-full md:w-80!"
+          />
+          <Select
+            allowClear
+            placeholder="All classifications"
+            value={filters.movie_classification_id}
+            onChange={(value) => setFilters((f) => ({ ...f, movie_classification_id: value }))}
+            options={classifications?.map((c: any) => ({
+              value: c.movie_classification_id,
+              label: c.name,
+            }))}
+            className="w-48"
+          />
+          <Select
+            placeholder="Status"
+            value={filters.is_active === undefined ? "all" : filters.is_active ? "active" : "inactive"}
+            onChange={(value) =>
+              setFilters((f) => ({ ...f, is_active: value === "all" ? undefined : value === "active" }))
+            }
+            options={[
+              { value: "all", label: "All movies" },
+              { value: "active", label: "Now showing" },
+              { value: "inactive", label: "Inactive" },
+            ]}
+            className="w-40"
+            suffixIcon={<PauseCircle className="w-4 h-4" />}
+          />
+        </div>
+      </div>
+
       {/* Movies Content */}
       <Movies 
         loading={moviesLoading || showtimeLoading} 
@@ -124,6 +217,24 @@ function MoviesPage() {
         totalShowtimes={totalShowtimes}
         onLoadMoreShowtimes={() => setShowtimeLimitCount(prev => prev + 10)}
       />
+
+      {!moviesLoading && movies.length === 0 && (
+        <p className="text-center text-muted-foreground py-12">No movies match these filters.</p>
+      )}
+      {totalMovies > movieLimit && (
+        <div className="flex justify-center mt-6">
+          <Pagination
+            current={moviePage}
+            pageSize={movieLimit}
+            total={totalMovies}
+            showSizeChanger
+            pageSizeOptions={[9, 12, 24, 48]}
+            onChange={(page, pageSize) =>
+              dispatch(getAllMovies({ page, limit: pageSize, filters: movieFilters }))
+            }
+          />
+        </div>
+      )}
 
 
       {/* Add Movie Modal */}

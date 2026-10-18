@@ -2,17 +2,22 @@
 import urls from "../../constants/urls";
 import Axios from "../httpClient";
 
+export interface StaffFilters {
+  search?: string;
+  is_active?: boolean;
+}
+
 const Staff = {
-  getPosCashiers: (page: number, limit: number) => {
-    return Axios.get(`${urls.staff}/pos-cashiers?page=${page}&limit=${limit}`);
+  getPosCashiers: (page: number, limit: number, filters: StaffFilters = {}) => {
+    return Axios.get(`${urls.staff}/pos-cashiers`, { params: { page, limit, ...filters } });
   },
 
-  getManagers: (page: number, limit: number) => {
-    return Axios.get(`${urls.staff}/managers?page=${page}&limit=${limit}`);
+  getManagers: (page: number, limit: number, filters: StaffFilters = {}) => {
+    return Axios.get(`${urls.staff}/managers`, { params: { page, limit, ...filters } });
   },
 
-  getStaffs: (page: number, limit: number) => {
-    return Axios.get(`${urls.staff}/staff?page=${page}&limit=${limit}`);
+  getStaffs: (page: number, limit: number, filters: StaffFilters = {}) => {
+    return Axios.get(`${urls.staff}/staff`, { params: { page, limit, ...filters } });
   },
 
   getCinemaStaff: (page: number, limit: number) => {

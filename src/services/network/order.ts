@@ -1,10 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import urls from "../../constants/urls";
 import Axios, { withIdempotencyKey } from "../httpClient";
 
+/** Filters every staff order list accepts; blank values are ignored by the API. */
+export interface OrderFilters {
+  search?: string;
+  status?: string;
+  order_type?: string;
+  channel?: "online" | "counter";
+  from?: string;
+  to?: string;
+  /** Admin-role staff only. */
+  cinema_id?: string;
+}
+
 const Order = {
-  allOrders: (page: number, limit: number) => {
-    return Axios.get(`${urls.order}?page=${page}&limit=${limit}`);
+  /** Orders plus `stats` totalled over every order the filters match. */
+  allOrders: (page: number, limit: number, filters: OrderFilters = {}) => {
+    return Axios.get(urls.order, { params: { page, limit, ...filters } });
   },
 
   getOrder: (id: string) => {
@@ -29,8 +41,8 @@ const Order = {
   },
 
   /** Paid orders that lost their seats (NEEDS_REFUND), plus refunds in progress. */
-  refunds: (page: number, limit: number) => {
-    return Axios.get(`${urls.order}/refunds?page=${page}&limit=${limit}`);
+  refunds: (page: number, limit: number, filters: OrderFilters = {}) => {
+    return Axios.get(`${urls.order}/refunds`, { params: { page, limit, ...filters } });
   },
 
   /** `manual: true` only records a refund already made in the gateway dashboard or in cash. */

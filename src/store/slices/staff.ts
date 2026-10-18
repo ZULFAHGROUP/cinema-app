@@ -1,18 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { ApiResponse } from "../../@types/common";
-import Staff from "../../services/network/staff";
+import Staff, { StaffFilters } from "../../services/network/staff";
+
+export interface StaffStats {
+  total_staff: number;
+  active_staff: number;
+  inactive_staff: number;
+}
 
 export const getManagers = createAsyncThunk(
   "staff/getManagers",
-  async ({ page = 1, limit = 10 }: { page?: number; limit?: number }, { rejectWithValue }) => {
+  async (
+    { page = 1, limit = 10, filters = {} }: { page?: number; limit?: number; filters?: StaffFilters },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await Staff.getManagers(page, limit);
+      const response = await Staff.getManagers(page, limit, filters);
       return {
         data: response.data.data.admins,
         page,
         limit,
         total: response.data.data.pagination.total,
+        stats: response.data.data.stats as StaffStats,
       };
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
@@ -22,14 +32,18 @@ export const getManagers = createAsyncThunk(
 
 export const getPosCashiers = createAsyncThunk(
   "staff/getPosCashiers",
-  async ({ page = 1, limit = 10 }: { page?: number; limit?: number }, { rejectWithValue }) => {
+  async (
+    { page = 1, limit = 10, filters = {} }: { page?: number; limit?: number; filters?: StaffFilters },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await Staff.getPosCashiers(page, limit);
+      const response = await Staff.getPosCashiers(page, limit, filters);
       return {
         data: response.data.data.admins,
         page,
         limit,
         total: response.data.data.pagination.total,
+        stats: response.data.data.stats as StaffStats,
       };
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
@@ -39,14 +53,18 @@ export const getPosCashiers = createAsyncThunk(
 
 export const getGeneralStaff = createAsyncThunk(
   "staff/getGeneralStaff",
-  async ({ page = 1, limit = 10 }: { page?: number; limit?: number }, { rejectWithValue }) => {
+  async (
+    { page = 1, limit = 10, filters = {} }: { page?: number; limit?: number; filters?: StaffFilters },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await Staff.getStaffs(page, limit);
+      const response = await Staff.getStaffs(page, limit, filters);
       return {
         data: response.data.data.admins,
         page,
         limit,
         total: response.data.data.pagination.total,
+        stats: response.data.data.stats as StaffStats,
       };
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
@@ -131,6 +149,9 @@ const staffSlice = createSlice({
     managersPagination: { page: 1, limit: 10, total: 0 },
     cashiersPagination: { page: 1, limit: 10, total: 0 },
     staffPagination: { page: 1, limit: 10, total: 0 },
+    managersStats: null as StaffStats | null,
+    cashiersStats: null as StaffStats | null,
+    staffStats: null as StaffStats | null,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -142,6 +163,7 @@ const staffSlice = createSlice({
       .addCase(getManagers.fulfilled, (state, action) => {
         state.loading = false;
         state.managers = action.payload.data || [];
+        state.managersStats = action.payload.stats || null;
         state.managersPagination = {
           page: action.payload.page,
           limit: action.payload.limit,
@@ -158,6 +180,7 @@ const staffSlice = createSlice({
       .addCase(getPosCashiers.fulfilled, (state, action) => {
         state.loading = false;
         state.cashiers = action.payload.data || [];
+        state.cashiersStats = action.payload.stats || null;
         state.cashiersPagination = {
           page: action.payload.page,
           limit: action.payload.limit,
@@ -174,6 +197,7 @@ const staffSlice = createSlice({
       .addCase(getGeneralStaff.fulfilled, (state, action) => {
         state.loading = false;
         state.generalStaff = action.payload.data || [];
+        state.staffStats = action.payload.stats || null;
         state.staffPagination = {
           page: action.payload.page,
           limit: action.payload.limit,

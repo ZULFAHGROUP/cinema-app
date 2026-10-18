@@ -4,12 +4,19 @@ import Axios, { withIdempotencyKey } from "../httpClient";
 
 type MovementInput = { quantity: number; reason?: string };
 
+export interface InventoryFilters {
+  search?: string;
+  product_category_id?: string;
+  /** At or below the reorder level. */
+  low_stock?: boolean;
+}
+
 const Inventory = {
-  allInventories: (page: number, limit: number, cinema_id?: string) => {
-    const url = cinema_id
-      ? `${urls.inventory}?page=${page}&limit=${limit}&cinema_id=${cinema_id}`
-      : `${urls.inventory}?page=${page}&limit=${limit}`;
-    return Axios.get(url);
+  /** Stock plus `stats` totalled over every row the filters match. */
+  allInventories: (page: number, limit: number, cinema_id?: string, filters: InventoryFilters = {}) => {
+    return Axios.get(urls.inventory, {
+      params: { page, limit, cinema_id: cinema_id || undefined, ...filters },
+    });
   },
 
   deleteInventory: (id: string | number) => {

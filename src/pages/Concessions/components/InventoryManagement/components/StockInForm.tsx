@@ -45,9 +45,8 @@ const StockInForm = ({ onCancel, inventoryId, productName,cinema_id }: StockInFo
 
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message || "Stock added successfully");
-        isAdmin ? 
-        await dispatch(getAllInventories({ page, limit, cinema_id: cinema_id })).unwrap() :         await dispatch(getAllInventories({ page, limit })).unwrap();
-;
+        // Admins see the cinema they picked; everyone else their own (from the token).
+        await dispatch(getAllInventories({ page, limit, cinema_id: isAdmin ? cinema_id : undefined }));
         resetForm();
         onCancel();
       }

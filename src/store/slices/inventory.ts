@@ -1,21 +1,37 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { ApiResponse } from "../../@types/common";
-import Inventory from "../../services/network/inventory";
+import Inventory, { InventoryFilters } from "../../services/network/inventory";
+
+export interface InventoryStats {
+  total_items: number;
+  total_quantity: number;
+  low_stock_items: number;
+  out_of_stock_items: number;
+}
 
 export const getAllInventories = createAsyncThunk(
   "inventory/getAll",
   async (
-    { page = 1, limit = 10, cinema_id }: { page?: number; limit?: number; cinema_id?: string },
-    { rejectWithValue }
+    {
+      page = 1,
+      limit = 10,
+      cinema_id,
+      filters,
+    }: { page?: number; limit?: number; cinema_id?: string; filters?: InventoryFilters },
+    { rejectWithValue, getState }
   ) => {
+    // Refreshes after a stock change pass no filters: keep the ones on screen.
+    const activeFilters = filters ?? (getState() as any).inventory.filters ?? {};
     try {
-      const response = await Inventory.allInventories(page, limit, cinema_id);
+      const response = await Inventory.allInventories(page, limit, cinema_id, activeFilters);
       return {
         data: response.data.data.inventories,
         page,
         limit,
         total: response.data.data.pagination.total,
+        stats: response.data.data.stats,
+        filters: activeFilters,
       };
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
@@ -141,6 +157,8 @@ const inventorySlice = createSlice({
     page: 1,
     limit: 10,
     total: 0,
+    stats: null as InventoryStats | null,
+    filters: {} as InventoryFilters,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -154,6 +172,8 @@ const inventorySlice = createSlice({
         state.page = action.payload.page;
         state.limit = action.payload.limit;
         state.total = action.payload.total;
+        state.stats = action.payload.stats || null;
+        state.filters = action.payload.filters;
       })
       .addCase(getAllInventories.rejected, (state) => {
         state.loading = false;

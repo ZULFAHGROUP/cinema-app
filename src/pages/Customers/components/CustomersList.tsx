@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import { Dropdown, Input, Tag } from "antd";
-import { MoreHorizontal, Receipt, Trash2 } from "lucide-react";
+import { Dropdown, Input, Select, Tag } from "antd";
+import { BadgeCheck, CalendarPlus, MailWarning, MoreHorizontal, Receipt, Trash2, Users } from "lucide-react";
+import StatCards from "../../../components/shared/StatCards";
 import { toast } from "react-toastify";
 import ReusableTable from "../../../components/shared/Table";
 import Loader from "../../../components/shared/Loader";
@@ -90,16 +91,17 @@ function CustomerOrders({ customer }: { customer: any }) {
 
 export default function CustomersList() {
   const dispatch = useAppDispatch();
-  const { customers, loading, page, limit, total } = useAppSelector((state) => state.customer);
+  const { customers, loading, page, limit, total, stats } = useAppSelector((state) => state.customer);
   const [searchText, setSearchText] = useState("");
   const [search, setSearch] = useState("");
+  const [isVerified, setIsVerified] = useState<boolean | undefined>(undefined);
   const [ordersFor, setOrdersFor] = useState<any>(null);
   const [toDelete, setToDelete] = useState<any>(null);
 
   useEffect(() => {
-    dispatch(getAllCustomers({ page: 1, limit, search }));
+    dispatch(getAllCustomers({ page: 1, limit, search, is_verified: isVerified }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, search]);
+  }, [dispatch, search, isVerified]);
 
   // Search on the server after the user stops typing.
   useEffect(() => {
@@ -112,7 +114,7 @@ export default function CustomersList() {
     try {
       const response = await Customer.deleteCustomer(toDelete.user_id);
       toast.success(response.data.message);
-      dispatch(getAllCustomers({ page, limit, search }));
+      dispatch(getAllCustomers({ page, limit, search, is_verified: isVerified }));
     } catch (error: any) {
       toast.error(error?.message || "Could not delete the customer");
     } finally {
@@ -167,15 +169,61 @@ export default function CustomersList() {
     },
   ];
 
+  const toggleVerified = (value: boolean) => setIsVerified((current) => (current === value ? undefined : value));
+
+  const statItems = [
+    {
+      label: "Customers",
+      value: stats?.total_customers ?? 0,
+      icon: Users,
+      onClick: () => setIsVerified(undefined),
+    },
+    {
+      label: "Verified",
+      value: stats?.verified_customers ?? 0,
+      icon: BadgeCheck,
+      tone: "good" as const,
+      onClick: () => toggleVerified(true),
+      active: isVerified === true,
+    },
+    {
+      label: "Not verified",
+      value: stats?.unverified_customers ?? 0,
+      icon: MailWarning,
+      tone: "warning" as const,
+      onClick: () => toggleVerified(false),
+      active: isVerified === false,
+    },
+    {
+      label: "New this month",
+      value: stats?.new_this_month ?? 0,
+      icon: CalendarPlus,
+      tone: "info" as const,
+    },
+  ];
+
   return (
     <div className="space-y-4">
-      <Input.Search
-        allowClear
-        placeholder="Search name, email or phone"
-        value={searchText}
-        onChange={(e) => setSearchText(e.target.value)}
-        className="md:w-80!"
-      />
+      <StatCards items={statItems} loading={loading} />
+      <div className="flex flex-wrap gap-3">
+        <Input.Search
+          allowClear
+          placeholder="Search name, email or phone"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="md:w-80!"
+        />
+        <Select
+          value={isVerified === undefined ? "all" : isVerified ? "yes" : "no"}
+          onChange={(value) => setIsVerified(value === "all" ? undefined : value === "yes")}
+          options={[
+            { value: "all", label: "All customers" },
+            { value: "yes", label: "Verified" },
+            { value: "no", label: "Not verified" },
+          ]}
+          className="w-40"
+        />
+      </div>
 
       {loading ? (
         <Loader rows={6} />
@@ -189,7 +237,9 @@ export default function CustomersList() {
           paginationMode="backend"
           paginationProps={{ current: page, pageSize: limit, total }}
           onTableChange={(p: any) =>
-            dispatch(getAllCustomers({ page: p.current, limit: p.pageSize, search }))
+            dispatch(
+              getAllCustomers({ page: p.current, limit: p.pageSize, search, is_verified: isVerified })
+            )
           }
         />
       )}

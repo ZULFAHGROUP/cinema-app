@@ -5,16 +5,22 @@ import Customer from "../../services/network/customer";
 export const getAllCustomers = createAsyncThunk(
   "customer/getAll",
   async (
-    { page = 1, limit = 10, search }: { page?: number; limit?: number; search?: string },
+    {
+      page = 1,
+      limit = 10,
+      search,
+      is_verified,
+    }: { page?: number; limit?: number; search?: string; is_verified?: boolean },
     { rejectWithValue }
   ) => {
     try {
-      const response = await Customer.getCustomers(page, limit, search);
+      const response = await Customer.getCustomers(page, limit, search, is_verified);
       return {
         data: response.data.data.users,
         page,
         limit,
         total: response.data.data.pagination.total,
+        stats: response.data.data.stats,
       };
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
@@ -31,6 +37,12 @@ const customerSlice = createSlice({
     page: 1,
     limit: 10,
     total: 0,
+    stats: null as {
+      total_customers: number;
+      verified_customers: number;
+      unverified_customers: number;
+      new_this_month: number;
+    } | null,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -44,6 +56,7 @@ const customerSlice = createSlice({
         state.page = action.payload.page;
         state.limit = action.payload.limit;
         state.total = action.payload.total;
+        state.stats = action.payload.stats || null;
       })
       .addCase(getAllCustomers.rejected, (state) => {
         state.loading = false;

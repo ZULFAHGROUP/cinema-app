@@ -16,6 +16,7 @@ export const getAllShowtimes = createAsyncThunk(
         page,
         limit,
         total: response.data.data.pagination.total,
+        stats: response.data.data.stats,
       };
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
@@ -96,6 +97,7 @@ const showtimeSlice = createSlice({
     limit: 10,
     total: 0,
     selectedShowtimePrice: null as any,
+    stats: null as { total_showtimes: number; today: number; upcoming: number } | null,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -109,6 +111,7 @@ const showtimeSlice = createSlice({
         state.page = action.payload.page;
         state.limit = action.payload.limit;
         state.total = action.payload.total;
+        state.stats = action.payload.stats || null;
       })
       .addCase(getAllShowtimes.rejected, (state) => {
         state.showtimeLoading = false;

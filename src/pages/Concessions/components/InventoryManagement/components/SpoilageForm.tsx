@@ -45,10 +45,9 @@ const SpoilageForm = ({ onCancel, inventoryId, productName, currentStock, cinema
 
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message || "Spoilage recorded successfully");
-        // Don't pass cinema_id for non-admin (backend gets it from auth token)
-     isAdmin ? 
-        await dispatch(getAllInventories({ page, limit, cinema_id: cinema_id })).unwrap() :         await dispatch(getAllInventories({ page, limit })).unwrap();
-;        resetForm();
+        // Admins see the cinema they picked; everyone else their own (from the token).
+        await dispatch(getAllInventories({ page, limit, cinema_id: isAdmin ? cinema_id : undefined }));
+        resetForm();
         onCancel();
       }
     } catch (error: any) {

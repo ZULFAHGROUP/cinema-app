@@ -3,8 +3,10 @@ import Axios from "../httpClient";
 
 const Customer = {
   /** `search` matches name, email or phone. */
-  getCustomers: (page: number, limit: number, search?: string) => {
-    return Axios.get(urls.customers, { params: { page, limit, search: search || undefined } });
+  getCustomers: (page: number, limit: number, search?: string, is_verified?: boolean) => {
+    return Axios.get(urls.customers, {
+      params: { page, limit, search: search || undefined, is_verified },
+    });
   },
 
   deleteCustomer: (id: string) => {

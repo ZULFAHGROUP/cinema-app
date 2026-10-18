@@ -23,7 +23,7 @@ interface AddMovieProps {
 const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
   const dispatch = useAppDispatch();
   const { classifications } = useAppSelector((state) => state.classification);
-  const { limit, page } = useAppSelector((state) => state.movie);
+  const { limit, page, filters: movieFilters } = useAppSelector((state) => state.movie);
 
   const allClassification = [...(classifications || [])]
     .sort((a: any, b: any) => a.name.localeCompare(b.name))
@@ -107,7 +107,7 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
 
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message);
-        await dispatch(getAllMovies({ page, limit }));
+        await dispatch(getAllMovies({ page, limit, filters: movieFilters }));
         resetForm();
         onCancel();
       }

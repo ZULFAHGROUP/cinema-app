@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { Tabs } from "antd";
 import Button from "../../components/shared/Button";
@@ -18,7 +17,6 @@ import AddProductForm from "./components/AddProductForm";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { getAllProducts } from "../../store/slices/product";
-import { getAllOrders } from "../../store/slices/order";
 
 function ConcessionsPage() {
   const [activeTab, setActiveTab] = useState("inventory");
@@ -31,7 +29,6 @@ function ConcessionsPage() {
     (state) => state.product //products
   );
   const { user } = useAppSelector((state) => state.accounts.data);
-const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order);
   // Determine if user is admin
   const isAdmin = user?.role?.toLowerCase() === "admin";
 
@@ -48,7 +45,6 @@ const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order
         })
       );
     }
-    dispatch(getAllOrders({page,limit}));
   }, [dispatch, productPage, productLimit, activeCinemaId]);
 
   // POS Mode - Commented out for now
@@ -111,7 +107,7 @@ const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order
           <BarChart3 className="w-4 h-4" /> Sales
         </span>
       ),
-      children: <Sales recentSales={orders} loading={orderLoading} />,
+      children: <Sales />,
     },
     {
       key: "refunds",
