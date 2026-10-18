@@ -198,8 +198,8 @@ export const transferOutSchema = Yup.object({
   reason: Yup.string()
     .required("Reason is required")
     .min(3, "Reason must be at least 3 characters"),
-  destination_cinema_id: Yup.string().required("Destination cinema is required"),
-  destination_inventory_id: Yup.string().required("Choose the product's stock in the destination cinema"),
+  destination_cinema_id: Yup.string(),
+  destination_inventory_id: Yup.string().required("Destination cinema is required"),
 });
 
 export const permissionSchema = Yup.object().shape({

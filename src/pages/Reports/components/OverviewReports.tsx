@@ -1,76 +1,69 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
 import ReactApexChart from "react-apexcharts";
+import { revenueSeries, SalesReport } from "../../../hooks/useSalesReport";
+import { formatCurrency } from "../../../utils";
 
-export default function OverviewReports() {
-  const [areaChartOptions] = useState<any>({
-    chart: {
-      type: "area",
-      height: 300,
-      toolbar: { show: false },
-    },
+interface OverviewReportsProps {
+  report: SalesReport;
+  /** Days in the period (undefined = all time); fills days with no sales. */
+  days?: number;
+}
+
+export default function OverviewReports({ report, days }: OverviewReportsProps) {
+  const points = revenueSeries(report, days);
+  const { ticket_revenue, concession_revenue } = report.summary;
+
+  const areaOptions: any = {
+    chart: { type: "area", toolbar: { show: false } },
     dataLabels: { enabled: false },
-    stroke: { curve: "smooth" },
-    xaxis: {
-      categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    },
+    stroke: { curve: "smooth", width: 2 },
+    xaxis: { categories: points.map((p) => p.label), tickAmount: Math.min(points.length, 12) },
+    yaxis: { labels: { formatter: (value: number) => formatCurrency(value) } },
     legend: { position: "top" },
-    colors: ["#8884d8", "#82ca9d"],
-    fill: {
-      type: "gradient",
-      gradient: {
-        shadeIntensity: 1,
-        opacityFrom: 0.7,
-        opacityTo: 0.3,
-      },
-    },
-  });
+    colors: ["#c77e3b", "#4b5563"],
+    fill: { type: "gradient", gradient: { opacityFrom: 0.5, opacityTo: 0.1 } },
+    noData: { text: "No sales in this period" },
+  };
 
-  const [areaSeries] = useState([
-    { name: "Tickets", data: [1200, 900, 1100, 1400, 2200, 2800, 2400] },
-    { name: "Concessions", data: [800, 600, 750, 900, 1400, 1800, 1500] },
-  ]);
-
-  const [pieChartOptions] = useState<any>({
+  const donutOptions: any = {
     chart: { type: "donut" },
-    labels: ["18-25", "26-35", "36-45", "46-55", "55+"],
-    colors: ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#8dd1e1"],
+    labels: ["Tickets", "Concessions"],
+    colors: ["#c77e3b", "#4b5563"],
     legend: { position: "bottom" },
-    dataLabels: {
-      enabled: true,
-      formatter: (val: number) => `${val.toFixed(0)}%`,
-    },
-  });
-
-  const [pieSeries] = useState([35, 28, 20, 12, 5]);
+    tooltip: { y: { formatter: (value: number) => formatCurrency(value) } },
+    noData: { text: "No sales in this period" },
+  };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="border rounded-lg p-6">
-        <h3 className="font-sans font-semibold text-lg mb-2">
-          Daily Revenue Trends
-        </h3>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="border rounded-lg p-6 lg:col-span-2">
+        <h3 className="font-sans font-semibold text-lg mb-1">Revenue Trend</h3>
         <p className="text-sm text-muted-foreground font-serif mb-4">
-          Revenue breakdown by tickets and concessions
+          Tickets and concessions, before VAT
         </p>
         <ReactApexChart
-          options={areaChartOptions}
-          series={areaSeries}
+          options={areaOptions}
+          series={
+            points.length
+              ? [
+                  { name: "Tickets", data: points.map((p) => p.tickets) },
+                  { name: "Concessions", data: points.map((p) => p.concessions) },
+                ]
+              : []
+          }
           type="area"
           height={300}
         />
       </div>
 
       <div className="border rounded-lg p-6">
-        <h3 className="font-sans font-semibold text-lg mb-2">
-          Customer Demographics
-        </h3>
+        <h3 className="font-sans font-semibold text-lg mb-1">Revenue Split</h3>
         <p className="text-sm text-muted-foreground font-serif mb-4">
-          Age distribution of customers
+          Share of sales by type
         </p>
         <ReactApexChart
-          options={pieChartOptions}
-          series={pieSeries}
+          options={donutOptions}
+          series={ticket_revenue || concession_revenue ? [ticket_revenue, concession_revenue] : []}
           type="donut"
           height={300}
         />

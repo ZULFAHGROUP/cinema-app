@@ -13,8 +13,9 @@ import { getAllOrders } from "../../../store/slices/order";
 import Loader from "../../../components/shared/Loader";
 import { formatCurrency } from "../../../utils";
 import { getAllCinemas } from "../../../store/slices/cinema";
-import { getCinemaOrders } from "../../../store/slices/order";
-import { useState, useEffect } from "react";
+import { getCinemaOrders, getOrderStats } from "../../../store/slices/order";
+import { useState, useEffect, useMemo } from "react";
+import { periodStart, useSalesReport } from "../../../hooks/useSalesReport";
 import ReusableSelect from "../../../components/shared/Select";
 
 export default function Sales({ recentSales,loading }: any) {
@@ -28,14 +29,19 @@ export default function Sales({ recentSales,loading }: any) {
   const dispatch = useAppDispatch()
   
   useEffect(() => {
-    dispatch(getAllCinemas({ page: 1, limit: 100 }));
+    dispatch(getAllCinemas({ page: 1, limit: 50 }));
+    dispatch(getOrderStats());
   }, [dispatch]);
+
+  const today = useMemo(() => periodStart(1), []);
+  const { report: todayReport } = useSalesReport(today);
+
   const salesStats = [
     {
       icon: DollarSign,
       color: "primary",
       label: "Today's Sales",
-      value: "₦1,247",
+      value: formatCurrency(todayReport?.summary.revenue || 0),
     },
     {
       icon: ShoppingCart,
@@ -89,7 +95,7 @@ const columns = [
     {
       title: "User",
       key: "surname",
-      render:(_:unknown,record: any) => record?.user ? <div className=""><p>{record.user.surname} {record.user.other_names}</p><p className="text-xs">{record.user.email}</p><p className="text-xs">{record.user.phone}</p></div> : "Counter sale"
+      render:(_:unknown,record: any) => record?.user ? <div className=""><p>{record.user.surname} {record.user.other_names}</p><p className="text-xs">{record.user.email}</p><p className="text-xs">{record.user.phone}</p></div> : <div><p>Counter sale</p>{record?.cashier && <p className="text-xs">by {record.cashier.surname} {record.cashier.other_names}</p>}</div>
     },
      ];
 

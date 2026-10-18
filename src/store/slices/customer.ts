@@ -5,11 +5,11 @@ import Customer from "../../services/network/customer";
 export const getAllCustomers = createAsyncThunk(
   "customer/getAll",
   async (
-    { page = 1, limit = 10 }: { page?: number; limit?: number },
+    { page = 1, limit = 10, search }: { page?: number; limit?: number; search?: string },
     { rejectWithValue }
   ) => {
     try {
-      const response = await Customer.getCustomers(page, limit);
+      const response = await Customer.getCustomers(page, limit, search);
       return {
         data: response.data.data.users,
         page,

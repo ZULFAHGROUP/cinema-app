@@ -5,7 +5,6 @@ import Button from "../../../../../components/shared/Button";
 import ReusableSelect from "../../../../../components/shared/Select";
 import { useAppDispatch, useAppSelector } from "../../../../../store/hook";
 import { transferOut, getAllInventories } from "../../../../../store/slices/inventory";
-import { getAllCinemas } from "../../../../../store/slices/cinema";
 import { toast } from "react-toastify";
 import { transferOutSchema } from "../../../../../validations";
 import { useEffect, useState } from "react";
@@ -18,27 +17,21 @@ interface TransferFormProps {
   inventory: any;
 }
 
-const normalise = (name?: string) => name?.trim().toLowerCase();
-
-/** Each cinema has its own product rows; the API treats same name + category as the same product. */
-const isSameProduct = (a: any, b: any) =>
-  a?.product_id === b?.product_id ||
-  (Boolean(normalise(a?.product?.name)) &&
-    normalise(a?.product?.name) === normalise(b?.product?.name) &&
-    (a?.product?.product_category_id ?? null) === (b?.product?.product_category_id ?? null));
-
 const TransferForm = ({ onCancel, inventory }: TransferFormProps) => {
   const dispatch = useAppDispatch();
   const { page, limit } = useAppSelector((state) => state.inventory);
-  const { allCinemas } = useAppSelector((state) => state.cinema);
-  const [destinationInventories, setDestinationInventories] = useState<any[]>([]);
-  const [loadingDestination, setLoadingDestination] = useState(false);
+  const [destinations, setDestinations] = useState<any[]>([]);
+  const [loadingDestinations, setLoadingDestinations] = useState(true);
   // One key per opened form, reused if the user retries after an error.
   const [idempotencyKey] = useState(newIdempotencyKey);
 
+  // The same product's stock record in every other cinema.
   useEffect(() => {
-    dispatch(getAllCinemas({ page: 1, limit: 50 }));
-  }, [dispatch]);
+    Inventory.transferDestinations(inventory.inventory_id)
+      .then((response) => setDestinations(response.data.data || []))
+      .catch((error: any) => toast.error(error?.message || "Could not load destinations"))
+      .finally(() => setLoadingDestinations(false));
+  }, [inventory.inventory_id]);
 
   const initialValues = {
     quantity: "",
@@ -47,42 +40,10 @@ const TransferForm = ({ onCancel, inventory }: TransferFormProps) => {
     destination_inventory_id: "",
   };
 
-  const cinemaOptions =
-    allCinemas
-      ?.filter((cinema: any) => cinema.cinema_id !== inventory?.cinema_id)
-      .map((cinema: any) => ({
-        label: cinema.name,
-        value: cinema.cinema_id,
-      })) || [];
-
-  const destinationOptions = destinationInventories.map((item: any) => ({
-    label: `${item.product?.name || "Unnamed product"} (${item.quantity} in stock)`,
+  const destinationOptions = destinations.map((item: any) => ({
+    label: `${item.cinema_name}${item.cinema_location ? ` (${item.cinema_location})` : ""}`,
     value: item.inventory_id,
   }));
-
-  /** Loads the destination cinema's stock and picks the matching product when there is one. */
-  const loadDestination = async (
-    cinemaId: string,
-    setFieldValue: (field: string, value: any) => void
-  ) => {
-    setFieldValue("destination_cinema_id", cinemaId);
-    setFieldValue("destination_inventory_id", "");
-    setDestinationInventories([]);
-    if (!cinemaId) return;
-
-    setLoadingDestination(true);
-    try {
-      const response = await Inventory.allInventories(1, 50, cinemaId);
-      const inventories = response.data.data?.inventories || [];
-      setDestinationInventories(inventories);
-      const match = inventories.find((item: any) => isSameProduct(item, inventory));
-      if (match) setFieldValue("destination_inventory_id", match.inventory_id);
-    } catch (error: any) {
-      toast.error(error?.message || "Could not load that cinema's stock");
-    } finally {
-      setLoadingDestination(false);
-    }
-  };
 
   async function handleSubmit(values: any, { resetForm }: { resetForm: () => void }) {
     try {
@@ -143,34 +104,22 @@ const TransferForm = ({ onCancel, inventory }: TransferFormProps) => {
             />
 
             <ReusableSelect
-              label="Destination Cinema"
-              name="destination_cinema_id"
-              value={values.destination_cinema_id}
-              onChange={(value) => loadDestination(value as string, setFieldValue)}
-              options={cinemaOptions}
-              defaultOption="Select destination"
-              error={
-                touched.destination_cinema_id && typeof errors.destination_cinema_id === "string"
-                  ? errors.destination_cinema_id
-                  : undefined
-              }
-              required
-            />
-
-            <ReusableSelect
-              label="Destination Stock"
+              label="Destination"
               name="destination_inventory_id"
               value={values.destination_inventory_id}
-              onChange={(value) => setFieldValue("destination_inventory_id", value)}
+              onChange={(value) => {
+                const destination = destinations.find((d: any) => d.inventory_id === value);
+                setFieldValue("destination_inventory_id", value);
+                setFieldValue("destination_cinema_id", destination?.cinema_id || "");
+              }}
               options={destinationOptions}
-              defaultOption={loadingDestination ? "Loading..." : "Select the same product there"}
-              disabled={!values.destination_cinema_id || loadingDestination}
-              showSearch
+              defaultOption={loadingDestinations ? "Loading..." : "Select destination cinema"}
+              disabled={loadingDestinations}
               error={
                 touched.destination_inventory_id && typeof errors.destination_inventory_id === "string"
                   ? errors.destination_inventory_id
-                  : values.destination_cinema_id && !loadingDestination && destinationInventories.length === 0
-                  ? "That cinema has no stock records yet. Create the product there first."
+                  : !loadingDestinations && destinations.length === 0
+                  ? "No other cinema stocks this product yet. Create it there first."
                   : undefined
               }
               required

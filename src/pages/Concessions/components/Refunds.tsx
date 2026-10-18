@@ -86,7 +86,14 @@ export default function Refunds() {
             <p className="text-xs">{record.user.email}</p>
           </div>
         ) : (
-          "Counter sale"
+          <div>
+            <p>Counter sale</p>
+            {record.cashier && (
+              <p className="text-xs">
+                by {record.cashier.surname} {record.cashier.other_names}
+              </p>
+            )}
+          </div>
         ),
     },
     {

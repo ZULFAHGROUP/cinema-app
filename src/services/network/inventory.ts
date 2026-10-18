@@ -16,6 +16,11 @@ const Inventory = {
     return Axios.delete(`${urls.inventory}/${id}`);
   },
 
+  /** The same product's inventory in other cinemas (needs only transfer_inventory). */
+  transferDestinations: (id: string | number) => {
+    return Axios.get(`${urls.inventory}/${id}/transfer-destinations`);
+  },
+
   getInventoryHistory: (inventoryId: string | number, cinemaId: any) => {
     return Axios.get(`${urls.inventory}/${inventoryId}/history?cinema_id=${cinemaId}`);
   },

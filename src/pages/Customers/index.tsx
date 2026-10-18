@@ -1,157 +1,14 @@
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  import { useEffect, useState } from "react";
-  import { Tabs } from "antd";
-  import Button from "../../components/shared/Button";
-  import { Users, Gift, Crown, TrendingUp, Plus } from "lucide-react";
-  import CustomersList from "./components/CustomersList";
-  import RewardsList from "./components/RewardsList";
-  import LoyaltyTiers from "./components/LoyaltyTiers";
-  import LoyaltyAnalytics from "./components/LoyaltyAnalytics";
-  import AddCustomerForm from "./components/AddCustomerForm";
-  import AddRewardForm from "./components/AddRewardForm";
-  import DisplayModal from "../../components/shared/Modal/DisplayModal";
-  import { useAppDispatch, useAppSelector } from "../../store/hook";
-  import { getAllCustomers } from "../../store/slices/customer";
+import { useState } from "react";
+import { Tabs } from "antd";
+import { Users, Gift, Crown, TrendingUp } from "lucide-react";
+import CustomersList from "./components/CustomersList";
+import ComingSoon from "../../components/shared/ComingSoon";
 
-  function CustomersPage() {
-    const [activeTab, setActiveTab] = useState("customers");
-    const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
-    const [isAddRewardModalOpen, setIsAddRewardModalOpen] = useState(false);
+const LOYALTY_NOTE =
+  "Points, rewards and tiers need loyalty support in the API. Customer accounts and their orders are available now.";
 
-    const dispatch = useAppDispatch();
-    const { customers, loading } = useAppSelector((state) => state.customer);
-
-    useEffect(() => {
-        dispatch(getAllCustomers({ page: 1, limit: 50 }));
-    }, [dispatch]);
-
-    // Placeholder rewards data (convert to slice later if needed)
-    const [rewards, setRewards] = useState([
-      {
-        id: 1,
-        name: "Free Movie Ticket",
-        description: "Redeem for any regular movie ticket",
-        pointsCost: 1000,
-        category: "Tickets",
-        availability: "Available",
-        image: "/movie-ticket-reward.png",
-      },
-      {
-        id: 2,
-        name: "Large Popcorn",
-        description: "Free large popcorn with any purchase",
-        pointsCost: 500,
-        category: "Concessions",
-        availability: "Available",
-        image: "/popcorn-reward.png",
-      },
-      {
-        id: 3,
-        name: "VIP Experience",
-        description: "Premium seating + concessions for 2",
-        pointsCost: 2500,
-        category: "Experiences",
-        availability: "Limited",
-        image: "/vip-experience-reward.png",
-      },
-      {
-        id: 4,
-        name: "₦10 Concession Credit",
-        description: "Credit towards any concession purchase",
-        pointsCost: 750,
-        category: "Credits",
-        availability: "Available",
-        image: "/concession-credit-reward.png",
-      },
-    ]);
-
-
-  const loyaltyTiers = [
-    {
-      name: "Bronze",
-      minSpent: 0,
-      pointsMultiplier: 1,
-      benefits: ["1 point per ₦1 spent", "Birthday discount"],
-      color: "bg-amber-100 text-amber-800",
-    },
-    {
-      name: "Silver",
-      minSpent: 200,
-      pointsMultiplier: 1.25,
-      benefits: [
-        "1.25 points per ₦1 spent",
-        "Priority booking",
-        "Member-only screenings",
-      ],
-      color: "bg-gray-100 text-gray-800",
-    },
-    {
-      name: "Gold",
-      minSpent: 500,
-      pointsMultiplier: 1.5,
-      benefits: [
-        "1.5 points per ₦1 spent",
-        "Free upgrades",
-        "Exclusive events",
-        "Concession discounts",
-      ],
-      color: "bg-yellow-100 text-yellow-800",
-    },
-  ];
-
-  const handleAddCustomer = (customerData: any) => {
-    const newCustomer = {
-      id: customers.length + 1,
-      ...customerData,
-      tier: "Bronze",
-      points: 0,
-      totalSpent: 0,
-      visits: 0,
-      lastVisit: new Date().toISOString().split("T")[0],
-      status: "Active",
-    };
-    setCustomers([...customers, newCustomer]);
-    setIsAddCustomerModalOpen(false);
-  };
-
-  const handleAddReward = (rewardData: any) => {
-    const newReward = {
-      id: rewards.length + 1,
-      ...rewardData,
-      image: "/placeholder.svg",
-      availability: "Available",
-    };
-    setRewards([...rewards, newReward]);
-    setIsAddRewardModalOpen(false);
-  };
-
-  const handleEditCustomer = (customerId: number) => {
-    console.log("Edit customer:", customerId);
-    // Implement edit functionality
-  };
-
-  const handleDeleteCustomer = (customerId: number) => {
-    setCustomers(customers.filter((customer) => customer.id !== customerId));
-  };
-
-  const handleAddPoints = (customerId: number, points: number) => {
-    setCustomers(
-      customers.map((customer) =>
-        customer.id === customerId
-          ? { ...customer, points: customer.points + points }
-          : customer
-      )
-    );
-  };
-
-  const handleEditReward = (rewardId: number) => {
-    console.log("Edit reward:", rewardId);
-    // Implement edit functionality
-  };
-
-  const handleDeleteReward = (rewardId: number) => {
-    setRewards(rewards.filter((reward) => reward.id !== rewardId));
-  };
+function CustomersPage() {
+  const [activeTab, setActiveTab] = useState("customers");
 
   const tabItems = [
     {
@@ -161,15 +18,7 @@
           <Users className="w-4 h-4" /> Customers
         </span>
       ),
-      children: (
-        <CustomersList
-          customers={customers}
-          loyaltyTiers={loyaltyTiers}
-          onEdit={handleEditCustomer}
-          onDelete={handleDeleteCustomer}
-          onAddPoints={handleAddPoints}
-        />
-      ),
+      children: <CustomersList />,
     },
     {
       key: "rewards",
@@ -178,13 +27,7 @@
           <Gift className="w-4 h-4" /> Rewards
         </span>
       ),
-      children: (
-        <RewardsList
-          rewards={rewards}
-          onEdit={handleEditReward}
-          onDelete={handleDeleteReward}
-        />
-      ),
+      children: <ComingSoon title="Rewards" description={LOYALTY_NOTE} />,
     },
     {
       key: "tiers",
@@ -193,7 +36,7 @@
           <Crown className="w-4 h-4" /> Loyalty Tiers
         </span>
       ),
-      children: <LoyaltyTiers tiers={loyaltyTiers} customers={customers} />,
+      children: <ComingSoon title="Loyalty tiers" description={LOYALTY_NOTE} />,
     },
     {
       key: "analytics",
@@ -202,88 +45,31 @@
           <TrendingUp className="w-4 h-4" /> Analytics
         </span>
       ),
-      children: <LoyaltyAnalytics customers={customers} tiers={loyaltyTiers} />,
+      children: <ComingSoon title="Loyalty analytics" description={LOYALTY_NOTE} />,
     },
   ];
 
   return (
     <div className="p-6">
-      {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-sans font-bold text-foreground">
-              Customer Loyalty
-            </h1>
-            <p className="text-sm text-muted-foreground font-serif">
-              Manage customers, points, and rewards
-            </p>
-          </div>
-          <div className="flex gap-2">
-            {activeTab === "rewards" && (
-              <Button
-                onClick={() => setIsAddRewardModalOpen(true)}
-                variant="outline"
-                className="gap-2 rounded-md"
-                icon={<Gift className="w-4 h-4" />}
-                title="Add Reward"
-              />
-            )}
-            {activeTab === "customers" && (
-              <Button
-                onClick={() => setIsAddCustomerModalOpen(true)}
-                className="gap-2 rounded-md"
-                icon={<Plus className="w-4 h-4" />}
-                title="Add Customer"
-              />
-            )}
-          </div>
+        <div className="mb-4">
+          <h1 className="text-2xl font-sans font-bold text-foreground">Customers</h1>
+          <p className="text-sm text-muted-foreground font-serif">
+            Customer accounts and their orders. Customers sign up from the booking app.
+          </p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex items-center flex-col md:flex-row justify-between mb-6">
-          <div className="flex-1">
-            <Tabs
-              activeKey={activeTab}
-              onChange={setActiveTab}
-              items={tabItems.map((item) => ({
-                key: item.key,
-                label: item.label,
-              }))}
-              className="loyalty-tabs"
-            />
-          </div>
-        </div>
+        <Tabs
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          items={tabItems.map((item) => ({ key: item.key, label: item.label }))}
+          className="mb-6"
+        />
 
-        {/* Tab Content */}
         <div className="tab-content">
           {tabItems.find((item) => item.key === activeTab)?.children}
         </div>
       </div>
-
-      {/* Add Customer Modal */}
-      <DisplayModal
-        open={isAddCustomerModalOpen}
-        onClose={() => setIsAddCustomerModalOpen(false)}
-        title="Add New Customer"
-      >
-        <AddCustomerForm
-          onSubmit={handleAddCustomer}
-          onCancel={() => setIsAddCustomerModalOpen(false)}
-        />
-      </DisplayModal>
-
-      {/* Add Reward Modal */}
-      <DisplayModal
-        open={isAddRewardModalOpen}
-        onClose={() => setIsAddRewardModalOpen(false)}
-        title="Create New Reward"
-      >
-        <AddRewardForm
-          onSubmit={handleAddReward}
-          onCancel={() => setIsAddRewardModalOpen(false)}
-        />
-      </DisplayModal>
     </div>
   );
 }

@@ -15,6 +15,11 @@ const Order = {
     return Axios.get(`${urls.order}/stats`);
   },
 
+  /** Completed orders in the range (ISO dates); omit both for all time. */
+  salesReport: (from?: string, to?: string) => {
+    return Axios.get(`${urls.order}/reports`, { params: { from, to } });
+  },
+
   userOrders: (userId: string, page: number, limit: number) => {
     return Axios.get(`${urls.order}/user/${userId}?page=${page}&limit=${limit}`);
   },
