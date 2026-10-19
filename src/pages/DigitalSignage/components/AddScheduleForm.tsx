@@ -1,112 +1,138 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Formik, Form } from "formik";
-import * as Yup from "yup";
-import Input from "../../../components/shared/Input";
+import { useState } from "react";
+import { Checkbox, InputNumber, Switch } from "antd";
+import { toast } from "react-toastify";
 import Button from "../../../components/shared/Button";
 import ReusableSelect from "../../../components/shared/Select";
-
-const validationSchema = Yup.object({
-  time: Yup.string().required("Time is required"),
-  content: Yup.string().required("Content is required"),
-  duration: Yup.string().required("Duration is required"),
-});
+import { ScheduleInput } from "../../../services/network/signage";
+import { CONTENT_TYPES, DAYS, describeWindow, shortTime } from "../constants";
 
 interface AddScheduleFormProps {
-  contentTemplates: any[];
-  onSubmit: (values: any) => void;
+  schedule?: any;
+  contents: any[];
+  displays: any[];
+  onSubmit: (values: ScheduleInput) => Promise<void>;
   onCancel: () => void;
 }
 
-const AddScheduleForm = ({
-  contentTemplates,
-  onSubmit,
-  onCancel,
-}: AddScheduleFormProps) => {
-  const contentOptions = contentTemplates?.map((template) => ({
-    value: template.name,
-    label: template.name,
-  }));
+const ALL_DISPLAYS = "all";
 
-  const initialValues = {
-    time: "",
-    content: "",
-    duration: "",
+/** When content plays: a daily time window, optional days, one display or all of them. */
+const AddScheduleForm = ({ schedule, contents, displays, onSubmit, onCancel }: AddScheduleFormProps) => {
+  const [contentId, setContentId] = useState<string>(schedule?.content_id || "");
+  const [displayId, setDisplayId] = useState<string>(schedule?.display_id || ALL_DISPLAYS);
+  const [start, setStart] = useState(shortTime(schedule?.start_time) || "09:00");
+  const [end, setEnd] = useState(shortTime(schedule?.end_time) || "18:00");
+  const [days, setDays] = useState<number[]>(schedule?.days_of_week || []);
+  const [priority, setPriority] = useState<number>(schedule?.priority ?? 5);
+  const [isActive, setIsActive] = useState<boolean>(schedule?.is_active ?? true);
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!contentId) {
+      toast.error("Choose the content to play");
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSubmit({
+        content_id: contentId,
+        display_id: displayId === ALL_DISPLAYS ? null : displayId,
+        start_time: start,
+        end_time: end,
+        // No days ticked (or all seven) means every day.
+        days_of_week: days.length && days.length < 7 ? days : null,
+        priority,
+        is_active: isActive,
+      });
+    } catch {
+      // The error toast comes from the API call.
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      onSubmit={(values, { setSubmitting }) => {
-        onSubmit(values);
-        setSubmitting(false);
-      }}
-    >
-      {({
-        values,
-        errors,
-        touched,
-        handleChange,
-        handleBlur,
-        setFieldValue,
-        isSubmitting,
-        handleSubmit,
-      }) => (
-        <Form onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <Input
-              label="Start Time"
-              name="time"
-              type="time"
-              value={values.time}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.time && errors.time ? errors.time : ""}
-              required
-            />
+    <div className="space-y-4">
+      <ReusableSelect
+        label="Content"
+        value={contentId}
+        onChange={(value) => setContentId(value as string)}
+        options={contents.map((c) => ({
+          value: c.content_id,
+          label: `${c.name} (${CONTENT_TYPES[c.type as keyof typeof CONTENT_TYPES]?.label})`,
+        }))}
+        defaultOption="Choose content"
+        required
+      />
+      <ReusableSelect
+        label="Display"
+        value={displayId}
+        onChange={(value) => setDisplayId(value as string)}
+        options={[
+          { value: ALL_DISPLAYS, label: "Every display in this cinema" },
+          ...displays.map((d) => ({ value: d.display_id, label: d.name })),
+        ]}
+      />
 
-            <ReusableSelect
-              label="Content"
-              name="content"
-              value={values.content}
-              onChange={(value) => setFieldValue("content", value)}
-              options={contentOptions}
-              defaultOption="Select content"
-              error={touched.content && errors.content ? errors.content : ""}
-              required
-            />
+      <div>
+        <label className="block font-medium md:text-lg mb-2">Time window</label>
+        <div className="flex items-center gap-2">
+          <input
+            type="time"
+            required
+            value={start}
+            onChange={(e) => e.target.value && setStart(e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-1.5"
+          />
+          <span>to</span>
+          <input
+            type="time"
+            required
+            value={end}
+            onChange={(e) => e.target.value && setEnd(e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-1.5"
+          />
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">
+          {describeWindow(start, end)}. Same start and end plays all day; an end before the start runs
+          past midnight.
+        </p>
+      </div>
 
-            <Input
-              label="Duration"
-              name="duration"
-              value={values.duration}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.duration && errors.duration ? errors.duration : ""}
-              placeholder="e.g., 30 min, 2 hours, Until Close"
-              required
-            />
-          </div>
+      <div>
+        <label className="block font-medium md:text-lg mb-2">Days</label>
+        <Checkbox.Group
+          value={days}
+          onChange={(values) => setDays(values as number[])}
+          options={DAYS.map((day, index) => ({ value: index, label: day }))}
+        />
+        <p className="text-xs text-muted-foreground mt-1">Leave all unticked for every day.</p>
+      </div>
 
-          <div className="flex gap-2 pt-6 border-t mt-6">
-            <Button
-              type="submit"
-              className="flex-1 rounded-md"
-              disabled={isSubmitting}
-              title={isSubmitting ? "Adding Schedule..." : "Add Schedule Item"}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-              title="Cancel"
-              className="rounded-md"
-            />
-          </div>
-        </Form>
-      )}
-    </Formik>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block font-medium md:text-lg mb-2">Priority</label>
+          <InputNumber min={1} max={10} value={priority} onChange={(v) => setPriority(v || 1)} className="w-full" />
+          <p className="text-xs text-muted-foreground mt-1">Higher wins when windows overlap.</p>
+        </div>
+        <div>
+          <label className="block font-medium md:text-lg mb-2">Active</label>
+          <Switch checked={isActive} onChange={setIsActive} />
+        </div>
+      </div>
+
+      <div className="flex gap-2 pt-4 border-t">
+        <Button
+          className="flex-1 rounded-md"
+          loading={saving}
+          disabled={saving}
+          title={schedule ? "Save schedule" : "Add schedule"}
+          onClick={handleSubmit}
+        />
+        <Button variant="outline" className="rounded-md" title="Cancel" onClick={onCancel} />
+      </div>
+    </div>
   );
 };
 

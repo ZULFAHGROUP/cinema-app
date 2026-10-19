@@ -1,125 +1,227 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
+import { Radio, Upload } from "antd";
+import { ImagePlus } from "lucide-react";
+import { toast } from "react-toastify";
 import Input from "../../../components/shared/Input";
+import TextArea from "../../../components/shared/TextArea";
 import Button from "../../../components/shared/Button";
 import ReusableSelect from "../../../components/shared/Select";
+import Signage, { ContentInput, SignageContentType } from "../../../services/network/signage";
+import { CONTENT_TYPES, CONTENT_TYPE_OPTIONS } from "../constants";
+
+type MediaSource = "none" | "upload" | "link";
 
 const validationSchema = Yup.object({
-  name: Yup.string()
-    .required("Content name is required")
-    .min(3, "Name must be at least 3 characters"),
+  name: Yup.string().trim().required("Content name is required").max(100),
   type: Yup.string().required("Content type is required"),
-  description: Yup.string()
-    .required("Description is required")
-    .min(10, "Description must be at least 10 characters"),
+  description: Yup.string().max(2000),
+  duration_seconds: Yup.number()
+    .typeError("Enter a number of seconds")
+    .min(3, "At least 3 seconds")
+    .max(3600, "At most an hour")
+    .required("Duration is required"),
+  media_url: Yup.string().url("Enter a full link starting with https://"),
 });
 
 interface AddContentFormProps {
-  onSubmit: (values: any) => void;
+  content?: any;
+  onSubmit: (values: ContentInput) => Promise<void>;
   onCancel: () => void;
 }
 
-const AddContentForm = ({ onSubmit, onCancel }: AddContentFormProps) => {
-  const contentTypeOptions = [
-    { value: "Movie Carousel", label: "Movie Carousel" },
-    { value: "Menu Display", label: "Menu Display" },
-    { value: "Advertisement", label: "Promotional" },
-    { value: "Safety Display", label: "Information" },
-  ];
+/** Create or edit signage content. Live types need no media; the others take an image or video. */
+const AddContentForm = ({ content, onSubmit, onCancel }: AddContentFormProps) => {
+  const [uploading, setUploading] = useState(false);
+  const [upload, setUpload] = useState<{ id: string; url: string } | null>(null);
+  const [mediaSource, setMediaSource] = useState<MediaSource>(
+    content?.media_url ? "link" : "upload"
+  );
 
-  const initialValues = {
-    name: "",
-    type: "",
-    description: "",
+  const handleUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Upload an image. For a video, paste its link instead.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const response = await Signage.uploadImage(file);
+      setUpload({ id: response.data.data.temp_upload_id, url: response.data.data.url });
+    } catch (error: any) {
+      toast.error(error?.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
     <Formik
-      initialValues={initialValues}
+      initialValues={{
+        name: content?.name || "",
+        type: (content?.type || "") as SignageContentType | "",
+        description: content?.description || "",
+        duration_seconds: content?.duration_seconds ?? 15,
+        media_url: content?.media_url || "",
+        media_kind: content?.media_kind || "image",
+      }}
       validationSchema={validationSchema}
-      onSubmit={(values, { setSubmitting }) => {
-        onSubmit(values);
-        setSubmitting(false);
+      onSubmit={async (values, { setSubmitting }) => {
+        const live = values.type && CONTENT_TYPES[values.type].live;
+        const hasMedia =
+          (mediaSource === "upload" && (upload || content?.media_url)) ||
+          (mediaSource === "link" && values.media_url.trim());
+        if (values.type === "promotional" && !hasMedia) {
+          toast.error("Promotional content needs an image or a video link");
+          setSubmitting(false);
+          return;
+        }
+        const payload: ContentInput = {
+          name: values.name.trim(),
+          type: values.type as SignageContentType,
+          description: values.description.trim() || null,
+          duration_seconds: Number(values.duration_seconds),
+        };
+        if (!live) {
+          if (mediaSource === "upload" && upload) payload.media_temp_upload_id = upload.id;
+          if (mediaSource === "link" && values.media_url) {
+            payload.media_url = values.media_url.trim();
+            payload.media_kind = values.media_kind as "image" | "video";
+          }
+          // Editing to "no media" clears what was there.
+          if (mediaSource === "none" && content?.media_url) payload.media_url = null;
+        }
+        try {
+          await onSubmit(payload);
+        } catch {
+          // The error toast comes from the API call.
+        } finally {
+          setSubmitting(false);
+        }
       }}
     >
-      {({
-        values,
-        errors,
-        touched,
-        handleChange,
-        handleBlur,
-        setFieldValue,
-        isSubmitting,
-        handleSubmit,
-      }) => (
-        <Form onSubmit={handleSubmit}>
-          <div className="space-y-4">
+      {({ values, errors, touched, handleChange, handleBlur, setFieldValue, isSubmitting }) => {
+        const type = values.type ? CONTENT_TYPES[values.type] : null;
+        const previewUrl = mediaSource === "upload" ? upload?.url || (!upload && content?.media_url) : null;
+        return (
+          <Form className="space-y-4">
             <Input
-              label="Content Name"
+              label="Content name"
               name="name"
               value={values.name}
               onChange={handleChange}
               onBlur={handleBlur}
-              error={touched.name && errors.name ? errors.name : ""}
-              placeholder="Enter content name"
+              error={touched.name && typeof errors.name === "string" ? errors.name : ""}
+              placeholder="Weekend combo offer"
               required
             />
-
             <ReusableSelect
-              label="Content Type"
+              label="Content type"
               name="type"
               value={values.type}
               onChange={(value) => setFieldValue("type", value)}
-              options={contentTypeOptions}
+              options={CONTENT_TYPE_OPTIONS}
               defaultOption="Select type"
-              error={touched.type && errors.type ? errors.type : ""}
+              showSearch={false}
+              error={touched.type && typeof errors.type === "string" ? errors.type : ""}
               required
             />
+            {type && <p className="text-xs text-muted-foreground -mt-2">{type.hint}</p>}
 
-            <div>
-              <label className="block font-medium md:text-lg mb-2">
-                Description <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                name="description"
-                value={values.description}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                placeholder="Describe your content..."
-                rows={4}
-                className={`w-full p-2 border rounded-md ${
-                  touched.description && errors.description
-                    ? "border-red-500"
-                    : "border-gray-300"
-                }`}
+            <TextArea
+              label={values.type === "information" ? "Message" : "Description (optional)"}
+              name="description"
+              value={values.description}
+              onChange={handleChange}
+              rows={3}
+              maxLength={2000}
+            />
+
+            <Input
+              label="Seconds on screen"
+              name="duration_seconds"
+              type="number"
+              min={3}
+              max={3600}
+              value={values.duration_seconds}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={
+                touched.duration_seconds && typeof errors.duration_seconds === "string"
+                  ? errors.duration_seconds
+                  : ""
+              }
+            />
+
+            {type && !type.live && (
+              <div className="space-y-3 border rounded-lg p-3">
+                <p className="text-sm font-medium">Media</p>
+                <Radio.Group
+                  value={mediaSource}
+                  onChange={(e) => setMediaSource(e.target.value)}
+                  options={[
+                    { value: "upload", label: "Upload image" },
+                    { value: "link", label: "Image or video link" },
+                    ...(values.type === "information" ? [{ value: "none", label: "Text only" }] : []),
+                  ]}
+                />
+                {mediaSource === "upload" && (
+                  <Upload.Dragger
+                    accept="image/*"
+                    showUploadList={false}
+                    beforeUpload={(file) => {
+                      handleUpload(file);
+                      return false;
+                    }}
+                    disabled={uploading}
+                  >
+                    {previewUrl ? (
+                      <img src={previewUrl} alt="Preview" className="max-h-40 mx-auto rounded" />
+                    ) : (
+                      <div className="py-4">
+                        <ImagePlus className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                        <p className="text-sm">{uploading ? "Uploading..." : "Click or drop an image"}</p>
+                      </div>
+                    )}
+                  </Upload.Dragger>
+                )}
+                {mediaSource === "link" && (
+                  <div className="space-y-2">
+                    <Input
+                      name="media_url"
+                      value={values.media_url}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="https://example.com/trailer.mp4"
+                      error={touched.media_url && typeof errors.media_url === "string" ? errors.media_url : ""}
+                    />
+                    <Radio.Group
+                      value={values.media_kind}
+                      onChange={(e) => setFieldValue("media_kind", e.target.value)}
+                      options={[
+                        { value: "image", label: "Image" },
+                        { value: "video", label: "Video" },
+                      ]}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-2 pt-4 border-t">
+              <Button
+                type="submit"
+                className="flex-1 rounded-md"
+                loading={isSubmitting}
+                disabled={isSubmitting || uploading}
+                title={content ? "Save content" : "Create content"}
               />
-              {touched.description && errors.description && (
-                <p className="text-sm text-red-500 italic mt-1">
-                  {errors.description}
-                </p>
-              )}
+              <Button type="button" variant="outline" className="rounded-md" title="Cancel" onClick={onCancel} />
             </div>
-          </div>
-
-          <div className="flex gap-2 pt-6 border-t mt-6">
-            <Button
-              type="submit"
-              className="flex-1 rounded-md"
-              disabled={isSubmitting}
-              title={isSubmitting ? "Creating Content..." : "Create Content"}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-              title="Cancel"
-              className="rounded-md"
-            />
-          </div>
-        </Form>
-      )}
+          </Form>
+        );
+      }}
     </Formik>
   );
 };

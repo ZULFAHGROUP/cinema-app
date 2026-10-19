@@ -111,10 +111,6 @@ export default function PaymentSummary({
           />
         </div>
       </div>
-      
-      <p className="text-center text-xs text-muted-foreground font-serif">
-        Order ID: {initiateData.order_id}
-      </p>
     </div>
   );
 }

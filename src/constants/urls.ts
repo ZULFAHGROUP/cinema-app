@@ -28,6 +28,8 @@ const urls = {
   purchase_initiate: "/purchase/initiate",
   payment_complete: "/payment/complete",
   order: "/orders",
+  upload: "/upload",
+  signage: "/signage",
 };
 
 export default urls;
