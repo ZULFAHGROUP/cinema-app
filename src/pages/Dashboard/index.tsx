@@ -114,7 +114,7 @@ const { orderStats } = useAppSelector(
     },
     {
       title: "Digital Signage",
-      description: "Display management (coming soon)",
+      description: "Lobby screens, content & schedules",
       icon: Monitor,
       href: allRoutes.signage,
     },

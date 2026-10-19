@@ -1,21 +1,35 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { ApiResponse } from "../../@types/common";
-import Staff from "../../services/network/staff";
+import Staff, { AssignmentFilters } from "../../services/network/staff";
+
+export interface AssignmentStats {
+  total_assignments: number;
+  cinemas_staffed: number;
+  managers: number;
+  staff: number;
+  pos_cashiers: number;
+  /** Active non-Admin staff with no cinema; not narrowed by the filters. */
+  unassigned_staff: number;
+}
 
 export const getCinemaStaff = createAsyncThunk(
   "cinemaStaff/getAll",
   async (
-    { page = 1, limit = 10 }: { page?: number; limit?: number },
-    { rejectWithValue }
+    { page = 1, limit = 10, filters }: { page?: number; limit?: number; filters?: AssignmentFilters },
+    { rejectWithValue, getState }
   ) => {
+    // Refreshes after assigning or removing pass no filters: keep the ones on screen.
+    const activeFilters = filters ?? (getState() as any).cinemaStaff.filters ?? {};
     try {
-      const response = await Staff.getCinemaStaff(page, limit);
+      const response = await Staff.getCinemaStaff(page, limit, activeFilters);
       return {
         data: response.data.data.assignments,
         page,
         limit,
         total: response.data.data.pagination.total,
+        stats: response.data.data.stats as AssignmentStats,
+        filters: activeFilters,
       };
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
@@ -62,6 +76,8 @@ const cinemaStaffSlice = createSlice({
     page: 1,
     limit: 10,
     total: 0,
+    stats: null as AssignmentStats | null,
+    filters: {} as AssignmentFilters,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -74,7 +90,10 @@ const cinemaStaffSlice = createSlice({
         state.cinemaStaffList = action.payload.data || [];
         state.page = action.payload.page;
         state.limit = action.payload.limit;
-        state.total = action.payload.total;})
+        state.total = action.payload.total;
+        state.stats = action.payload.stats || null;
+        state.filters = action.payload.filters;
+      })
       .addCase(getCinemaStaff.rejected, (state) => {
         state.loading = false;
       })

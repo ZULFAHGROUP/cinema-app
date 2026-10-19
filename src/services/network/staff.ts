@@ -7,6 +7,11 @@ export interface StaffFilters {
   is_active?: boolean;
 }
 
+export interface AssignmentFilters {
+  search?: string;
+  cinema_id?: string;
+}
+
 const Staff = {
   getPosCashiers: (page: number, limit: number, filters: StaffFilters = {}) => {
     return Axios.get(`${urls.staff}/pos-cashiers`, { params: { page, limit, ...filters } });
@@ -20,8 +25,9 @@ const Staff = {
     return Axios.get(`${urls.staff}/staff`, { params: { page, limit, ...filters } });
   },
 
-  getCinemaStaff: (page: number, limit: number) => {
-    return Axios.get(`${urls.admin_cinema}?page=${page}&limit=${limit}`);
+  /** Assignments plus `stats`; `search` matches staff name/email or cinema name/location. */
+  getCinemaStaff: (page: number, limit: number, filters: AssignmentFilters = {}) => {
+    return Axios.get(urls.admin_cinema, { params: { page, limit, ...filters } });
   },
 
   assignCinemaStaff: (data: { cinema_id: string; admin_id: string }) => {

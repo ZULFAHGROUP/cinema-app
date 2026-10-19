@@ -1,33 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useState } from "react";
-import { DatePicker, Input, Select, Tag, Tooltip } from "antd";
+import { DatePicker, Input, Select, Tag } from "antd";
 import { toast } from "react-toastify";
 import ReusableTable from "../../components/shared/Table";
 import Loader from "../../components/shared/Loader";
 import Button from "../../components/shared/Button";
 import Extras, { AuditFilters } from "../../services/network/extras";
+import AuditDetailsModal from "./AuditDetailsModal";
+import { ACTION_COLORS, AUDIT_ACTIONS, describeResource } from "./constants";
+import StatCards from "../../components/shared/StatCards";
+import { Activity, LogIn, PencilLine, ShieldAlert } from "lucide-react";
 import { formatUserLabel, humanDateAndTime } from "../../utils";
 
-const ACTION_COLORS: Record<string, string> = {
-  CREATE: "green",
-  UPDATE: "blue",
-  DELETE: "red",
-};
-
-/** "Chrome on Linux" instead of the full user agent string. */
-const describeUserAgent = (userAgent?: string) => {
-  if (!userAgent) return "Unknown";
-  const browser =
-    ["Edg", "OPR", "Chrome", "Firefox", "Safari"].find((name) => userAgent.includes(name)) ||
-    (userAgent.includes("PostmanRuntime") ? "Postman" : userAgent.includes("curl") ? "curl" : "");
-  const os = ["Windows", "Mac OS", "Android", "iPhone", "Linux"].find((name) =>
-    userAgent.includes(name)
-  );
-  const label = [browser === "Edg" ? "Edge" : browser === "OPR" ? "Opera" : browser, os]
-    .filter(Boolean)
-    .join(" on ");
-  return label || userAgent.slice(0, 30);
-};
 
 const AuditTrail = () => {
   const [audits, setAudits] = useState<any[]>([]);
@@ -37,6 +21,8 @@ const AuditTrail = () => {
   const [searchText, setSearchText] = useState("");
   const [resources, setResources] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<any>(null);
+  const [selectedAudit, setSelectedAudit] = useState<any>(null);
+  const [stats, setStats] = useState<any>(null);
 
   const loadAudits = useCallback(
     async (page: number, limit: number, activeFilters: AuditFilters) => {
@@ -44,6 +30,7 @@ const AuditTrail = () => {
       try {
         const response = await Extras.allAuditTrails(page, limit, activeFilters);
         setAudits(response.data.data.audits || []);
+        setStats(response.data.data.stats || null);
         setPagination({ page, limit, total: response.data.data.pagination.total });
       } catch (error: any) {
         toast.error(error?.message || "Could not load the audit trail");
@@ -117,9 +104,20 @@ const AuditTrail = () => {
     },
     {
       title: "Resource",
-      dataIndex: "resource",
       key: "resource",
-      render: (resource: string) => formatUserLabel(resource) || "Unknown",
+      render: (_: unknown, record: any) => {
+        // Sign-ins and profile edits act on the person's own account: they're already under "Performed by".
+        const isActor =
+          (record.admin_id && record.resource_details?.admin_id === record.admin_id) ||
+          (record.user_id && record.resource_details?.user_id === record.user_id);
+        const details = isActor ? null : describeResource(record.resource_details);
+        return (
+          <div className="max-w-56">
+            <p>{formatUserLabel(record.resource) || "Unknown"}</p>
+            {details && <p className="text-xs text-muted-foreground truncate">{details.label}</p>}
+          </div>
+        );
+      },
     },
     {
       title: "Result",
@@ -127,24 +125,6 @@ const AuditTrail = () => {
       key: "response_status",
       render: (status: number) =>
         status ? <Tag color={status < 400 ? "green" : "red"}>{status}</Tag> : "-",
-    },
-    {
-      title: "Request",
-      dataIndex: "description",
-      key: "description",
-      render: (description: string) => <span className="text-xs break-all">{description}</span>,
-    },
-    {
-      title: "Client",
-      key: "client",
-      render: (_: unknown, record: any) => (
-        <Tooltip title={record.user_agent}>
-          <div className="text-xs">
-            <p>{describeUserAgent(record.user_agent)}</p>
-            <p className="text-muted-foreground">{record.ip_address}</p>
-          </div>
-        </Tooltip>
-      ),
     },
   ];
 
@@ -159,6 +139,39 @@ const AuditTrail = () => {
         </div>
       </div>
 
+      <StatCards
+        loading={loading}
+        items={[
+          { label: "Records", value: stats?.total_records ?? 0, icon: Activity },
+          {
+            label: "Changes",
+            value: (stats?.creates ?? 0) + (stats?.updates ?? 0) + (stats?.deletes ?? 0),
+            hint: `${stats?.creates ?? 0} created · ${stats?.updates ?? 0} updated · ${stats?.deletes ?? 0} deleted`,
+            icon: PencilLine,
+            tone: "info",
+          },
+          {
+            label: "Sign-ins",
+            value: stats?.logins ?? 0,
+            hint: `${stats?.failed_logins ?? 0} failed`,
+            icon: LogIn,
+            tone: stats?.failed_logins ? "warning" : "good",
+            onClick: () =>
+              updateFilter({ action: filters.action === "LOGIN_FAILED" ? undefined : "LOGIN_FAILED" }),
+            active: filters.action === "LOGIN_FAILED",
+          },
+          {
+            label: "Failed requests",
+            value: stats?.failed_requests ?? 0,
+            hint: "Click to show only these",
+            icon: ShieldAlert,
+            tone: stats?.failed_requests ? "danger" : "neutral",
+            onClick: () => updateFilter({ status: filters.status === "failed" ? undefined : "failed" }),
+            active: filters.status === "failed",
+          },
+        ]}
+      />
+
       <div className="flex flex-wrap gap-3 items-center">
         <Input.Search
           allowClear
@@ -172,8 +185,19 @@ const AuditTrail = () => {
           placeholder="Action"
           value={filters.action}
           onChange={(value) => updateFilter({ action: value })}
-          options={["CREATE", "UPDATE", "DELETE"].map((action) => ({ label: action, value: action }))}
-          className="w-36"
+          options={AUDIT_ACTIONS.map((action) => ({ label: formatUserLabel(action), value: action }))}
+          className="w-52"
+        />
+        <Select
+          allowClear
+          placeholder="Result"
+          value={filters.status}
+          onChange={(value) => updateFilter({ status: value })}
+          options={[
+            { value: "success", label: "Succeeded" },
+            { value: "failed", label: "Failed" },
+          ]}
+          className="w-32"
         />
         <Select
           allowClear
@@ -216,6 +240,7 @@ const AuditTrail = () => {
         <Loader rows={10} />
       ) : (
         <ReusableTable
+          onRowClick={setSelectedAudit}
           data={audits}
           columns={columns}
           title={`Audit Trail (${pagination.total})`}
@@ -230,6 +255,9 @@ const AuditTrail = () => {
           onTableChange={(p: any) => loadAudits(p.current, p.pageSize, filters)}
         />
       )}
+      <p className="text-xs text-muted-foreground">Click a row to see its details.</p>
+
+      <AuditDetailsModal audit={selectedAudit} onClose={() => setSelectedAudit(null)} />
     </div>
   );
 };
