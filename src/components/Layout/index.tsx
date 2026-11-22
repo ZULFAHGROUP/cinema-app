@@ -20,7 +20,7 @@ import ScrollToTop from "../../utils/ScrollToTop";
 import { IoIosArrowBack } from "react-icons/io";
 import sideBarDetails from "../../constants/sidebar";
 import PrivateRoute from "../../routes/privateRoute";
-import { logout } from "../../store/slices/accounts";
+import { signOut } from "../../store/slices/accounts";
 import { useAppDispatch } from "../../store/hook";
 
 const { Header, Sider, Content } = Layout;
@@ -62,7 +62,7 @@ const AppLayout: React.FC = () => {
       ]}
       onClick={(e) => {
         if (e.key === "logout") {
-          dispatch(logout());
+          dispatch(signOut());
           navigate("/");
         } else {
           navigate(e.key);

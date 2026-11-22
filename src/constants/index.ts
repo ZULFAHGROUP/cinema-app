@@ -37,3 +37,6 @@ export const selectOptions = {
     { value: "service_worker", label: "Service Worker" },
   ],
 };
+
+/** Roles the API ships with; they can't be renamed or deleted, and new staff take one of them. */
+export const BUILT_IN_ROLES = ["Admin", "Manager", "Staff", "POS_cashier"];

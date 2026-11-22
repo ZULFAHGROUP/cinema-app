@@ -31,7 +31,7 @@ const Movies = ({ movies, showtimes, loading, onAddShowtime, cinemas, totalShowt
   const [showDeleteMovieModal, setShowDeleteMovieModal] = useState(false);
   const [showDeleteShowtimeModal, setShowDeleteShowtimeModal] = useState(false);
 
-  const { limit, page } = useAppSelector((state) => state.movie);
+  const { limit, page, filters: movieFilters } = useAppSelector((state) => state.movie);
   const { limit: showtimeLimit, page: showtimePage } = useAppSelector((state) => state.showtime);
 
   const dispatch = useAppDispatch();
@@ -42,7 +42,7 @@ const Movies = ({ movies, showtimes, loading, onAddShowtime, cinemas, totalShowt
     try {
       const response = await dispatch(deleteMovie(selectedMovie?.movie_id)).unwrap();
       if (response.code === 200) {
-        await dispatch(getAllMovies({ page, limit }));
+        await dispatch(getAllMovies({ page, limit, filters: movieFilters }));
         setShowDeleteMovieModal(false);
       }
     } catch (error: any) {

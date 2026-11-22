@@ -11,6 +11,7 @@ import ReusableTable from "../../../../components/shared/Table";
 import RolesForm from "./components/RolesForm";
 import { deleteRole, getAllRoles } from "../../../../store/slices/roles";
 import Loader from "../../../../components/shared/Loader";
+import { BUILT_IN_ROLES } from "../../../../constants";
 
 const Roles = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -39,7 +40,7 @@ const Roles = () => {
         setShowDeleteModal(false);
       }
     } catch (error: any) {
-      toast.error(error?.response?.message || "Error deleting classification");
+      toast.error(error?.message || "Error deleting role");
       setShowDeleteModal(false);
     }
   };
@@ -77,6 +78,8 @@ const Roles = () => {
                 key: "delete",
                 label: "Delete",
                 danger: true,
+                // The API ships with these and refuses to delete them.
+                disabled: BUILT_IN_ROLES.includes(record.role_name),
                 icon: <Trash2 className="w-4 h-4" />,
                 onClick: () => {
                   setSelectedItem(record);

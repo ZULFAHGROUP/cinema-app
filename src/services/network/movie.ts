@@ -2,11 +2,16 @@
 import urls from "../../constants/urls";
 import Axios from "../httpClient";
 
+export interface MovieFilters {
+  search?: string;
+  movie_classification_id?: string;
+  is_active?: boolean;
+}
+
 const Movie = {
-  allMovies: (page: number, limit: number) => {
-    return Axios.get(
-      `${urls.movie}?page=${page}&limit=${limit}                                                                  `
-    );
+  /** Movies plus `stats` (total/active/inactive) over every movie the filters match. */
+  allMovies: (page: number, limit: number, filters: MovieFilters = {}) => {
+    return Axios.get(urls.movie, { params: { page, limit, ...filters } });
   },
 
   createMovie: (data: any) => {

@@ -31,17 +31,14 @@ function StaffPage() {
     managers,
     cashiers,
     generalStaff,
+    managersStats,
+    cashiersStats,
+    staffStats,
   } = useAppSelector((state) => state.staff);
 
   useEffect(() => {
     dispatch(getAllRoles({ page: rolePage, limit: roleLimit })).unwrap();
   }, [dispatch, rolePage, roleLimit]);
-
-  useEffect(() => {
-    dispatch(getManagers({ page: 1, limit: 100 }));
-    dispatch(getPosCashiers({ page: 1, limit: 100 }));
-    dispatch(getGeneralStaff({ page: 1, limit: 100 }));
-  }, [dispatch]);
 
   const handleAddedStaff = () => {
     setIsAddStaffModalOpen(false);
@@ -62,7 +59,8 @@ function StaffPage() {
           staff={managers}
           role={roles}
           staffTab="managers"
-          onRefresh={() => dispatch(getManagers({ page: 1, limit: 100 }))}
+          stats={managersStats}
+          onFetch={(filters) => dispatch(getManagers({ page: 1, limit: 50, filters }))}
         />
       ),
     },
@@ -78,7 +76,8 @@ function StaffPage() {
           staff={cashiers}
           role={roles}
           staffTab="cashiers"
-          onRefresh={() => dispatch(getPosCashiers({ page: 1, limit: 100 }))}
+          stats={cashiersStats}
+          onFetch={(filters) => dispatch(getPosCashiers({ page: 1, limit: 50, filters }))}
         />
       ),
     },
@@ -94,7 +93,8 @@ function StaffPage() {
           staff={generalStaff}
           role={roles}
           staffTab="staff"
-          onRefresh={() => dispatch(getGeneralStaff({ page: 1, limit: 100 }))}
+          stats={staffStats}
+          onFetch={(filters) => dispatch(getGeneralStaff({ page: 1, limit: 50, filters }))}
         />
       ),
     },

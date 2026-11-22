@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Formik, Form } from "formik";
 import Input from "../../../components/shared/Input";
 import Button from "../../../components/shared/Button";
@@ -5,15 +6,20 @@ import { forgotPasswordValidationSchema } from "../../../validations";
 import AuthLayout from "../../../components/shared/AuthLayout";
 import { useNavigate } from "react-router-dom";
 import { allRoutes } from "../../../routes/allRoutes";
+import Accounts from "../../../services/network/accounts";
+import { toast } from "react-toastify";
+
 const ForgotPassword = () => {
   const initialValues = { email: "" };
   const navigate = useNavigate();
-  async function handleForgotPassword() {
+  async function handleForgotPassword(values: { email: string }) {
     try {
-      // localStorage.setItem('recoveryEmail', values.email)
+      const response = await Accounts.startForgetPassword(values);
+      localStorage.setItem("recoveryEmail", values.email);
+      toast.success(response.data.message);
       navigate(allRoutes.resetPassword);
-    } catch (e) {
-      console.log("error is", e);
+    } catch (error: any) {
+      toast.error(error?.message || "Something went wrong");
     }
   }
 

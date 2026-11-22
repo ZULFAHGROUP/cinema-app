@@ -2,6 +2,7 @@
 import Button from "../../../components/shared/Button";
 import { Plus, Minus, Info, ArrowLeftIcon } from "lucide-react";
 import { formatCurrency } from "../../../utils";
+import SeatPicker from "./SeatPicker";
 
 interface PurchaseSelectionProps {
   showtime: any;
@@ -15,6 +16,10 @@ interface PurchaseSelectionProps {
   onConfirm: () => void;
   onBack: () => void;
   isBoxOfficeMode: boolean;
+  seatMap: { has_seat_map: boolean; seats: any[] } | null;
+  seatMapLoading: boolean;
+  selectedSeatIds: string[];
+  setSelectedSeatIds: (seatIds: string[]) => void;
 }
 
 export default function PurchaseSelection({
@@ -28,7 +33,18 @@ export default function PurchaseSelection({
   setSelectedProducts,
   onConfirm,
   onBack, isBoxOfficeMode,
+  seatMap,
+  seatMapLoading,
+  selectedSeatIds,
+  setSelectedSeatIds,
 }: PurchaseSelectionProps) {
+  const hasSeatMap = Boolean(seatMap?.has_seat_map);
+
+  // Picking seats sets the ticket count; with none picked the first free seats are assigned.
+  const handleSeatChange = (seatIds: string[]) => {
+    setSelectedSeatIds(seatIds);
+    if (seatIds.length) setTicketQuantity(seatIds.length);
+  };
   
   const handleProductQuantity = (product: any, delta: number) => {
     const existing = selectedProducts.find(p => p.product_id === product.product_id);
@@ -86,20 +102,47 @@ export default function PurchaseSelection({
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setTicketQuantity(Math.max(0, ticketQuantity - 1))}
-                className="w-10 h-10 flex items-center justify-center border-2 rounded-full hover:bg-muted transition-colors"
-                disabled={ticketQuantity === 0}
+                className="w-10 h-10 flex items-center justify-center border-2 rounded-full hover:bg-muted transition-colors disabled:opacity-30"
+                disabled={ticketQuantity === 0 || selectedSeatIds.length > 0}
               >
                 <Minus className="w-4 h-4" />
               </button>
               <span className="w-8 text-center text-xl font-sans font-bold">{ticketQuantity}</span>
               <button
                 onClick={() => setTicketQuantity(ticketQuantity + 1)}
-                className="w-10 h-10 flex items-center justify-center border-2 rounded-full hover:bg-muted transition-colors"
+                className="w-10 h-10 flex items-center justify-center border-2 rounded-full hover:bg-muted transition-colors disabled:opacity-30"
+                disabled={selectedSeatIds.length > 0}
               >
                 <Plus className="w-4 h-4" />
               </button>
             </div>
           </div>
+
+          {(hasSeatMap || seatMapLoading) && (
+            <div className="mt-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="font-sans font-semibold text-sm">Choose seats</p>
+                {selectedSeatIds.length > 0 && (
+                  <button
+                    type="button"
+                    className="text-xs underline"
+                    onClick={() => setSelectedSeatIds([])}
+                  >
+                    Clear seats
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Optional: leave empty to get the first free seats.
+              </p>
+              <SeatPicker
+                seats={seatMap?.seats || []}
+                loading={seatMapLoading}
+                selectedSeatIds={selectedSeatIds}
+                onChange={handleSeatChange}
+              />
+            </div>
+          )}
         </div>
 
         {/* Concessions Section */}
@@ -159,7 +202,7 @@ export default function PurchaseSelection({
       <div className="mt-8 flex justify-end">
         <Button
           onClick={onConfirm}
-          disabled={ticketQuantity === 0 && selectedProducts.length === 0}
+          disabled={ticketQuantity === 0}
           className="w-full md:w-auto px-12 rounded-xl py-6 h-auto text-lg font-bold shadow-lg shadow-primary/20"
           title="Proceed to Payment"
         />

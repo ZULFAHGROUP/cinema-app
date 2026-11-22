@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../../../store/hook";
@@ -8,15 +7,16 @@ import ReusableTable from "../../../../components/shared/Table";
 import RolePermissionsForm from "./components/RolePermissionsForm";
 import { getAllRolePermissions } from "../../../../store/slices/rolePermissions";
 import Loader from "../../../../components/shared/Loader";
+import { Tag } from "antd";
+import { formatUserLabel } from "../../../../utils";
 
 const RolePermissions = () => {
   const [showFormModal, setShowFormModal] = useState(false);
 
   const dispatch = useAppDispatch();
-  const { rolePermissions, rolePermissionLoading, page, limit, total } = useAppSelector(
+  const { rolePermissions, rolePermissionLoading, page, limit } = useAppSelector(
     (state) => state.rolePermission
   );
-console.log('rolePermissions is',rolePermissions);
   useEffect(() => {
     dispatch(getAllRolePermissions({ page, limit })).unwrap();
   }, [dispatch, page, limit]);
@@ -28,20 +28,18 @@ console.log('rolePermissions is',rolePermissions);
       key: "role_name",
     },
     {
-      title: "Permission ID",
-      dataIndex: "permission_id",
-      key: "permission_id",
+      title: "Permissions",
+      dataIndex: "permissions",
+      key: "permissions",
+      render: (permissions: string[]) => (
+        <div className="flex flex-wrap gap-1">
+          {permissions?.map((permission) => (
+            <Tag key={permission}>{formatUserLabel(permission)}</Tag>
+          ))}
+        </div>
+      ),
     },
   ];
-
-  const handleTableChange = (pagination: any) => {
-    dispatch(
-      getAllRolePermissions({
-        page: pagination.current,
-        limit: pagination.pageSize,
-      })
-    ).unwrap();
-  };
 
   return (
     <div className="space-y-4">
@@ -65,14 +63,7 @@ console.log('rolePermissions is',rolePermissions);
           columns={columns}
           title="Role-Permission Assignments"
           showPagination={true}
-          searchField={["role_id", "permission_id"]}
-          paginationMode="backend"
-          paginationProps={{
-            total,
-            current: page,
-            pageSize: limit,
-          }}
-          onTableChange={handleTableChange}
+          searchField={["role_name"]}
         />
       )}
 

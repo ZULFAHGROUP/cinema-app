@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import Accounts from "../../services/network/accounts";
-import { ApiResponse, AuthState } from "../../@types/common";
+import { AuthState } from "../../@types/common";
 
 const initialState: AuthState = {
   loginLoading: false,
@@ -36,29 +36,43 @@ const initialState: AuthState = {
   },
 };
 
+/** Admin wins so `role` checks ("is this an admin?") see the widest role. */
+const primaryRole = (roles: string[] = []) =>
+  roles.find((role) => role.toLowerCase() === "admin") || roles[0] || "";
+
 export const login = createAsyncThunk(
   "account/login",
-  async (payload: FormData): Promise<ApiResponse> => {
+  async (payload: { email: string; password: string }) => {
     const response = await Accounts.login(payload);
-    const data = {
-      jwtToken: response.headers.authorization,
-      user: response.data.data,
-      status: response.status === 200,
+    const { token, admin } = response.data.data;
+
+    // The store has no token yet, so load the profile (assigned cinema) with this one.
+    const profile = await Accounts.getProfile({
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const cinema = profile.data.data?.cinema || null;
+
+    return {
+      jwtToken: token,
+      user: {
+        ...admin,
+        role: primaryRole(admin.roles),
+        cinema,
+        cinema_id: cinema?.cinema_id || "",
+      },
+      status: true,
     };
-    return data;
   }
 );
 
-export const resumeSession = createAsyncThunk(
-  "account/resumeSession",
-  async (payload) => {
-    const response = await Accounts.login(payload);
-    const data = response.data.data;
-    data.sessionTimedOut = false;
-    data.jwtToken = response.headers["token"];
-    return data;
+/** Revokes the token on the server; the local session is cleared either way. */
+export const signOut = createAsyncThunk("account/signOut", async () => {
+  try {
+    await Accounts.logout();
+  } catch {
+    // An expired or revoked token is already signed out.
   }
-);
+});
 
 // export const resetPassword = createAsyncThunk(
 //   "account/resetPassword",
@@ -112,8 +126,8 @@ const accountSlice = createSlice({
         state.loginLoading = false;
         state.loginError = action.error.message || String(action.error);
       })
-      .addCase(resumeSession.fulfilled, (state, action: PayloadAction<any>) => {
-        state.data = action.payload;
+      .addCase(signOut.fulfilled, (state) => {
+        state.data = initialState.data;
       });
     // .addCase(updateProfile.fulfilled, (state, action: PayloadAction<any>) => {
     //   console.log(action.payload);

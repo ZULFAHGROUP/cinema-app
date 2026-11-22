@@ -1,22 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { Tabs } from "antd";
 import Button from "../../components/shared/Button";
 import {
   Package,
   BarChart3,
+  RotateCcw,
   // ShoppingCart,
   Plus,
   // Minus,
 } from "lucide-react";
 import InventoryManagement from "./components/InventoryManagement";
 import Sales from "./components/Sales";
+import Refunds from "./components/Refunds";
 // import POSMode from "./components/PosMode";
 import AddProductForm from "./components/AddProductForm";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { getAllProducts } from "../../store/slices/product";
-import { getAllOrders } from "../../store/slices/order";
 
 function ConcessionsPage() {
   const [activeTab, setActiveTab] = useState("inventory");
@@ -29,9 +29,8 @@ function ConcessionsPage() {
     (state) => state.product //products
   );
   const { user } = useAppSelector((state) => state.accounts.data);
-const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order);
   // Determine if user is admin
-  const isAdmin = user?.role?.name?.toLowerCase() === "admin";
+  const isAdmin = user?.role?.toLowerCase() === "admin";
 
   // Use selected cinema for admin, undefined for others (backend uses auth token)
   const activeCinemaId = isAdmin ? selectedCinemaId : undefined;
@@ -46,7 +45,6 @@ const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order
         })
       );
     }
-    dispatch(getAllOrders({page,limit}));
   }, [dispatch, productPage, productLimit, activeCinemaId]);
 
   // POS Mode - Commented out for now
@@ -109,7 +107,16 @@ const { orders,page,limit,orderLoading } = useAppSelector((state) => state.order
           <BarChart3 className="w-4 h-4" /> Sales
         </span>
       ),
-      children: <Sales recentSales={orders} loading={orderLoading} />,
+      children: <Sales />,
+    },
+    {
+      key: "refunds",
+      label: (
+        <span className="flex items-center gap-2">
+          <RotateCcw className="w-4 h-4" /> Refunds
+        </span>
+      ),
+      children: <Refunds />,
     },
     // {
     //   key: "suppliers",

@@ -1,41 +1,40 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { ApiResponse } from "../../@types/common";
-import Inventory from "../../services/network/inventory";
+import Inventory, { InventoryFilters } from "../../services/network/inventory";
+
+export interface InventoryStats {
+  total_items: number;
+  total_quantity: number;
+  low_stock_items: number;
+  out_of_stock_items: number;
+}
 
 export const getAllInventories = createAsyncThunk(
   "inventory/getAll",
   async (
-    { page = 1, limit = 10, cinema_id }: { page?: number; limit?: number; cinema_id?: string },
-    { rejectWithValue }
+    {
+      page = 1,
+      limit = 10,
+      cinema_id,
+      filters,
+    }: { page?: number; limit?: number; cinema_id?: string; filters?: InventoryFilters },
+    { rejectWithValue, getState }
   ) => {
+    // Refreshes after a stock change pass no filters: keep the ones on screen.
+    const activeFilters = filters ?? (getState() as any).inventory.filters ?? {};
     try {
-      const response = await Inventory.allInventories(page, limit, cinema_id);
+      const response = await Inventory.allInventories(page, limit, cinema_id, activeFilters);
       return {
         data: response.data.data.inventories,
         page,
         limit,
         total: response.data.data.pagination.total,
+        stats: response.data.data.stats,
+        filters: activeFilters,
       };
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
-    }
-  }
-);
-
-export const updateInventory = createAsyncThunk(
-  "inventory/update",
-  async (
-    { id, data: payload }: { id: string; data: any },
-    { rejectWithValue }
-  ): Promise<ApiResponse> => {
-    try {
-      const response = await Inventory.updateInventory(id, payload);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue({
-        message: error.response?.data || error.message,
-      }) as any;
     }
   }
 );
@@ -48,7 +47,8 @@ export const deleteInventory = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -70,15 +70,16 @@ export const getInventoryHistory = createAsyncThunk(
 export const stockIn = createAsyncThunk(
   "inventory/stockIn",
   async (
-    { id, data }: { id: string; data: any },
+    { id, data, idempotencyKey }: { id: string; data: any; idempotencyKey: string },
     { rejectWithValue }
   ): Promise<ApiResponse> => {
     try {
-      const response = await Inventory.stockIn(id, data);
+      const response = await Inventory.stockIn(id, data, idempotencyKey);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -87,15 +88,16 @@ export const stockIn = createAsyncThunk(
 export const recordSpoilage = createAsyncThunk(
   "inventory/spoilage",
   async (
-    { id, data }: { id: string; data: any },
+    { id, data, idempotencyKey }: { id: string; data: any; idempotencyKey: string },
     { rejectWithValue }
   ): Promise<ApiResponse> => {
     try {
-      const response = await Inventory.recordSpoilage(id, data);
+      const response = await Inventory.recordSpoilage(id, data, idempotencyKey);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -104,15 +106,16 @@ export const recordSpoilage = createAsyncThunk(
 export const correctInventory = createAsyncThunk(
   "inventory/correction",
   async (
-    { id, data }: { id: string; data: any },
+    { id, data, idempotencyKey }: { id: string; data: any; idempotencyKey: string },
     { rejectWithValue }
   ): Promise<ApiResponse> => {
     try {
-      const response = await Inventory.correctInventory(id, data);
+      const response = await Inventory.correctInventory(id, data, idempotencyKey);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -121,32 +124,24 @@ export const correctInventory = createAsyncThunk(
 export const transferOut = createAsyncThunk(
   "inventory/transferOut",
   async (
-    { id, data }: { id: string; data: { quantity: number; reason: string; destination_cinema_id: string } },
+    {
+      id,
+      data,
+      idempotencyKey,
+    }: {
+      id: string;
+      data: { quantity: number; reason?: string; destination_cinema_id: string; destination_inventory_id: string };
+      idempotencyKey: string;
+    },
     { rejectWithValue }
   ): Promise<ApiResponse> => {
     try {
-      const response = await Inventory.transferOut(id, data);
+      const response = await Inventory.transferOut(id, data, idempotencyKey);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
-      }) as any;
-    }
-  }
-);
-
-export const transferIn = createAsyncThunk(
-  "inventory/transferIn",
-  async (
-    { id, data }: { id: string; data: { quantity: number; reason: string; source_cinema_id: string } },
-    { rejectWithValue }
-  ): Promise<ApiResponse> => {
-    try {
-      const response = await Inventory.transferIn(id, data);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -162,6 +157,8 @@ const inventorySlice = createSlice({
     page: 1,
     limit: 10,
     total: 0,
+    stats: null as InventoryStats | null,
+    filters: {} as InventoryFilters,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -175,6 +172,8 @@ const inventorySlice = createSlice({
         state.page = action.payload.page;
         state.limit = action.payload.limit;
         state.total = action.payload.total;
+        state.stats = action.payload.stats || null;
+        state.filters = action.payload.filters;
       })
       .addCase(getAllInventories.rejected, (state) => {
         state.loading = false;
@@ -199,12 +198,6 @@ const inventorySlice = createSlice({
         state.loading = false;
       })
       .addCase(transferOut.fulfilled, (state) => {
-        state.loading = false;
-      })
-      .addCase(transferIn.fulfilled, (state) => {
-        state.loading = false;
-      })
-      .addCase(updateInventory.fulfilled, (state) => {
         state.loading = false;
       })
       .addCase(deleteInventory.fulfilled, (state) => {

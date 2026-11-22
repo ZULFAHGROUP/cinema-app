@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import axios from "../httpClient";
+import { AxiosRequestConfig } from "axios";
 import urls from "../../constants/urls";
 import Axios from "../httpClient";
 
@@ -8,21 +8,26 @@ const Accounts = {
     return Axios.post(urls.login, data);
   },
 
-  // createUser: (data: any) => {
-  //   return Axios.post(urls.createAccount, data);
-  // },
+  logout: () => {
+    return Axios.post(urls.logout);
+  },
 
-  // resetPassword: (data: any) => {
-  //   return Axios.post(urls.createAccount, data);
-  // },
+  getProfile: (config?: AxiosRequestConfig) => {
+    return Axios.get(urls.me, config);
+  },
 
-  // updateProfile: (data: any) => {
-  //   return Axios.post(urls.createAccount, data);
-  // },
+  startForgetPassword: (data: { email: string }) => {
+    return Axios.post(urls.start_forget_password, data);
+  },
 
-  // changePassword: (data: any) => {
-  //   return Axios.post(urls.createAccount, data);
-  // },
+  completeForgetPassword: (data: {
+    email: string;
+    otp: string;
+    password: string;
+    confirmPassword: string;
+  }) => {
+    return Axios.post(urls.complete_forget_password, data);
+  },
 };
 
 export default Accounts;

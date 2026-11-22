@@ -1,14 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Button from "../../../../components/shared/Button";
-import { Package2, TrendingUp, TrendingDown, Edit2, History, ArrowLeftRight, MoreVertical } from "lucide-react";
+import {
+  AlertTriangle,
+  Boxes,
+  Edit2,
+  History,
+  ArrowLeftRight,
+  MoreVertical,
+  Package,
+  PackageX,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 import { useEffect, useState } from "react";
-import { Dropdown } from "antd";
+import { Dropdown, Input, Select } from "antd";
 import { useAppDispatch, useAppSelector } from "../../../../store/hook";
 import { getAllInventories, deleteInventory } from "../../../../store/slices/inventory";
-import { getAllProducts } from "../../../../store/slices/product";
+import { getAllProductCategories } from "../../../../store/slices/productCat";
 import { getAllCinemas } from "../../../../store/slices/cinema";
 import ConfirmationModal from "../../../../components/shared/Modal/ConfirmationModal";
 import DisplayModal from "../../../../components/shared/Modal/DisplayModal";
-import ReusableSelect from "../../../../components/shared/Select";
+import StatCards from "../../../../components/shared/StatCards";
 import { toast } from "react-toastify";
 import ReusableTable from "../../../../components/shared/Table";
 import Loader from "../../../../components/shared/Loader";
@@ -17,6 +29,14 @@ import SpoilageForm from "./components/SpoilageForm";
 import CorrectionForm from "./components/CorrectionForm";
 import TransferForm from "./components/TransferForm";
 import InventoryHistoryModal from "./components/InventoryHistoryModal";
+import { InventoryFilters } from "../../../../services/network/inventory";
+import { useDebouncedValue } from "../../../../hooks/useDebouncedValue";
+
+const getStockStatus = (quantity: number, reorderLevel: number) => {
+  if (quantity <= 0) return { label: "Out of Stock", color: "bg-red-100 text-red-800" };
+  if (quantity <= reorderLevel) return { label: "Low Stock", color: "bg-yellow-100 text-yellow-800" };
+  return { label: "In Stock", color: "bg-green-100 text-green-800" };
+};
 
 const InventoryManagement = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -27,30 +47,32 @@ const InventoryManagement = () => {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedCinemaId, setSelectedCinemaId] = useState<string>("");
+  const [filters, setFilters] = useState<InventoryFilters>({});
+  const [searchText, setSearchText] = useState("");
+  const search = useDebouncedValue(searchText.trim());
 
   const dispatch = useAppDispatch();
-  const { inventories, loading, page, limit, total } = useAppSelector((state) => state.inventory);
-  const { products } = useAppSelector((state) => state.product);
+  const { inventories, loading, page, limit, total, stats } = useAppSelector((state) => state.inventory);
+  const { productCats } = useAppSelector((state) => state.productCat);
   const { allCinemas } = useAppSelector((state) => state.cinema);
   const { user } = useAppSelector((state) => state.accounts.data);
 
   const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "superadmin";
 
-  // Determine active cinema: admin uses selected, others don't pass (backend uses auth token)
-  const activeCinemaId = isAdmin ? selectedCinemaId : undefined;
+  // Admins can narrow to one cinema (blank = all); everyone else sees their own cinema.
+  const activeCinemaId = isAdmin ? selectedCinemaId || undefined : undefined;
+  const activeFilters: InventoryFilters = { ...filters, search: search || undefined };
 
   useEffect(() => {
-    if (isAdmin) {
-      dispatch(getAllCinemas({ page: 1, limit: 100 }));
-    }
+    if (isAdmin) dispatch(getAllCinemas({ page: 1, limit: 50 }));
+    dispatch(getAllProductCategories({ page: 1, limit: 50 }));
   }, [dispatch, isAdmin]);
 
+  // Back to page 1 whenever the cinema, a filter or the search changes.
   useEffect(() => {
-    if (activeCinemaId) {
-      dispatch(getAllInventories({ page, limit, cinema_id: activeCinemaId }));
-      dispatch(getAllProducts({ page: 1, limit: 1000, cinema_id: activeCinemaId }));
-    }
-  }, [dispatch, page, limit, activeCinemaId]);
+    dispatch(getAllInventories({ page: 1, limit, cinema_id: activeCinemaId, filters: activeFilters }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, activeCinemaId, filters, search]);
 
   const handleDelete = async () => {
     if (!selectedItem) return;
@@ -62,38 +84,41 @@ const InventoryManagement = () => {
         setShowDeleteModal(false);
       }
     } catch (error: any) {
-      toast.error(error?.response?.message || "Error deleting inventory");
+      toast.error(error?.message || "Error deleting inventory");
       setShowDeleteModal(false);
     }
   };
 
-  // Get product details for an inventory item
-  const getProductDetails = (productId: string) => {
-    return products?.find((p: any) => p.product_id === productId);
-  };
+  const categoryName = (categoryId?: string) =>
+    (productCats as any[])?.find((c: any) => c.product_category_id === categoryId)?.name;
+  const cinemaName = (cinemaId: string) =>
+    allCinemas?.find((c: any) => c.cinema_id === cinemaId)?.name;
 
-  // Determine stock status
-  const getStockStatus = (quantity: number, reorderLevel: number) => {
-    if (quantity === 0) return { label: "Out of Stock", color: "bg-red-100 text-red-800" };
-    if (quantity <= reorderLevel) return { label: "Low Stock", color: "bg-yellow-100 text-yellow-800" };
-    return { label: "In Stock", color: "bg-green-100 text-green-800" };
+  const openModal = (record: any, open: (value: boolean) => void) => {
+    setSelectedItem({ ...record, productName: record.product?.name });
+    open(true);
   };
 
   const columns = [
     {
       title: "Product",
-      dataIndex: "product_id",
-      key: "product_id",
-      render: (productId: string) => {
-        const product = getProductDetails(productId) as any;
-        return (
-                        <div>
-              <p className="font-medium">{product?.name || "Unknown Product"}</p>
-              <p className="text-sm text-gray-500">{product?.product_category?.name}</p>
-            </div>
-        );
-      },
+      key: "product",
+      render: (_: unknown, record: any) => (
+        <div>
+          <p className="font-medium">{record.product?.name || "Unknown Product"}</p>
+          <p className="text-sm text-gray-500">{categoryName(record.product?.product_category_id)}</p>
+        </div>
+      ),
     },
+    ...(isAdmin && !activeCinemaId
+      ? [
+          {
+            title: "Cinema",
+            key: "cinema",
+            render: (_: unknown, record: any) => cinemaName(record.cinema_id) || "-",
+          },
+        ]
+      : []),
     {
       title: "Current Stock",
       dataIndex: "quantity",
@@ -110,81 +135,57 @@ const InventoryManagement = () => {
       key: "status",
       render: (_: any, record: any) => {
         const status = getStockStatus(record.quantity, record.reorder_level);
-        return (
-          <span className={`text-xs px-2 py-1 rounded ${status.color}`}>
-            {status.label}
-          </span>
-        );
+        return <span className={`text-xs px-2 py-1 rounded ${status.color}`}>{status.label}</span>;
       },
     },
     {
       title: "Actions",
       key: "actions",
-      render: (_: any, record: any) => {
-        const product = getProductDetails(record.product_id) as any;
-        return (
-          <div className="flex gap-1 flex-wrap">
-            <Dropdown
-              menu={{
-                items: [
-                  {
-                    key: "1",
-                    label: "Stock In",
-                    icon: <TrendingUp className="w-4 h-4" />,
-                    onClick: () => {
-                      setSelectedItem({ ...record, productName: product?.name });
-                      setShowStockInModal(true);
-                    },
-                  },
-                  {
-                    key: "2",
-                    label: "Record Spoilage",
-                    icon: <TrendingDown className="w-4 h-4" />,
-                    onClick: () => {
-                      setSelectedItem({ ...record, productName: product?.name });
-                      setShowSpoilageModal(true);
-                    },
-                  },
-                  {
-                    key: "3",
-                    label: "Correct Stock",
-                    icon: <Edit2 className="w-4 h-4" />,
-                    onClick: () => {
-                      setSelectedItem({ ...record, productName: product?.name });
-                      setShowCorrectionModal(true);
-                    },
-                  },
-                  {
-                    key: "4",
-                    label: "Transfer Stock",
-                    icon: <ArrowLeftRight className="w-4 h-4" />,
-                    onClick: () => {
-                      setSelectedItem({ ...record, productName: product?.name });
-                      setShowTransferModal(true);
-                    },
-                  },
-                  {
-                    key: "5",
-                    label: "History",
-                    icon: <History className="w-4 h-4" />,
-                    onClick: () => {
-                      setSelectedItem({ ...record, productName: product?.name });
-                      setShowHistoryModal(true);
-                    },
-                  },
-                ],
-              }}
-              trigger={["click"]}
-            >
-              <Button
-                size="sm"
-                className="p-0 bg-transparent w-fit shadow-none text-black!"
-                icon={<MoreVertical className="" size={18} />}
-              />
-            </Dropdown>
-          </div>
-        );
-      },
+      render: (_: any, record: any) => (
+        <Dropdown
+          menu={{
+            items: [
+              {
+                key: "1",
+                label: "Stock In",
+                icon: <TrendingUp className="w-4 h-4" />,
+                onClick: () => openModal(record, setShowStockInModal),
+              },
+              {
+                key: "2",
+                label: "Record Spoilage",
+                icon: <TrendingDown className="w-4 h-4" />,
+                onClick: () => openModal(record, setShowSpoilageModal),
+              },
+              {
+                key: "3",
+                label: "Correct Stock",
+                icon: <Edit2 className="w-4 h-4" />,
+                onClick: () => openModal(record, setShowCorrectionModal),
+              },
+              {
+                key: "4",
+                label: "Transfer Stock",
+                icon: <ArrowLeftRight className="w-4 h-4" />,
+                onClick: () => openModal(record, setShowTransferModal),
+              },
+              {
+                key: "5",
+                label: "History",
+                icon: <History className="w-4 h-4" />,
+                onClick: () => openModal(record, setShowHistoryModal),
+              },
+            ],
+          }}
+          trigger={["click"]}
+        >
+          <Button
+            size="sm"
+            className="p-0 bg-transparent w-fit shadow-none text-black!"
+            icon={<MoreVertical className="" size={18} />}
+          />
+        </Dropdown>
+      ),
     },
   ];
 
@@ -195,71 +196,109 @@ const InventoryManagement = () => {
         limit: pagination.pageSize,
         cinema_id: activeCinemaId,
       })
-    ).unwrap();
+    );
   };
 
-  // Low stock items for alerts
-  const lowStockItems = inventories?.filter((inv: any) => {
-    const status = getStockStatus(inv.quantity, inv.reorder_level);
-    return status.label !== "In Stock";
-  });
+  const needsAttention = (stats?.low_stock_items || 0) + (stats?.out_of_stock_items || 0);
+  const statItems = [
+    {
+      label: "Products stocked",
+      value: stats?.total_items ?? 0,
+      icon: Package,
+      onClick: () => setFilters((f) => ({ ...f, low_stock: undefined })),
+    },
+    {
+      label: "Units on hand",
+      value: stats?.total_quantity ?? 0,
+      icon: Boxes,
+      tone: "info" as const,
+    },
+    {
+      // The low_stock filter returns both low and empty items, so the count matches it.
+      label: "Needs restock",
+      value: needsAttention,
+      hint: `${stats?.low_stock_items ?? 0} low · ${stats?.out_of_stock_items ?? 0} out · click to filter`,
+      icon: AlertTriangle,
+      tone: needsAttention ? ("warning" as const) : ("neutral" as const),
+      onClick: () => setFilters((f) => ({ ...f, low_stock: f.low_stock ? undefined : true })),
+      active: Boolean(filters.low_stock),
+    },
+    {
+      label: "Out of stock",
+      value: stats?.out_of_stock_items ?? 0,
+      icon: PackageX,
+      tone: stats?.out_of_stock_items ? ("danger" as const) : ("neutral" as const),
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Low Stock Alerts */}
-      {lowStockItems && lowStockItems.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Package2 className="w-5 h-5 text-yellow-600" />
-            <h3 className="font-semibold text-yellow-800">Stock Alerts ({lowStockItems.length})</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-            {lowStockItems.slice(0, 6).map((item: any) => {
-              const product = getProductDetails(item.product_id) as any;
-              const status = getStockStatus(item.quantity, item.reorder_level);
-              return (
-                <div key={item.inventory_id} className="bg-white rounded p-2 text-sm">
-                  <p className="font-medium">{product?.name}</p>
-                  <p className="text-gray-600">
-                    Stock: {item.quantity} / Min: {item.reorder_level}
-                  </p>
-                  <span className={`text-xs px-2 py-0.5 rounded ${status.color}`}>
-                    {status.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      <StatCards items={statItems} loading={loading} />
 
-      {/* Cinema Selector for Admin */}
-      {isAdmin && (
-        <div className="mb-4 w-64">
-          <ReusableSelect
-            label="Select Cinema"
-            name="cinema_filter"
-            value={selectedCinemaId}
-            onChange={(value) => setSelectedCinemaId(value as string)}
-            options={allCinemas?.map((cinema: any) => ({
-              label: cinema.name,
-              value: cinema.cinema_id,
-            })) || []}
-            defaultOption="Select cinema"
+      {needsAttention > 0 && !filters.low_stock && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex flex-wrap items-center gap-3">
+          <AlertTriangle className="w-5 h-5 text-yellow-600" />
+          <p className="text-sm text-yellow-800 flex-1">
+            {needsAttention} product{needsAttention === 1 ? "" : "s"} need restocking.
+          </p>
+          <Button
+            size="xs"
+            variant="outline"
+            className="rounded-md"
+            title="Show them"
+            onClick={() => setFilters((f) => ({ ...f, low_stock: true }))}
           />
         </div>
       )}
 
-      {/* Inventory Table */}
-      {loading ? (
+      <div className="flex flex-wrap gap-3 items-center">
+        <Input.Search
+          allowClear
+          placeholder="Search product"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="w-full md:w-64!"
+        />
+        <Select
+          allowClear
+          placeholder="All categories"
+          value={filters.product_category_id}
+          onChange={(value) => setFilters((f) => ({ ...f, product_category_id: value }))}
+          options={(productCats as any[])?.map((c: any) => ({ value: c.product_category_id, label: c.name }))}
+          className="w-48"
+        />
+        <Select
+          placeholder="Stock level"
+          value={filters.low_stock ? "low" : "all"}
+          onChange={(value) => setFilters((f) => ({ ...f, low_stock: value === "low" || undefined }))}
+          options={[
+            { value: "all", label: "All stock levels" },
+            { value: "low", label: "Low or out of stock" },
+          ]}
+          className="w-48"
+        />
+        {isAdmin && (
+          <Select
+            allowClear
+            showSearch
+            optionFilterProp="label"
+            placeholder="All cinemas"
+            value={selectedCinemaId || undefined}
+            onChange={(value) => setSelectedCinemaId(value || "")}
+            options={allCinemas?.map((cinema: any) => ({ value: cinema.cinema_id, label: cinema.name }))}
+            className="w-48"
+          />
+        )}
+      </div>
+
+      {loading && inventories.length === 0 ? (
         <Loader rows={6} />
       ) : (
         <ReusableTable
           data={inventories || []}
           columns={columns}
-          title="Inventory"
-          searchField={["product_id"]}
-          excludeColumns={["inventory_id", "cinema_id", "created_at", "updated_at"]}
+          title={`Inventory (${total})`}
+          showSearch={false}
           showPagination={true}
           paginationMode="backend"
           paginationProps={{
@@ -278,12 +317,15 @@ const InventoryManagement = () => {
         onClose={() => setShowStockInModal(false)}
         width={600}
       >
-        <StockInForm
-          onCancel={() => setShowStockInModal(false)}
-          inventoryId={selectedItem?.inventory_id}
-          productName={selectedItem?.productName}
-          cinema_id={selectedCinemaId}
-        />
+        {/* Mounted only while open: each opening gets a fresh Idempotency-Key. */}
+        {showStockInModal && (
+          <StockInForm
+            onCancel={() => setShowStockInModal(false)}
+            inventoryId={selectedItem?.inventory_id}
+            productName={selectedItem?.productName}
+            cinema_id={selectedCinemaId}
+          />
+        )}
       </DisplayModal>
 
       {/* Spoilage Modal */}
@@ -293,13 +335,16 @@ const InventoryManagement = () => {
         onClose={() => setShowSpoilageModal(false)}
         width={600}
       >
-        <SpoilageForm
-          onCancel={() => setShowSpoilageModal(false)}
-          inventoryId={selectedItem?.inventory_id}
-          productName={selectedItem?.productName}
-          currentStock={selectedItem?.quantity}
-          cinema_id={selectedCinemaId}
-        />
+        {/* Mounted only while open: each opening gets a fresh Idempotency-Key. */}
+        {showSpoilageModal && (
+          <SpoilageForm
+            onCancel={() => setShowSpoilageModal(false)}
+            inventoryId={selectedItem?.inventory_id}
+            productName={selectedItem?.productName}
+            currentStock={selectedItem?.quantity}
+            cinema_id={selectedCinemaId}
+          />
+        )}
       </DisplayModal>
 
       {/* Correction Modal */}
@@ -309,13 +354,16 @@ const InventoryManagement = () => {
         onClose={() => setShowCorrectionModal(false)}
         width={600}
       >
-        <CorrectionForm
-          onCancel={() => setShowCorrectionModal(false)}
-          inventoryId={selectedItem?.inventory_id}
-          productName={selectedItem?.productName}
-          currentStock={selectedItem?.quantity}         
-           cinema_id={selectedCinemaId}
-        />
+        {/* Mounted only while open: each opening gets a fresh Idempotency-Key. */}
+        {showCorrectionModal && (
+          <CorrectionForm
+            onCancel={() => setShowCorrectionModal(false)}
+            inventoryId={selectedItem?.inventory_id}
+            productName={selectedItem?.productName}
+            currentStock={selectedItem?.quantity}         
+             cinema_id={selectedCinemaId}
+          />
+        )}
       </DisplayModal>
 
       {/* Transfer Modal */}
@@ -325,12 +373,13 @@ const InventoryManagement = () => {
         onClose={() => setShowTransferModal(false)}
         width={600}
       >
-        <TransferForm
-          onCancel={() => setShowTransferModal(false)}
-          inventoryId={selectedItem?.inventory_id}
-          productName={selectedItem?.productName}
-          currentStock={selectedItem?.quantity}
-        />
+        {/* Mounted only while open: each opening gets a fresh Idempotency-Key. */}
+        {showTransferModal && (
+          <TransferForm
+            onCancel={() => setShowTransferModal(false)}
+            inventory={selectedItem}
+          />
+        )}
       </DisplayModal>
 
       {/* History Modal */}

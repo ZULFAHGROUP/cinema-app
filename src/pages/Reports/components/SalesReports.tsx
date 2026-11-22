@@ -1,54 +1,70 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
 import ReactApexChart from "react-apexcharts";
+import { revenueSeries, SalesReport } from "../../../hooks/useSalesReport";
+import { formatCurrency } from "../../../utils";
 
-export default function SalesReports() {
-  const [barChartOptions] = useState<any>({
-    chart: {
-      type: "bar",
-      height: 350,
-      stacked: false,
-      toolbar: { show: false },
-    },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: "55%",
-        borderRadius: 4,
-      },
-    },
+interface SalesReportsProps {
+  report: SalesReport;
+  days?: number;
+}
+
+export default function SalesReports({ report, days }: SalesReportsProps) {
+  const points = revenueSeries(report, days);
+  const { summary } = report;
+
+  const barOptions: any = {
+    chart: { type: "bar", toolbar: { show: false } },
+    plotOptions: { bar: { columnWidth: "55%", borderRadius: 4 } },
     dataLabels: { enabled: false },
-    stroke: { show: true, width: 2, colors: ["transparent"] },
-    xaxis: {
-      categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    },
-    yaxis: {
-      title: { text: "$ (thousands)" },
-    },
-    fill: { opacity: 1 },
+    xaxis: { categories: points.map((p) => p.label), tickAmount: Math.min(points.length, 12) },
+    yaxis: { labels: { formatter: (value: number) => formatCurrency(value) } },
     legend: { position: "top" },
-    colors: ["#8884d8", "#82ca9d"],
-  });
+    colors: ["#c77e3b", "#4b5563"],
+    noData: { text: "No sales in this period" },
+  };
 
-  const [barSeries] = useState([
-    { name: "Tickets", data: [1200, 900, 1100, 1400, 2200, 2800, 2400] },
-    { name: "Concessions", data: [800, 600, 750, 900, 1400, 1800, 1500] },
-  ]);
+  const rows = [
+    { label: "Orders completed", value: summary.orders.toLocaleString() },
+    { label: "Tickets sold", value: summary.tickets_sold.toLocaleString() },
+    { label: "Ticket revenue (before VAT)", value: formatCurrency(summary.ticket_revenue) },
+    { label: "Concession items sold", value: summary.concessions_sold.toLocaleString() },
+    { label: "Concession revenue (before VAT)", value: formatCurrency(summary.concession_revenue) },
+    { label: "VAT collected", value: formatCurrency(summary.vat) },
+    { label: "Total collected", value: formatCurrency(summary.revenue) },
+  ];
 
   return (
-    <div className="border rounded-lg p-6">
-      <h3 className="font-sans font-semibold text-lg mb-2">
-        Daily Sales Breakdown
-      </h3>
-      <p className="text-sm text-muted-foreground font-serif mb-4">
-        Tickets vs concessions revenue
-      </p>
-      <ReactApexChart
-        options={barChartOptions}
-        series={barSeries}
-        type="bar"
-        height={350}
-      />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="border rounded-lg p-6 lg:col-span-2">
+        <h3 className="font-sans font-semibold text-lg mb-1">Sales Breakdown</h3>
+        <p className="text-sm text-muted-foreground font-serif mb-4">
+          Tickets vs concessions revenue
+        </p>
+        <ReactApexChart
+          options={barOptions}
+          series={
+            points.length
+              ? [
+                  { name: "Tickets", data: points.map((p) => p.tickets) },
+                  { name: "Concessions", data: points.map((p) => p.concessions) },
+                ]
+              : []
+          }
+          type="bar"
+          height={350}
+        />
+      </div>
+      <div className="border rounded-lg p-6">
+        <h3 className="font-sans font-semibold text-lg mb-4">Totals</h3>
+        <dl className="space-y-3">
+          {rows.map((row) => (
+            <div key={row.label} className="flex justify-between gap-4 text-sm border-b pb-2">
+              <dt className="text-muted-foreground">{row.label}</dt>
+              <dd className="font-semibold text-right">{row.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
     </div>
   );
 }

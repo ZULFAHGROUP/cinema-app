@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { BUILT_IN_ROLES } from "../../../../../constants";
 import { Formik, Form } from "formik";
 import Input from "../../../../../components/shared/Input";
 import Button from "../../../../../components/shared/Button";
@@ -88,6 +89,8 @@ const RolesForm = ({
                   : undefined
               }
               placeholder="Technical"
+              // Built-in roles can't be renamed; only their description can change.
+              disabled={editMode && BUILT_IN_ROLES.includes(roleData?.role_name)}
               required
             />
 

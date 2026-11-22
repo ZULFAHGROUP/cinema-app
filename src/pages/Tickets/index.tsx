@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Button from "../../components/shared/Button";
 import ReusableSelect from "../../components/shared/Select";
 import Input from "../../components/shared/Input";
@@ -17,6 +17,8 @@ import { getAvailableProducts } from "../../store/slices/product";
 import { initiatePurchase, resetPurchase } from "../../store/slices/purchase";
 import { toast } from "react-toastify";
 import { getHumanTime } from "../../utils";
+import { clearShowtimeSeats, getShowtimeSeats } from "../../store/slices/seat";
+import { newIdempotencyKey } from "../../services/httpClient";
 
 function TicketSalesPage() {
   const [currentStep, setCurrentStep] = useState("movie-selection");
@@ -24,6 +26,9 @@ function TicketSalesPage() {
   const [selectedShowtime, setSelectedShowtime] = useState<any>(null);
   const [ticketQuantity, setTicketQuantity] = useState(1);
   const [selectedProducts, setSelectedProducts] = useState<any[]>([]);
+  const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
+  // One key per purchase attempt, reused on retries so the order isn't created twice.
+  const purchaseKey = useRef<string | null>(null);
   const [movieLimit, setMovieLimit] = useState(10);
   const [showtimeLimit, setShowtimeLimit] = useState(10);
   const [availableProductLimit, setAvailableProductLimit] = useState(10);
@@ -34,6 +39,13 @@ function TicketSalesPage() {
   const { showtimes, selectedShowtimePrice, total: totalShowtimes } = useAppSelector((state) => state.showtime);
   const { availableProducts, availableProductTotal } = useAppSelector((state) => state.product);
   const { initiateLoading, initiateData } = useAppSelector((state) => state.purchase);
+  const { showtimeSeatMap, showtimeSeatsLoading } = useAppSelector((state) => state.seat);
+
+  const loadSeats = (showtimeId?: string) => {
+    setSelectedSeatIds([]);
+    if (showtimeId) dispatch(getShowtimeSeats(showtimeId));
+    else dispatch(clearShowtimeSeats());
+  };
 
   useEffect(() => {
     dispatch(getAllMovies({ page: 1, limit: movieLimit }));
@@ -54,6 +66,7 @@ function TicketSalesPage() {
 
   const handleShowtimeSelect = async (showtime: any) => {
     setSelectedShowtime(showtime);
+    loadSeats(showtime.showtime_id);
     try {
       await dispatch(getShowtimePrice(showtime.showtime_id)).unwrap();
       setCurrentStep("purchase-selection");
@@ -65,22 +78,35 @@ function TicketSalesPage() {
   const handlePurchaseConfirm = async () => {
     const payload = {
       showtime_id: selectedShowtime?.showtime_id,
-      ticket_quantity: ticketQuantity,
+      ticket_quantity: selectedSeatIds.length || ticketQuantity,
+      // Without seat_ids the first free seats are assigned.
+      ...(selectedSeatIds.length ? { seat_ids: selectedSeatIds } : {}),
       extra_products: selectedProducts.map(p => ({
         product_id: p.product_id,
         quantity: p.quantity
       }))
     };
 
-    try {
-      const resultAction = await dispatch(initiatePurchase(payload));
-      if (initiatePurchase.fulfilled.match(resultAction)) {
-        setCurrentStep("payment-summary");
-      } else {
-        toast.error("Failed to initiate purchase");
-      }
-    } catch (err) {
-      toast.error("An error occurred");
+    purchaseKey.current ??= newIdempotencyKey();
+    const resultAction = await dispatch(
+      initiatePurchase({ payload, idempotencyKey: purchaseKey.current })
+    );
+
+    if (initiatePurchase.fulfilled.match(resultAction)) {
+      purchaseKey.current = null;
+      setCurrentStep("payment-summary");
+      return;
+    }
+
+    const { message, statusCode } = (resultAction.payload as any) || {};
+    toast.error(message || "Failed to initiate purchase");
+    if (statusCode === 409 && selectedShowtime) {
+      // Not enough seats, or a chosen seat was just taken: show the current map.
+      loadSeats(selectedShowtime.showtime_id);
+    }
+    if (statusCode === 422) {
+      // Same key with a different order: treat it as a new attempt.
+      purchaseKey.current = null;
     }
   };
 
@@ -97,6 +123,8 @@ function TicketSalesPage() {
     setSelectedShowtime(null);
     setTicketQuantity(1);
     setSelectedProducts([]);
+    loadSeats();
+    purchaseKey.current = null;
   };
 
   // Filter showtimes by selected movie
@@ -159,6 +187,7 @@ function TicketSalesPage() {
                           const movie = movies.find((m: any) => m.movie_id === value);
                           setSelectedMovie(movie);
                           setSelectedShowtime(null);
+                          loadSeats();
                         }}
                         options={movies.map((movie: any) => ({
                           value: movie.movie_id,
@@ -175,6 +204,7 @@ function TicketSalesPage() {
                         onChange={async (value) => {
                           const showtime = filteredShowtimes.find((s: any) => s.showtime_id === value);
                           setSelectedShowtime(showtime);
+                          loadSeats(showtime?.showtime_id);
                           if (showtime) {
                               try {
                                 await dispatch(getShowtimePrice(showtime.showtime_id)).unwrap();
@@ -216,6 +246,10 @@ function TicketSalesPage() {
                             setTicketQuantity={setTicketQuantity}
                             selectedProducts={selectedProducts}
                             setSelectedProducts={setSelectedProducts}
+                            seatMap={showtimeSeatMap}
+                            seatMapLoading={showtimeSeatsLoading}
+                            selectedSeatIds={selectedSeatIds}
+                            setSelectedSeatIds={setSelectedSeatIds}
                             onConfirm={handlePurchaseConfirm}
                             onBack={() => {}}
                           />
@@ -267,6 +301,10 @@ function TicketSalesPage() {
                         setTicketQuantity={setTicketQuantity}
                         selectedProducts={selectedProducts}
                         setSelectedProducts={setSelectedProducts}
+                        seatMap={showtimeSeatMap}
+                        seatMapLoading={showtimeSeatsLoading}
+                        selectedSeatIds={selectedSeatIds}
+                        setSelectedSeatIds={setSelectedSeatIds}
                         onConfirm={handlePurchaseConfirm}
                         isBoxOfficeMode={isBoxOfficeMode}
                         onBack={() => setCurrentStep("showtime-selection")}

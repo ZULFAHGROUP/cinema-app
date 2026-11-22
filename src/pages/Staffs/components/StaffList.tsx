@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Dropdown, Menu } from "antd";
+import { Dropdown, Input, Menu, Select, Tag } from "antd";
 import ReusableTable from "../../../components/shared/Table";
-import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { MoreHorizontal, Edit, Trash2, UserCheck, UserX, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import StatCards from "../../../components/shared/StatCards";
+import { StaffFilters } from "../../../services/network/staff";
+import { StaffStats } from "../../../store/slices/staff";
+import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 import DisplayModal from "../../../components/shared/Modal/DisplayModal";
 import ConfirmationModal from "../../../components/shared/Modal/ConfirmationModal";
 import { useAppDispatch } from "../../../store/hook";
@@ -14,11 +18,49 @@ import { formatUserLabel } from "../../../utils";
 interface StaffListProps {
   staff: any[];
   role: any;
-  onRefresh?: () => void;
-  staffTab: string
+  staffTab: string;
+  stats?: StaffStats | null;
+  /** Reloads this tab's list on the server with the given search and filters. */
+  onFetch: (filters: StaffFilters) => void;
 }
 
-export default function StaffList({ staff, role,staffTab, onRefresh }: StaffListProps) {
+export default function StaffList({ staff, role, staffTab, stats, onFetch }: StaffListProps) {
+  const [searchText, setSearchText] = useState("");
+  const [isActive, setIsActive] = useState<boolean | undefined>(undefined);
+  const search = useDebouncedValue(searchText.trim());
+  const filters: StaffFilters = { search: search || undefined, is_active: isActive };
+  const onRefresh = () => onFetch(filters);
+
+  useEffect(() => {
+    onFetch({ search: search || undefined, is_active: isActive });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, isActive]);
+
+  const toggleActive = (value: boolean) => setIsActive((current) => (current === value ? undefined : value));
+  const statItems = [
+    {
+      label: "Total",
+      value: stats?.total_staff ?? 0,
+      icon: Users,
+      onClick: () => setIsActive(undefined),
+    },
+    {
+      label: "Active",
+      value: stats?.active_staff ?? 0,
+      icon: UserCheck,
+      tone: "good" as const,
+      onClick: () => toggleActive(true),
+      active: isActive === true,
+    },
+    {
+      label: "Deactivated",
+      value: stats?.inactive_staff ?? 0,
+      icon: UserX,
+      tone: stats?.inactive_staff ? ("danger" as const) : ("neutral" as const),
+      onClick: () => toggleActive(false),
+      active: isActive === false,
+    },
+  ];
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
@@ -68,20 +110,18 @@ export default function StaffList({ staff, role,staffTab, onRefresh }: StaffList
     if (!selectedStaff) return;
     try {
       const response = await dispatch(
-        deleteStaff(selectedStaff?.surname)
+        deleteStaff(selectedStaff?.admin_id)
       ).unwrap();
       if (response.code === 200) {
         // toast.success(response.message);
         // await dispatch(getManagers({ limit, page })).unwrap(); // REMOVED hardcoded refresh
         // setShowDeleteModal(false);
         toast.success(response.message);
-        if (onRefresh) {
-            onRefresh();
-        }
+        onRefresh();
         setShowDeleteModal(false);
       }
     } catch (error: any) {
-      toast.error(error?.response?.message || "Error deleting classification");
+      toast.error(error?.message || "Error deleting staff");
       setShowDeleteModal(false);
     }
   };
@@ -107,19 +147,34 @@ export default function StaffList({ staff, role,staffTab, onRefresh }: StaffList
     },
     {
       title: "Role",
-      dataIndex: "role",
-      key: "role",
-      render: (role: any) =>
-        role ? `${formatUserLabel(role?.role_name)}` : "Role not available",
+      dataIndex: "roles",
+      key: "roles",
+      render: (roles: any[]) =>
+        roles?.length
+          ? roles.map((r) => formatUserLabel(r.role_name)).join(", ")
+          : "Role not available",
       filters:
-        role?.filter(
-    (role:any) => role.role_name?.toLowerCase() !== "customer"
-  ).map((r: any) => ({
+        role?.map((r: any) => ({
           text: r?.role_name,
           value: r?.role_name,
         })) || [],
 
-      onFilter: (value: any, record: any) => record.role.role_name === value,
+      onFilter: (value: any, record: any) =>
+        record.roles?.some((r: any) => r.role_name === value),
+    },
+    {
+      title: "Cinema",
+      dataIndex: "cinema",
+      key: "cinema",
+      render: (cinema: any) => cinema?.name || "All cinemas",
+    },
+    {
+      title: "Status",
+      dataIndex: "is_active",
+      key: "is_active",
+      render: (isActive: boolean) => (
+        <Tag color={isActive ? "green" : "red"}>{isActive ? "Active" : "Deactivated"}</Tag>
+      ),
     },
     //   {
     //   title: "Status",
@@ -149,13 +204,32 @@ export default function StaffList({ staff, role,staffTab, onRefresh }: StaffList
   ];
 
   return (
-    <>
+    <div className="space-y-4">
+      <StatCards items={statItems} />
+      <div className="flex flex-wrap gap-3">
+        <Input.Search
+          allowClear
+          placeholder="Search name, email or phone"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="md:w-80!"
+        />
+        <Select
+          value={isActive === undefined ? "all" : isActive ? "active" : "inactive"}
+          onChange={(value) => setIsActive(value === "all" ? undefined : value === "active")}
+          options={[
+            { value: "all", label: "All statuses" },
+            { value: "active", label: "Active" },
+            { value: "inactive", label: "Deactivated" },
+          ]}
+          className="w-40"
+        />
+      </div>
       <ReusableTable
         data={staff}
         columns={columns}
         title={staffTab === 'managers'? "Managers List" : staffTab === "cashiers" ? "Cashiers List" : "General Staff List"}
-        searchField={["name", "email", "role", "department"]}
-        showSearch={true}
+        showSearch={false}
         showPagination={true}
         excludeColumns={["id"]}
       />
@@ -169,6 +243,10 @@ export default function StaffList({ staff, role,staffTab, onRefresh }: StaffList
           isEdit={true}
           staffData={selectedStaff}
           roles={role}
+          onSuccess={() => {
+            setShowEditModal(false);
+            onRefresh();
+          }}
         />
       </DisplayModal>
 
@@ -179,6 +257,6 @@ export default function StaffList({ staff, role,staffTab, onRefresh }: StaffList
         onConfirm={handleDelete}
         content={`Are you sure that you want to delete this staff, ${selectedStaff?.surname}`}
       />
-    </>
+    </div>
   );
 }

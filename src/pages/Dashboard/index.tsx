@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Film,
   Users,
@@ -9,8 +7,7 @@ import {
   Settings,
   Gift,
   Monitor,
-  TrendingUp,
-  Star,
+  Banknote,
 } from "lucide-react";
 import {
   Card,
@@ -27,6 +24,7 @@ import { getAllAuditTrails } from "../../store/slices/extras";
 import { formatAuditActivity, formatCurrencyToNGN  } from "../../utils";
 import { getOrderStats } from "../../store/slices/order";
 import { allRoutes } from "../../routes/allRoutes";
+import { useSalesReport } from "../../hooks/useSalesReport";
 
 function Dashboard() {
   const dispatch = useAppDispatch();
@@ -42,7 +40,7 @@ function Dashboard() {
   dispatch(getOrderStats()).unwrap();
   }, [dispatch, page, limit]);
 
-  const { movies } = useAppSelector((state) => state.movie);
+  const { total: totalMovies } = useAppSelector((state) => state.movie);
 const { auditTrails } = useAppSelector(
   (state) => state.extras
 );
@@ -50,36 +48,36 @@ const { orderStats } = useAppSelector(
   (state) => state.order
 );
 
+  const { report } = useSalesReport();
+
   const dashboardStats = [
     {
       title: "Total Revenue",
-      value: formatCurrencyToNGN(orderStats?.totalRevenue) || 0,
-      change: "+12%",
-      icon: '₦',
+      value: formatCurrencyToNGN(orderStats?.totalRevenue),
+      note: "Completed orders, incl. VAT",
+      icon: Banknote,
       color: "text-green-600",
     },
     {
-      // title: "Active Movies",
-      title: "Movies",
-      value: movies.length,
-      // value:'24',
-      change: "+2",
-      icon: Film,
-      color: "text-blue-600",
-    },
-    {
       title: "Tickets Sold",
-      value: "1,247",
-      change: "+8%",
+      value: (report?.summary.tickets_sold ?? 0).toLocaleString(),
+      note: `Avg ${formatCurrencyToNGN(report?.summary.average_ticket_price)} per ticket`,
       icon: Ticket,
       color: "text-purple-600",
     },
     {
-      title: "Avg Rating",
-      value: "4.8",
-      change: "+0.2",
-      icon: Star,
+      title: "Completed Orders",
+      value: Number(orderStats?.completedOrders || 0).toLocaleString(),
+      note: `of ${Number(orderStats?.totalOrders || 0).toLocaleString()} orders placed`,
+      icon: ShoppingCart,
       color: "text-yellow-600",
+    },
+    {
+      title: "Movies",
+      value: Number(totalMovies || 0).toLocaleString(),
+      note: "In the catalogue",
+      icon: Film,
+      color: "text-blue-600",
     },
   ];
 
@@ -109,14 +107,14 @@ const { orderStats } = useAppSelector(
       href: allRoutes.concessions,
     },
     {
-      title: "Customer Loyalty",
-      description: "Points, rewards & members",
+      title: "Customers",
+      description: "Customer accounts (loyalty coming soon)",
       icon: Gift,
       href: allRoutes.customers,
     },
     {
       title: "Digital Signage",
-      description: "Display management",
+      description: "Display management (coming soon)",
       icon: Monitor,
       href: allRoutes.signage,
     },
@@ -149,11 +147,8 @@ const { orderStats } = useAppSelector(
                     <p className="text-nowrap text-lg md:text-2xl font-sans font-bold text-foreground">
                       {stat.value}
                     </p>
-                    <p
-                      className={`text-sm font-serif flex items-center gap-1 ${stat.color}`}
-                    >
-                      <TrendingUp className="w-3 h-3" />
-                      {stat.change}
+                    <p className="text-xs font-serif text-muted-foreground">
+                      {stat.note}
                     </p>
                   </div>
                   <div className={`p-3 rounded-lg bg-muted ${stat.color}`}>
@@ -203,6 +198,11 @@ const { orderStats } = useAppSelector(
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+              {recentActivity.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No activity recorded yet.
+                </p>
+              )}
               {recentActivity.map((activity, index) => (
                 <div
                   key={index}

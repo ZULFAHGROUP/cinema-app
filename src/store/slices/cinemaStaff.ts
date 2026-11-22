@@ -12,7 +12,7 @@ export const getCinemaStaff = createAsyncThunk(
     try {
       const response = await Staff.getCinemaStaff(page, limit);
       return {
-        data: response.data.data.users,
+        data: response.data.data.assignments,
         page,
         limit,
         total: response.data.data.pagination.total,
@@ -25,13 +25,14 @@ export const getCinemaStaff = createAsyncThunk(
 
 export const assignCinemaStaff = createAsyncThunk(
   "cinemaStaff/assign",
-  async (payload: { cinema_id: string; user_id: string }, { rejectWithValue }): Promise<ApiResponse> => {
+  async (payload: { cinema_id: string; admin_id: string }, { rejectWithValue }): Promise<ApiResponse> => {
     try {
       const response = await Staff.assignCinemaStaff(payload);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -39,13 +40,14 @@ export const assignCinemaStaff = createAsyncThunk(
 
 export const removeCinemaStaff = createAsyncThunk(
   "cinemaStaff/remove",
-  async (payload: { cinema_id: string; user_id: string }, { rejectWithValue }): Promise<ApiResponse> => {
+  async (payload: { cinema_id: string; admin_id: string }, { rejectWithValue }): Promise<ApiResponse> => {
     try {
       const response = await Staff.removeCinemaStaff(payload);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }

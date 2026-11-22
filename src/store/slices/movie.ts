@@ -1,21 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { ApiResponse } from "../../@types/common";
-import Movie from "../../services/network/movie";
+import Movie, { MovieFilters } from "../../services/network/movie";
 
 export const getAllMovies = createAsyncThunk(
   "movie/getAll",
   async (
-    { page = 1, limit = 10 }: { page?: number; limit?: number },
+    { page = 1, limit = 10, filters }: { page?: number; limit?: number; filters?: MovieFilters },
     { rejectWithValue }
   ) => {
+    // Other pages (tickets, price rules) also list movies, so filters are never implied.
+    const activeFilters = filters ?? {};
     try {
-      const response = await Movie.allMovies(page, limit);
+      const response = await Movie.allMovies(page, limit, activeFilters);
       return {
         data: response.data.data.movies,
         page,
         limit,
         total: response.data.data.pagination.total,
+        stats: response.data.data.stats,
+        filters: activeFilters,
       };
     } catch (error: any) {
       return rejectWithValue(error.response?.data);
@@ -31,7 +35,8 @@ export const createMovie = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -48,7 +53,8 @@ export const updateMovie = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -62,7 +68,8 @@ export const deleteMovie = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
@@ -73,7 +80,9 @@ const movieSlice = createSlice({
   initialState: {
     movies: [] as any[],
     moviesLoading: false,
-    error: null,page:1,limit:10,total:0
+    error: null,page:1,limit:10,total:0,
+    stats: null as { total_movies: number; active_movies: number; inactive_movies: number } | null,
+    filters: {} as MovieFilters,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -87,6 +96,8 @@ const movieSlice = createSlice({
         state.page = action.payload.page;
         state.limit = action.payload.limit;
         state.total = action.payload.total;
+        state.stats = action.payload.stats || null;
+        state.filters = action.payload.filters;
       })
       .addCase(getAllMovies.rejected, (state) => {
         state.moviesLoading = false;

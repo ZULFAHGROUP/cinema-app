@@ -8,7 +8,7 @@ import {
 } from "../../../components/shared/Cards";
 import Button from "../../../components/shared/Button";
 import { Collapse, Dropdown } from "antd";
-import { Edit, Trash2, Monitor, ChevronDown, MoreVertical } from "lucide-react";
+import { Edit, Trash2, Monitor, ChevronDown, MoreVertical, Armchair } from "lucide-react";
 import { deleteCinema, getAllCinemas } from "../../../store/slices/cinema";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
@@ -18,6 +18,7 @@ import TheaterForm from "./AddTheaterForm";
 import DisplayModal from "../../../components/shared/Modal/DisplayModal";
 import { deleteScreen, getAllScreen } from "../../../store/slices/screen";
 import AddScreensForm from "./AddScreensForm";
+import SeatLayoutEditor from "./SeatLayoutEditor";
 import Loader from "../../../components/shared/Loader";
 
 const { Panel } = Collapse;
@@ -30,6 +31,7 @@ const Theater = ({ cinemas, loading }: any) => {
   const [showEditCinemaModal, setShowEditCinemaModal] = useState(false);
   const [showEditScreenModal, setShowEditScreenModal] = useState(false);
   const [showAddScreenModal, setShowAddScreenModal] = useState(false);
+  const [showSeatLayoutModal, setShowSeatLayoutModal] = useState(false);
 
   const dispatch = useAppDispatch();
   const { page, limit } = useAppSelector((state) => state.cinema);
@@ -55,7 +57,6 @@ const Theater = ({ cinemas, loading }: any) => {
   };
 
   const handleDeleteScreen = async () => {
-    console.log("screen", selectedScreen);
     if (!selectedScreen) return;
 
     try {
@@ -218,8 +219,7 @@ const Theater = ({ cinemas, loading }: any) => {
                                         {screen.name}
                                       </p>
                                       <p className="font-serif text-xs text-muted-foreground">
-                                        {screen.size} • {screen.resolution} •{" "}
-                                        {screen.soundSystem}
+                                        {screen.screenType?.name} • {screen.seat_count} seats
                                       </p>
                                     </div>
                                     <div className="flex gap-1">
@@ -233,6 +233,15 @@ const Theater = ({ cinemas, loading }: any) => {
                                               onClick: () => {
                                                 setSelectedScreen(screen);
                                                 setShowEditScreenModal(true);
+                                              },
+                                            },
+                                            {
+                                              key: "seats",
+                                              label: "Seat Layout",
+                                              icon: <Armchair className="w-4 h-4" />,
+                                              onClick: () => {
+                                                setSelectedScreen(screen);
+                                                setShowSeatLayoutModal(true);
                                               },
                                             },
                                             {
@@ -315,6 +324,19 @@ const Theater = ({ cinemas, loading }: any) => {
           screenData={selectedScreen}
           cinemas={cinemas}
         />
+      </DisplayModal>
+
+      <DisplayModal
+        open={showSeatLayoutModal}
+        title={`Seat layout: ${selectedScreen?.name}`}
+        onClose={() => setShowSeatLayoutModal(false)}
+      >
+        {showSeatLayoutModal && selectedScreen && (
+          <SeatLayoutEditor
+            screen={selectedScreen}
+            onCancel={() => setShowSeatLayoutModal(false)}
+          />
+        )}
       </DisplayModal>
 
       <DisplayModal

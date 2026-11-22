@@ -1,76 +1,62 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { ApiResponse } from "../../@types/common";
-import Seats from "../../services/network/seat";
+import Seats, { SeatLayoutRow } from "../../services/network/seat";
 
-interface SeatTypeState {
-  seats: any[];
-  seatLoading: boolean;
+interface SeatState {
+  screenSeats: any[];
+  screenSeatsLoading: boolean;
+  showtimeSeatMap: { showtime_id: string; has_seat_map: boolean; seats: any[] } | null;
+  showtimeSeatsLoading: boolean;
   error: string | null;
 }
 
-const initialState: SeatTypeState = {
-  seats: [],
-  seatLoading: false,
+const initialState: SeatState = {
+  screenSeats: [],
+  screenSeatsLoading: false,
+  showtimeSeatMap: null,
+  showtimeSeatsLoading: false,
   error: null,
 };
 
-export const getAllSeats = createAsyncThunk(
-  "seat/getAll",
-  async (_, { rejectWithValue }) => {
+export const getScreenSeats = createAsyncThunk(
+  "seat/getScreenSeats",
+  async (screenId: string, { rejectWithValue }) => {
     try {
-      const response = await Seats.allSeat();
+      const response = await Seats.getScreenSeats(screenId);
       return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data || error.message);
+      return rejectWithValue({ message: error.message, response: error.response?.data });
     }
   }
 );
 
-// ✅ CREATE SEAT
-export const createSeat = createAsyncThunk(
-  "seat/create",
-  async (payload: any, { rejectWithValue }): Promise<ApiResponse> => {
-    try {
-      const response = await Seats.createSeat(payload);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue({
-        message: error.response?.data || error.message,
-      }) as any;
-    }
-  }
-);
-
-// ✅ UPDATE SEAT
-export const updateSeat = createAsyncThunk(
-  "seat/update",
+export const saveScreenSeats = createAsyncThunk(
+  "seat/saveScreenSeats",
   async (
-    { id, payload }: { id: string | number; payload: any },
+    { screenId, rows }: { screenId: string; rows: SeatLayoutRow[] },
     { rejectWithValue }
   ): Promise<ApiResponse> => {
     try {
-      const response = await Seats.updateSeat(id, payload);
+      const response = await Seats.saveScreenSeats(screenId, rows);
       return response.data;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.response?.data || error.message,
+        message: error.message,
+        response: error.response?.data,
       }) as any;
     }
   }
 );
 
-// ✅ DELETE SEAT
-export const deleteSeat = createAsyncThunk(
-  "seat/delete",
-  async (id: string | number, { rejectWithValue }): Promise<ApiResponse> => {
+export const getShowtimeSeats = createAsyncThunk(
+  "seat/getShowtimeSeats",
+  async (showtimeId: string, { rejectWithValue }) => {
     try {
-      const response = await Seats.deleteSeat(id);
-      return response.data;
+      const response = await Seats.getShowtimeSeats(showtimeId);
+      return response.data.data;
     } catch (error: any) {
-      return rejectWithValue({
-        message: error.response?.data || error.message,
-      }) as any;
+      return rejectWithValue({ message: error.message, response: error.response?.data });
     }
   }
 );
@@ -78,58 +64,40 @@ export const deleteSeat = createAsyncThunk(
 const seatSlice = createSlice({
   name: "seat",
   initialState,
-  reducers: {},
+  reducers: {
+    clearShowtimeSeats: (state) => {
+      state.showtimeSeatMap = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
-      // GET
-      .addCase(getAllSeats.pending, (state) => {
-        state.seatLoading = true;
+      .addCase(getScreenSeats.pending, (state) => {
+        state.screenSeatsLoading = true;
+        state.screenSeats = [];
       })
-      .addCase(getAllSeats.fulfilled, (state, action) => {
-        state.seatLoading = false;
-        state.seats = action.payload || [];
+      .addCase(getScreenSeats.fulfilled, (state, action) => {
+        state.screenSeatsLoading = false;
+        state.screenSeats = action.payload || [];
       })
-      .addCase(getAllSeats.rejected, (state, action) => {
-        state.seatLoading = false;
-        state.error = action.payload as string;
+      .addCase(getScreenSeats.rejected, (state) => {
+        state.screenSeatsLoading = false;
       })
-
-      // CREATE
-      .addCase(createSeat.pending, (state) => {
-        state.seatLoading = true;
+      .addCase(saveScreenSeats.fulfilled, (state, action) => {
+        state.screenSeats = action.payload.data || [];
       })
-      .addCase(createSeat.fulfilled, (state) => {
-        state.seatLoading = false;
+      .addCase(getShowtimeSeats.pending, (state) => {
+        state.showtimeSeatsLoading = true;
       })
-      .addCase(createSeat.rejected, (state, action) => {
-        state.seatLoading = false;
-        state.error = action.payload as string;
+      .addCase(getShowtimeSeats.fulfilled, (state, action) => {
+        state.showtimeSeatsLoading = false;
+        state.showtimeSeatMap = action.payload;
       })
-
-      // UPDATE
-      .addCase(updateSeat.pending, (state) => {
-        state.seatLoading = true;
-      })
-      .addCase(updateSeat.fulfilled, (state) => {
-        state.seatLoading = false;
-      })
-      .addCase(updateSeat.rejected, (state, action) => {
-        state.seatLoading = false;
-        state.error = action.payload as string;
-      })
-
-      // DELETE
-      .addCase(deleteSeat.pending, (state) => {
-        state.seatLoading = true;
-      })
-      .addCase(deleteSeat.fulfilled, (state) => {
-        state.seatLoading = false;
-      })
-      .addCase(deleteSeat.rejected, (state, action) => {
-        state.seatLoading = false;
-        state.error = action.payload as string;
+      .addCase(getShowtimeSeats.rejected, (state) => {
+        state.showtimeSeatsLoading = false;
+        state.showtimeSeatMap = null;
       });
   },
 });
 
+export const { clearShowtimeSeats } = seatSlice.actions;
 export default seatSlice.reducer;

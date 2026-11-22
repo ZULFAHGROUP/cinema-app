@@ -38,12 +38,11 @@ const AddScreensForm = ({
   useEffect(() => {
     dispatch(getAllScreenTypes({ page, limit: total }));
   }, [dispatch, page, limit, total]);
-  console.log("cinema id", preSelectedCinema);
   const initialValues = {
     cinema_id: preSelectedCinema || screenData?.cinema_id || "",
     name: screenData?.name || "",
     seat_count: screenData?.seat_count || "",
-    screen_type_id: screenData?.screenType?.name || "",
+    screen_type_id: screenData?.screenType?.screen_type_id || "",
   };
 
   async function handleSubmit(
@@ -53,8 +52,12 @@ const AddScreensForm = ({
     try {
       let response;
       if (editMode && screenData?.screen_id) {
-        const payload = { ...values };
-        // delete payload.cinema_id;
+        // Only name and seat_count can change. A screen with a seat map gets its
+        // seat_count from the layout, so only send it when it was edited.
+        const payload: { name: string; seat_count?: number } = { name: values.name };
+        if (Number(values.seat_count) !== Number(screenData.seat_count)) {
+          payload.seat_count = Number(values.seat_count);
+        }
         response = await dispatch(
           updateScreen({ id: screenData.screen_id, data: payload })
         ).unwrap();

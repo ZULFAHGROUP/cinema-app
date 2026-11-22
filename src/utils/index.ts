@@ -151,9 +151,8 @@ export const formatCurrency = (amount: number, currency = "NGN") => {
 };
 
 export const formatAuditActivity = (audit: any) => {
-  const userName = audit.user
-    ? `${audit.user.surname} ${audit.user.other_names}`
-    : "System";
+  const actor = audit.admin || audit.user;
+  const userName = actor ? `${actor.surname} ${actor.other_names}` : "System";
 
   let actionText = "";
   let detailsText = "";

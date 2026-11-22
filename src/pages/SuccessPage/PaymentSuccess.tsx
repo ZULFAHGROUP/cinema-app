@@ -1,13 +1,68 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CheckCircle, Download, Printer, Share2, Ticket } from "lucide-react";
+import { AlertTriangle, CheckCircle, Download, Loader2, Printer, Share2, Ticket } from "lucide-react";
 import Button from "../../components/shared/Button";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { allRoutes } from "../../routes/allRoutes";
+import Purchase from "../../services/network/purchase";
+
+type CompletionState = "completing" | "completed" | "failed";
 
 const PaymentSuccess = () => {
     const [searchParams] = useSearchParams();
-    const reference = searchParams.get("reference") || searchParams.get("trxref") || "N/A";
+    // Paystack sends `reference`/`trxref`; Nomba sends `orderReference`.
+    const reference =
+      searchParams.get("reference") ||
+      searchParams.get("trxref") ||
+      searchParams.get("orderReference") ||
+      "";
     const navigate = useNavigate();
+    const [state, setState] = useState<CompletionState>(reference ? "completing" : "failed");
+    const [errorMessage, setErrorMessage] = useState(reference ? "" : "No payment reference was returned.");
+
+    // The webhook usually completes the order first; this call is safe to repeat
+    // and covers environments the webhook can't reach (e.g. local development).
+    useEffect(() => {
+      if (!reference) return;
+      Purchase.complete(reference)
+        .then(() => setState("completed"))
+        .catch((error: any) => {
+          setState("failed");
+          setErrorMessage(
+            error?.response?.status === 409
+              ? "Payment was received, but the held seats were resold after the hold ended. Staff will refund this order."
+              : error?.message || "We couldn't confirm this payment yet."
+          );
+        });
+    }, [reference]);
+
+    if (state !== "completed") {
+      return (
+        <div className="max-w-2xl mx-auto p-4 md:p-8 text-center">
+          {state === "completing" ? (
+            <>
+              <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" />
+              <h1 className="text-2xl font-sans font-bold">Confirming your payment...</h1>
+            </>
+          ) : (
+            <>
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-4">
+                <AlertTriangle className="w-12 h-12 text-red-600" />
+              </div>
+              <h1 className="text-2xl font-sans font-bold mb-2">Payment not confirmed</h1>
+              <p className="text-muted-foreground font-serif mb-2">{errorMessage}</p>
+              {reference && <p className="text-sm break-all">Reference: {reference}</p>}
+              <Button
+                variant="primary"
+                className="rounded-xl mt-6"
+                onClick={() => navigate(allRoutes.tickets)}
+                title="Back to Ticket Sales"
+              />
+            </>
+          )}
+        </div>
+      );
+    }
 
   return (
     <div className="max-w-2xl mx-auto p-4 md:p-8">
