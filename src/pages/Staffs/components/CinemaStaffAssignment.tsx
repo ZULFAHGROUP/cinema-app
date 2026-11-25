@@ -1,338 +1,344 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
-import { List } from "antd";
-import { Formik, Form } from "formik";
-import * as Yup from "yup";
+import { useCallback, useEffect, useState } from "react";
+import { Input, Select, Tag } from "antd";
+import { ArrowRightLeft, Building2, Trash2, UserCheck, UserX } from "lucide-react";
+import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { getAllCinemas } from "../../../store/slices/cinema";
-import {
-  getCinemaStaff,
-  assignCinemaStaff,
-  removeCinemaStaff,
-} from "../../../store/slices/cinemaStaff";
-import {
-  getManagers,
-  getPosCashiers,
-  getGeneralStaff,
-} from "../../../store/slices/staff";
-import { getAllRoles } from "../../../store/slices/roles";
-import { UserPlus, Plus, Trash2 } from "lucide-react";
-import DisplayModal from "../../../components/shared/Modal/DisplayModal";
+import { getCinemaStaff, assignCinemaStaff, removeCinemaStaff } from "../../../store/slices/cinemaStaff";
+import Staff, { AssignmentFilters } from "../../../services/network/staff";
 import ReusableTable from "../../../components/shared/Table";
-import ReusableSelect from "../../../components/shared/Select";
+import DisplayModal from "../../../components/shared/Modal/DisplayModal";
 import ConfirmationModal from "../../../components/shared/Modal/ConfirmationModal";
-import { toast } from "react-toastify";
+import StatCards from "../../../components/shared/StatCards";
 import Button from "../../../components/shared/Button";
+import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 
+const ROLE_COLORS: Record<string, string> = { Manager: "gold", Staff: "blue", Cashier: "purple" };
+
+/**
+ * Managers, staff and cashiers each work at one cinema; Admins work across all of them
+ * and are never assigned. This tab answers: who has no cinema yet, which cinemas have
+ * nobody, and who works where.
+ */
 export default function CinemaStaffAssignment() {
   const dispatch = useAppDispatch();
-  const { 
-    allCinemas, 
-    page: cinemaPage,
-    limit: cinemaLimit 
-  } = useAppSelector((state) => state.cinema);
+  const { allCinemas } = useAppSelector((state) => state.cinema);
+  const { cinemaStaffList, loading, page, limit, total } = useAppSelector((state) => state.cinemaStaff);
 
-  const {
-    roles,
-    page: rolePage,
-    limit: roleLimit,
-  } = useAppSelector((state) => state.role);
+  // Everyone who can be assigned, with their role and current cinema (if any).
+  const [people, setPeople] = useState<any[]>([]);
+  // Every assignment, unfiltered, so the cards don't change with the search box.
+  const [summary, setSummary] = useState<{ stats: any; cinemaIds: Set<string> }>({
+    stats: null,
+    cinemaIds: new Set(),
+  });
+  const [pickedCinema, setPickedCinema] = useState<Record<string, string>>({});
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [toRemove, setToRemove] = useState<any>(null);
+  const [toMove, setToMove] = useState<any>(null);
+  const [moveTo, setMoveTo] = useState<string>();
+  const [searchText, setSearchText] = useState("");
+  const [cinemaFilter, setCinemaFilter] = useState<string | undefined>();
+  const search = useDebouncedValue(searchText.trim());
 
-  const {
-    cinemaStaffList,
-    loading: assignmentLoading,
-    page: cinemaStaffPage,
-    limit: cinemaStaffLimit,
-    total: cinemaStaffTotal,
-  } = useAppSelector((state) => state.cinemaStaff);
-  
-  const {
-    managers,
-    cashiers,
-    generalStaff,
-    loading: staffLoading,
-    managersPagination,
-    cashiersPagination,
-    staffPagination,
-  } = useAppSelector((state) => state.staff);
+  const loadPeople = useCallback(async () => {
+    const tag = (label: string) => (r: any) =>
+      r.data.data.admins.map((a: any) => ({ ...a, roleLabel: label }));
+    const lists = await Promise.all([
+      Staff.getManagers(1, 50).then(tag("Manager")),
+      Staff.getStaffs(1, 50).then(tag("Staff")),
+      Staff.getPosCashiers(1, 50).then(tag("Cashier")),
+    ]);
+    setPeople(lists.flat());
+  }, []);
 
-  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [staffToDelete, setStaffToDelete] = useState<{cinemaId: string, adminId: string, name: string} | null>(null);
+  const loadSummary = useCallback(async () => {
+    const response = await Staff.getCinemaStaff(1, 50, {});
+    const { assignments, stats } = response.data.data;
+    setSummary({ stats, cinemaIds: new Set(assignments.map((a: any) => a.cinema_id)) });
+  }, []);
 
-  useEffect(() => {
-    dispatch(getAllCinemas({ page: cinemaPage , limit: cinemaLimit }));
-    dispatch(getAllRoles({ page: rolePage, limit: roleLimit }));
-    // Fetch all assignments on mount
-    dispatch(getCinemaStaff({ page: cinemaStaffPage, limit: cinemaStaffLimit }));
-  }, [dispatch]);
+  const loadTable = useCallback(
+    (pageNumber = 1) => {
+      const filters: AssignmentFilters = { search: search || undefined, cinema_id: cinemaFilter };
+      return dispatch(getCinemaStaff({ page: pageNumber, limit, filters }));
+    },
+    [dispatch, search, cinemaFilter, limit]
+  );
 
-  const handleDeleteClick = (cinemaId: string, adminId: string, name: string) => {
-      setStaffToDelete({ cinemaId, adminId, name });
-      setShowDeleteModal(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!staffToDelete) return;
-
+  const refreshAll = async () => {
     try {
-      await dispatch(
-        removeCinemaStaff({ cinema_id: staffToDelete.cinemaId, admin_id: staffToDelete.adminId })
-      ).unwrap();
-      toast.success("Staff removed successfully");
-      dispatch(getCinemaStaff({ page: cinemaStaffPage, limit: cinemaStaffLimit }));
-      setShowDeleteModal(false);
-      setStaffToDelete(null);
+      await Promise.all([loadPeople(), loadSummary(), loadTable(page)]);
     } catch (error: any) {
-      toast.error(error.message || "Failed to remove staff");
+      toast.error(error?.message || "Could not load assignments");
     }
   };
 
-  const handlePaginationChange = (pagination: any) => {
-    const { current, pageSize } = pagination;
-    dispatch(getCinemaStaff({ page: current, limit: pageSize || 10 }));
+  useEffect(() => {
+    dispatch(getAllCinemas({ page: 1, limit: 50 }));
+    loadPeople().catch(() => undefined);
+    loadSummary().catch(() => undefined);
+  }, [dispatch, loadPeople, loadSummary]);
+
+  // Back to page 1 whenever the search or cinema filter changes.
+  useEffect(() => {
+    loadTable(1);
+  }, [loadTable]);
+
+  const cinemaName = (id?: string) =>
+    allCinemas?.find((c: any) => c.cinema_id === id)?.name || "Unknown cinema";
+  const roleOf = (adminId: string) => people.find((p) => p.admin_id === adminId)?.roleLabel;
+  const cinemaOptions = (allCinemas || []).map((c: any) => ({ value: c.cinema_id, label: c.name }));
+
+  const unassigned = people.filter((p) => p.is_active && !p.cinema);
+  const emptyCinemas = (allCinemas || []).filter((c: any) => !summary.cinemaIds.has(c.cinema_id));
+  const stats = summary.stats;
+
+  const assign = async (person: any, cinemaId?: string) => {
+    if (!cinemaId) return;
+    setBusyId(person.admin_id);
+    try {
+      await dispatch(assignCinemaStaff({ admin_id: person.admin_id, cinema_id: cinemaId })).unwrap();
+      toast.success(`${person.surname} ${person.other_names} now works at ${cinemaName(cinemaId)}`);
+      await refreshAll();
+    } catch (error: any) {
+      toast.error(error?.message || "Could not assign");
+    } finally {
+      setBusyId(null);
+    }
   };
+
+  const remove = async () => {
+    if (!toRemove) return;
+    try {
+      await dispatch(removeCinemaStaff({ admin_id: toRemove.admin_id, cinema_id: toRemove.cinema_id })).unwrap();
+      toast.success('Removed. They\'re now under "Needs a cinema".');
+      await refreshAll();
+    } catch (error: any) {
+      toast.error(error?.message || "Could not remove");
+    } finally {
+      setToRemove(null);
+    }
+  };
+
+  // A person works at one cinema at a time, so moving is remove then assign.
+  const closeMove = () => {
+    setToMove(null);
+    setMoveTo(undefined);
+  };
+  const move = async () => {
+    if (!toMove || !moveTo) return;
+    try {
+      await dispatch(removeCinemaStaff({ admin_id: toMove.admin_id, cinema_id: toMove.cinema_id })).unwrap();
+      await dispatch(assignCinemaStaff({ admin_id: toMove.admin_id, cinema_id: moveTo })).unwrap();
+      toast.success(`Moved to ${cinemaName(moveTo)}`);
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not move. Check "Needs a cinema" and assign them again.');
+    } finally {
+      closeMove();
+      await refreshAll();
+    }
+  };
+
+  const statItems = [
+    {
+      label: "Have a cinema",
+      value: stats?.total_assignments ?? 0,
+      hint: `${stats?.managers ?? 0} managers · ${stats?.staff ?? 0} staff · ${stats?.pos_cashiers ?? 0} cashiers`,
+      icon: UserCheck,
+      tone: "good" as const,
+    },
+    {
+      label: "Needs a cinema",
+      value: stats?.unassigned_staff ?? unassigned.length,
+      hint: unassigned.length ? "Assign them below" : undefined,
+      icon: UserX,
+      tone: unassigned.length ? ("warning" as const) : ("neutral" as const),
+    },
+    {
+      label: "Cinemas with no staff",
+      value: emptyCinemas.length,
+      hint: `of ${allCinemas?.length ?? 0} cinemas`,
+      icon: Building2,
+      tone: emptyCinemas.length ? ("danger" as const) : ("neutral" as const),
+    },
+  ];
 
   const columns = [
     {
       title: "Name",
       key: "name",
-      render: (_: any, record: any) => (
-        <div className="flex flex-col text-left">
-             <span className="font-medium">
-                {record.admin ? `${record.admin.surname} ${record.admin.other_names}` : "Unknown staff"}
-            </span>
-        </div>
-      ),
+      render: (_: any, record: any) =>
+        record.admin ? `${record.admin.surname} ${record.admin.other_names}` : "Unknown staff",
+    },
+    {
+      title: "Role",
+      key: "role",
+      render: (_: any, record: any) => {
+        const role = roleOf(record.admin_id);
+        return role ? <Tag color={ROLE_COLORS[role]}>{role}</Tag> : "-";
+      },
     },
     {
       title: "Email",
       key: "email",
+      render: (_: any, record: any) => <span className="text-gray-500">{record.admin?.email}</span>,
+    },
+    {
+      title: "Works at",
+      key: "cinema",
       render: (_: any, record: any) => (
-          <span className="text-gray-500">{record.admin?.email}</span>
-      )
+        <div>
+          <p className="text-sm">{record.cinema?.name || cinemaName(record.cinema_id)}</p>
+          <p className="text-xs text-gray-500">{record.cinema?.location}</p>
+        </div>
+      ),
     },
     {
-       title: "Cinema",
-       key: "cinema",
-       render: (_: any, record: any) => (
-         <div>
-          <span className="text-sm">
-            {record.cinema ? record.cinema.name : "Unknown Cinema"}
-         </span>
-         <p className="text-xs text-gray-500">{record.cinema ? record.cinema.location : "Unknown Cinema Address"}</p>
-         </div>
-       )
-    },
-    {
-      title: "Action",
-      key: "action",
-      render: (_: any, record: any) => {
-        const name = record.admin ? `${record.admin.surname} ${record.admin.other_names}` : "this staff member";
-        return (
-          <Button   className="bg-transparent text-red-500! shadow-none!"  title="Remove"   icon={<Trash2 size={16} />}     onClick={() => handleDeleteClick(record.cinema_id, record.admin_id, name)}
-/>
-                   );
-      },
+      title: "",
+      key: "actions",
+      render: (_: any, record: any) => (
+        <div className="flex gap-2 justify-end">
+          <Button
+            size="xs"
+            variant="outline"
+            className="rounded-md"
+            icon={<ArrowRightLeft size={14} />}
+            title="Move"
+            onClick={() => setToMove(record)}
+          />
+          <Button
+            size="xs"
+            variant="outline"
+            className="rounded-md text-red-600!"
+            icon={<Trash2 size={14} />}
+            title="Remove"
+            onClick={() => setToRemove(record)}
+          />
+        </div>
+      ),
     },
   ];
 
-  // Helper to fetch staff based on role
-  const fetchStaffByRole = (roleName: string) => {
-    const lowerRole = roleName.toLowerCase();
-    // Reset page to 1 when filter changes ideally, or keep defaults
-    if (lowerRole.includes("manager")) {
-      dispatch(getManagers({ page: managersPagination.page, limit: managersPagination.limit }));
-    } else if (lowerRole.includes("cashier") || lowerRole.includes("pos")) {
-      dispatch(getPosCashiers({ page: cashiersPagination.page, limit: cashiersPagination.limit }));
-    } else {
-      dispatch(getGeneralStaff({ page: staffPagination.page, limit: staffPagination.limit }));
-    }
-  };
-
-  const getAvailableStaff = (roleName?: string) => {
-    if (!roleName) return [];
-    const lowerRole = roleName.toLowerCase();
-    if (lowerRole.includes("manager")) {
-      return managers;
-    } else if (lowerRole.includes("cashier") || lowerRole.includes("pos")) {
-      return cashiers;
-    } else {
-      return generalStaff;
-    }
-  };
-
-  // A staff member works at one cinema at a time.
-  const isAssigned = (staff: any) =>
-    Boolean(staff.cinema) ||
-    cinemaStaffList.some((assignment: any) => assignment.admin_id === staff.admin_id);
-
-  const handleAssign = async (adminId: string, cinemaId: string, onSuccess?: () => void) => {
-    try {
-     const response = await dispatch(
-        assignCinemaStaff({ cinema_id: cinemaId, admin_id: adminId })
-      ).unwrap();
-    if (response.code === 200 || response.code === 201){
-       toast.success("Staff assigned successfully");
-      dispatch(getCinemaStaff({ page: cinemaStaffPage, limit: cinemaStaffLimit }));
-      setIsAssignModalOpen(false);
-      if (onSuccess) {
-        onSuccess();
-      }
-      
-    } 
-    } catch (error: any) {
-      toast.error(error.message || "Failed to assign staff");
-    }
-  };
-
   return (
     <div className="space-y-6">
-      {/* Header Actions */}
-      <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-         <h2 className="text-lg font-semibold text-gray-800">Cinema Assignments</h2>
-         <Button 
-         title="New Assignment"
-           variant="primary" 
-           icon={<Plus size={16} />} 
-           className="rounded-md"
-           onClick={() => setIsAssignModalOpen(true)}
-         />
-               </div>
+      <p className="text-sm text-muted-foreground">
+        Managers, staff and cashiers each work at one cinema. Admins work across all cinemas.
+      </p>
 
-      {/* Assigned Staff Table */}
-      <ReusableTable
-        data={cinemaStaffList}
-        columns={columns}
-        title="Assigned Staff"
-        showPagination={true}
-        paginationMode="backend"
-        paginationProps={{
-            current: cinemaStaffPage,
-            total: cinemaStaffTotal,
-            pageSize: cinemaStaffLimit,
-        }}
-        onTableChange={handlePaginationChange}
-        showSearch={true}
-        searchField={["admin.surname", "admin.email", "cinema.name"]}
-      />
+      <StatCards items={statItems} />
 
-      {/* Assignment Modal */}
-      <DisplayModal
-        open={isAssignModalOpen}
-        title="Assign Staff to Cinema"
-        onClose={() => setIsAssignModalOpen(false)}
-        // width={800}
-      >
-        <Formik
-          initialValues={{
-            cinema_id: "",
-            role_name: "",
-          }}
-          validationSchema={Yup.object({
-            cinema_id: Yup.string().required("Cinema is required"),
-            role_name: Yup.string().required("Role is required"),
-          })}
-          onSubmit={() => {}}
-        >
-          {({ values, setFieldValue, errors, touched, resetForm }) => {
-            // Trigger fetch when role changes.
-            // Note: In Formik, we can use an effect inside the component or handle it in onChange.
-            // Handling in onChange is cleaner here.
-            
-            const onRoleChange = (role: string) => {
-                setFieldValue("role_name", role);
-                fetchStaffByRole(role);
-            };
-
-            const staffList = getAvailableStaff(values.role_name);
-
-            return (
-              <Form className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-                    <ReusableSelect
-                       label="Select Cinema"
-                       name="cinema_id"
-                       value={values.cinema_id}
-                       options={allCinemas.map((c: any) => ({
-                         label: c.name,
-                         value: c.cinema_id,
-                       }))}
-                       onChange={(val) => setFieldValue("cinema_id", val)}
-                       error={errors.cinema_id && touched.cinema_id ? errors.cinema_id : ""}
-                       defaultOption="Choose a cinema"
-                    />
-
-                    <ReusableSelect
-                       label="Select Role"
-                       name="role_name"
-                       value={values.role_name}
-                       // Admin-role staff work across all cinemas and can't be assigned one.
-                       options={roles?.filter((role: any) => role.role_name !== "Admin").map((role: any) => ({
-                         label: role.role_name,
-                         value: role.role_name,
-                       })) || []}
-                       onChange={(val) => onRoleChange(val as string)}
-                       error={errors.role_name && touched.role_name ? errors.role_name : ""}
-                       defaultOption="Filter by role"
-                    />
+      {/* Who still needs a cinema: only shown when someone does. */}
+      {unassigned.length > 0 && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
+          <h3 className="font-semibold">Needs a cinema ({unassigned.length})</h3>
+          <div className="divide-y divide-amber-200">
+            {unassigned.map((person) => (
+              <div key={person.admin_id} className="flex flex-wrap items-center gap-3 py-3">
+                <div className="flex-1 min-w-48">
+                  <p className="font-medium">
+                    {person.surname} {person.other_names}{" "}
+                    <Tag color={ROLE_COLORS[person.roleLabel]}>{person.roleLabel}</Tag>
+                  </p>
+                  <p className="text-xs text-muted-foreground">{person.email}</p>
                 </div>
+                <Select
+                  showSearch
+                  optionFilterProp="label"
+                  placeholder="Choose cinema"
+                  value={pickedCinema[person.admin_id]}
+                  onChange={(value) => setPickedCinema((p) => ({ ...p, [person.admin_id]: value }))}
+                  options={cinemaOptions}
+                  className="w-56"
+                />
+                <Button
+                  size="xs"
+                  className="rounded-md"
+                  title="Assign"
+                  loading={busyId === person.admin_id}
+                  disabled={busyId === person.admin_id || !pickedCinema[person.admin_id]}
+                  onClick={() => assign(person, pickedCinema[person.admin_id])}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
-                <div className="border rounded-lg overflow-hidden h-[250px] flex flex-col">
-                    <div className="bg-gray-100 px-4 py-2 border-b font-medium text-sm text-gray-600">
-                        Available Staff {values.role_name ? `(${values.role_name})` : ""}
-                    </div>
-                    {!values.role_name ? (
-                      <div className="flex items-center justify-center flex-1 text-gray-400">
-                        Select a role to view available staff
-                      </div>
-                    ) : (
-                      <div className="flex-1 overflow-y-auto p-2">
-                         <List
-                            loading={staffLoading}
-                            dataSource={staffList}
-                            renderItem={(item: any) => (
-                            <List.Item
-                                actions={[
-                                <Button
-                                title={isAssigned(item) ? "Assigned" : "Assign"}
-                                variant="primary"
-                                icon={<UserPlus size={16} />}
-                                className="rounded-md"
-                                onClick={() => handleAssign(item.admin_id, values.cinema_id, resetForm)}
-                                disabled={assignmentLoading || !values.cinema_id || isAssigned(item)}
-                                />
-                                ]}
-                                className="bg-white mb-2 rounded border px-3 py-2"
-                            >
-                                <List.Item.Meta
-                                title={`${item.surname} ${item.other_names}`}
-                                description={item.cinema ? `${item.email} · ${item.cinema.name}` : item.email}
-                                />
-                            </List.Item>
-                            )}
-                            locale={{ emptyText: "No staff found for this role" }}
-                        />
-                      </div>
-                    )}
-                </div>
-              </Form>
-            );
-          }}
-        </Formik>
-      </DisplayModal>
+      {/* Who works where */}
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h3 className="font-semibold">Who works where</h3>
+            <p className="text-sm text-muted-foreground">Search, or pick a cinema to see its team.</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Input.Search
+              allowClear
+              placeholder="Search name, email or cinema"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="w-full md:w-64!"
+            />
+            <Select
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder="All cinemas"
+              value={cinemaFilter}
+              onChange={setCinemaFilter}
+              options={cinemaOptions}
+              className="w-52"
+            />
+          </div>
+        </div>
+        <ReusableTable
+          data={loading ? [] : cinemaStaffList}
+          columns={columns}
+          title={cinemaFilter ? `${cinemaName(cinemaFilter)} team (${total})` : `All assignments (${total})`}
+          showSearch={false}
+          showPagination
+          paginationMode="backend"
+          paginationProps={{ current: page, total, pageSize: limit }}
+          onTableChange={(p: any) => loadTable(p.current)}
+        />
+      </div>
 
-      {/* Delete Confirmation Modal */}
       <ConfirmationModal
-        open={showDeleteModal}
-        onCancel={() => {
-            setShowDeleteModal(false);
-            setStaffToDelete(null);
-        }}
-        onConfirm={handleConfirmDelete}
-        title="Remove Staff Assignment"
-        content={`Are you sure you want to remove ${staffToDelete?.name} from this cinema?`}
+        open={Boolean(toRemove)}
+        onCancel={() => setToRemove(null)}
+        onConfirm={remove}
+        title="Remove from cinema"
+        content={`Remove ${toRemove?.admin?.surname} ${toRemove?.admin?.other_names} from ${cinemaName(
+          toRemove?.cinema_id
+        )}? They keep their account but can't work until you assign them again.`}
       />
+
+      <DisplayModal
+        open={Boolean(toMove)}
+        title={`Move ${toMove?.admin?.surname ?? ""} ${toMove?.admin?.other_names ?? ""}`}
+        onClose={closeMove}
+      >
+        <div className="space-y-4">
+          <p className="text-sm">
+            Currently at <strong>{cinemaName(toMove?.cinema_id)}</strong>. Choose where they'll work instead:
+          </p>
+          <Select
+            showSearch
+            optionFilterProp="label"
+            placeholder="New cinema"
+            value={moveTo}
+            onChange={setMoveTo}
+            options={cinemaOptions.filter((c: any) => c.value !== toMove?.cinema_id)}
+            className="w-full"
+          />
+          <div className="flex gap-2 pt-4 border-t">
+            <Button className="flex-1 rounded-md" title="Move" disabled={!moveTo} onClick={move} />
+            <Button variant="outline" className="rounded-md" title="Cancel" onClick={closeMove} />
+          </div>
+        </div>
+      </DisplayModal>
     </div>
   );
 }

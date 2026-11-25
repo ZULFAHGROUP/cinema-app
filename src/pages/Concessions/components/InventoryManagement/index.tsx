@@ -31,6 +31,7 @@ import TransferForm from "./components/TransferForm";
 import InventoryHistoryModal from "./components/InventoryHistoryModal";
 import { InventoryFilters } from "../../../../services/network/inventory";
 import { useDebouncedValue } from "../../../../hooks/useDebouncedValue";
+import RecordHistory from "../../../../components/shared/RecordHistory";
 
 const getStockStatus = (quantity: number, reorderLevel: number) => {
   if (quantity <= 0) return { label: "Out of Stock", color: "bg-red-100 text-red-800" };
@@ -47,6 +48,7 @@ const InventoryManagement = () => {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedCinemaId, setSelectedCinemaId] = useState<string>("");
+  const [auditFor, setAuditFor] = useState<any>(null);
   const [filters, setFilters] = useState<InventoryFilters>({});
   const [searchText, setSearchText] = useState("");
   const search = useDebouncedValue(searchText.trim());
@@ -171,10 +173,21 @@ const InventoryManagement = () => {
               },
               {
                 key: "5",
-                label: "History",
+                label: "Stock movements",
                 icon: <History className="w-4 h-4" />,
                 onClick: () => openModal(record, setShowHistoryModal),
               },
+              // Who changed this record and when (audit trail; Admins only).
+              ...(isAdmin
+                ? [
+                    {
+                      key: "6",
+                      label: "Change history",
+                      icon: <History className="w-4 h-4" />,
+                      onClick: () => setAuditFor(record),
+                    },
+                  ]
+                : []),
             ],
           }}
           trigger={["click"]}
@@ -403,6 +416,14 @@ const InventoryManagement = () => {
         onConfirm={handleDelete}
         item={selectedItem?.productName}
       />
+      <DisplayModal
+        open={Boolean(auditFor)}
+        title={`Change history: ${auditFor?.product?.name ?? ""}`}
+        onClose={() => setAuditFor(null)}
+        width={700}
+      >
+        {auditFor && <RecordHistory resourceId={auditFor.inventory_id} />}
+      </DisplayModal>
     </div>
   );
 };

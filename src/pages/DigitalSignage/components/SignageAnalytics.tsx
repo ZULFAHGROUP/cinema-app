@@ -1,113 +1,122 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Tag } from "antd";
-import { Monitor, ImageIcon, Calendar, TrendingUp } from "lucide-react";
+import { CalendarCheck, CalendarOff, Layers, Monitor, PowerOff, Wifi, WifiOff } from "lucide-react";
+import StatCards from "../../../components/shared/StatCards";
+import { CONTENT_TYPES } from "../constants";
 
 interface SignageAnalyticsProps {
   displays: any[];
-  contentTemplates: any[];
-  scheduleItems: any[];
+  displayStats: any;
+  contentStats: any;
+  scheduleStats: any;
 }
 
+/** Health of the cinema's screens and what's in the library, from the lists' `stats`. */
 export default function SignageAnalytics({
   displays,
-  contentTemplates,
-  scheduleItems,
+  displayStats,
+  contentStats,
+  scheduleStats,
 }: SignageAnalyticsProps) {
-  const activeDisplays = displays.filter((d) => d.status === "online").length;
+  const contentBreakdown = [
+    { type: "movie_carousel", count: contentStats?.movie_carousels ?? 0 },
+    { type: "menu_display", count: contentStats?.menu_displays ?? 0 },
+    { type: "promotional", count: contentStats?.promotional ?? 0 },
+    { type: "information", count: contentStats?.information ?? 0 },
+  ] as const;
+  const totalContent = contentStats?.total_contents ?? 0;
+  const offline = displays.filter((d) => d.is_powered_on && d.status === "offline");
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="border rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-serif text-sm text-muted-foreground">
-                Active Displays
-              </p>
-              <p className="font-sans text-2xl font-bold">
-                {activeDisplays}/{displays.length}
-              </p>
-            </div>
-            <Monitor className="w-8 h-8 text-primary" />
-          </div>
-        </div>
+      <StatCards
+        items={[
+          { label: "Displays", value: displayStats?.total_displays ?? 0, icon: Monitor },
+          {
+            label: "Online",
+            value: displayStats?.online_displays ?? 0,
+            hint: "Checked in within 90 seconds",
+            icon: Wifi,
+            tone: "good",
+          },
+          {
+            label: "Offline",
+            value: displayStats?.offline_displays ?? 0,
+            icon: WifiOff,
+            tone: displayStats?.offline_displays ? "danger" : "neutral",
+          },
+          {
+            label: "Powered off",
+            value: displayStats?.powered_off_displays ?? 0,
+            icon: PowerOff,
+            tone: "warning",
+          },
+        ]}
+      />
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="border rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-serif text-sm text-muted-foreground">
-                Content Items
-              </p>
-              <p className="font-sans text-2xl font-bold">
-                {contentTemplates.length}
-              </p>
-            </div>
-            <ImageIcon className="w-8 h-8 text-primary" />
-          </div>
-        </div>
-
-        <div className="border rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-serif text-sm text-muted-foreground">
-                Scheduled Items
-              </p>
-              <p className="font-sans text-2xl font-bold">
-                {scheduleItems.length}
-              </p>
-            </div>
-            <Calendar className="w-8 h-8 text-primary" />
-          </div>
-        </div>
-
-        <div className="border rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-serif text-sm text-muted-foreground">Uptime</p>
-              <p className="font-sans text-2xl font-bold">99.2%</p>
-            </div>
-            <TrendingUp className="w-8 h-8 text-primary" />
-          </div>
-        </div>
-      </div>
-
-      {/* Display Performance */}
-      <div className="border rounded-lg p-6">
-        <h3 className="font-sans font-semibold text-lg mb-2">
-          Display Performance
-        </h3>
-        <p className="text-sm text-muted-foreground font-serif mb-4">
-          Monitor display health and performance
-        </p>
-        <div className="space-y-4">
-          {displays.map((display) => (
-            <div
-              key={display.id}
-              className="flex items-center justify-between p-4 bg-muted rounded-lg"
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-3 h-3 rounded-full ${
-                    display.status === "online" ? "bg-green-500" : "bg-red-500"
-                  }`}
-                />
-                <div>
-                  <p className="font-serif font-medium">{display.name}</p>
-                  <p className="font-serif text-sm text-muted-foreground">
-                    Last update: {display.lastUpdate}
-                  </p>
+          <h3 className="font-sans font-semibold text-lg mb-1 flex items-center gap-2">
+            <Layers className="w-5 h-5" /> Content library
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">{totalContent} item(s) by type</p>
+          <div className="space-y-3">
+            {contentBreakdown.map(({ type, count }) => {
+              const meta = CONTENT_TYPES[type];
+              const Icon = meta.icon;
+              return (
+                <div key={type}>
+                  <div className="flex items-center justify-between text-sm mb-1">
+                    <span className="flex items-center gap-2">
+                      <Icon className="w-4 h-4" /> {meta.label}
+                    </span>
+                    <span className="font-medium">{count}</span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded">
+                    <div
+                      className="h-2 bg-[#c77e3b] rounded"
+                      style={{ width: `${totalContent ? (count / totalContent) * 100 : 0}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="text-right">
-                <Tag
-                  color={display.status === "online" ? "green" : "red"}
-                >
-                  {display.status}
-                </Tag>
-              </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="border rounded-lg p-6 space-y-4">
+          <h3 className="font-sans font-semibold text-lg">Schedules</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-lg bg-green-50 p-4">
+              <CalendarCheck className="w-5 h-5 text-green-700 mb-1" />
+              <p className="text-2xl font-bold">{scheduleStats?.active_schedules ?? 0}</p>
+              <p className="text-sm text-muted-foreground">Active</p>
             </div>
-          ))}
+            <div className="rounded-lg bg-gray-50 p-4">
+              <CalendarOff className="w-5 h-5 text-gray-500 mb-1" />
+              <p className="text-2xl font-bold">{scheduleStats?.inactive_schedules ?? 0}</p>
+              <p className="text-sm text-muted-foreground">Paused</p>
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {scheduleStats?.all_display_schedules ?? 0} of {scheduleStats?.total_schedules ?? 0} play on every display.
+          </p>
+
+          {offline.length > 0 && (
+            <div className="border-t pt-4">
+              <p className="font-medium text-sm mb-2 text-red-700">Switched on but not checking in</p>
+              <ul className="text-sm space-y-1">
+                {offline.map((d) => (
+                  <li key={d.display_id} className="flex justify-between gap-2">
+                    <span>{d.name}</span>
+                    <span className="text-muted-foreground">{d.location}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-muted-foreground mt-2">
+                Check the screen's network connection and that its player has the right key.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
