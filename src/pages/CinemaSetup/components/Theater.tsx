@@ -114,10 +114,17 @@ const Theater = ({ cinemas, loading }: any) => {
             cinemas?.map((theater: any) => {
               const cinemaScreens = getCinemaScreens(theater?.cinema_id);
               const isLoadingScreens = loadingCinemas[theater?.cinema_id];
+              // Loaded screens are fresher (after adds/edits); the cinema list has them too.
+              const screensForCount = cinemaScreens?.length ? cinemaScreens : theater?.screens || [];
+              const screenCount = screensForCount.length;
+              const seatCount = screensForCount.reduce(
+                (sum: number, screen: any) => sum + (Number(screen.seat_count) || 0),
+                0
+              );
 
               return (
                 <Card
-                  key={theater?.id}
+                  key={theater?.cinema_id}
                   className="hover:shadow-md transition-shadow relative"
                 >
                   <CardHeader>
@@ -169,11 +176,8 @@ const Theater = ({ cinemas, loading }: any) => {
                     </div>
                     <CardDescription className="font-serif">
                       <p>{theater?.location}</p>
-                      {cinemaScreens?.length || theater?.screens?.length} screen
-                      {cinemaScreens?.length || theater?.screens?.length !== 1
-                        ? "s"
-                        : ""}{" "}
-                      • {theater?.totalSeats} seats
+                      {screenCount} screen{screenCount === 1 ? "" : "s"} ·{" "}
+                      {seatCount.toLocaleString()} seat{seatCount === 1 ? "" : "s"}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>

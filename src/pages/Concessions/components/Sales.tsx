@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useState } from "react";
 import { DatePicker, Input, Select, Tag } from "antd";
-import { Banknote, Clock, Receipt, RotateCcw } from "lucide-react";
+import { Banknote, Clock, History, Receipt, RotateCcw } from "lucide-react";
+import DisplayModal from "../../../components/shared/Modal/DisplayModal";
+import RecordHistory from "../../../components/shared/RecordHistory";
 import { toast } from "react-toastify";
 import ReusableTable from "../../../components/shared/Table";
 import Loader from "../../../components/shared/Loader";
@@ -39,6 +41,7 @@ export default function Sales() {
   const [filters, setFilters] = useState<OrderFilters>({});
   const [searchText, setSearchText] = useState("");
   const [dateRange, setDateRange] = useState<any>(null);
+  const [historyFor, setHistoryFor] = useState<any>(null);
   const search = useDebouncedValue(searchText.trim());
 
   useEffect(() => {
@@ -163,6 +166,25 @@ export default function Sales() {
         </Tag>
       ),
     },
+    // Payment, refund and seat changes over time (audit trail; Admins only).
+    ...(isAdmin
+      ? [
+          {
+            title: "",
+            key: "history",
+            render: (_: unknown, record: any) => (
+              <Button
+                size="xs"
+                variant="outline"
+                className="rounded-md"
+                icon={<History className="w-4 h-4" />}
+                title="History"
+                onClick={() => setHistoryFor(record)}
+              />
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -172,7 +194,7 @@ export default function Sales() {
       <div className="flex flex-wrap gap-3 items-center">
         <Input.Search
           allowClear
-          placeholder="Search order id, customer or cashier"
+          placeholder="Search customer or cashier"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           className="w-full md:w-72!"
@@ -260,6 +282,14 @@ export default function Sales() {
           onTableChange={(p: any) => load(p.current, p.pageSize, activeFilters)}
         />
       )}
+      <DisplayModal
+        open={Boolean(historyFor)}
+        title="Order history"
+        onClose={() => setHistoryFor(null)}
+        width={700}
+      >
+        {historyFor && <RecordHistory resourceId={historyFor.order_id} />}
+      </DisplayModal>
     </div>
   );
 }
