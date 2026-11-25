@@ -53,7 +53,7 @@ const AddProductForm = ({
     product_category_id: productData?.product_category_id || "",
     cinema_id: productData?.cinema_id || (isAdmin ? "" : userCinemaId || ""),
     price: productData?.price || "",
-    product_image: "",
+    product_image: productData?.product_image || "",
     description: productData?.description || "",
   };
 
@@ -70,22 +70,21 @@ const AddProductForm = ({
   ) {
     try {
       let response;
+      const payload = {
+        ...values,
+        price: Number(values.price),
+      };
 
-      // Convert file
-      const formData = new FormData();
-      Object.entries(values).forEach(([key, value]) => {
-        formData.append(key, value as any);
-      });
-
-      if (editMode && productData?.id) {
+      const productId = productData?.product_id || productData?.id;
+      if (editMode && productId) {
         response = await dispatch(
           updateProduct({
-            id: productData.id,
-            data: formData,
+            id: productId,
+            data: payload,
           })
         ).unwrap();
       } else {
-        response = await dispatch(createProduct(formData)).unwrap();
+        response = await dispatch(createProduct(payload)).unwrap();
       }
 
       if (response.code === 200 || response.code === 201) {

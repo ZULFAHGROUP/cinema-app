@@ -8,7 +8,7 @@ import {
 } from "../../../components/shared/Cards";
 import Button from "../../../components/shared/Button";
 import { Tag, Dropdown, Collapse } from "antd";
-import { Edit, Clock, Trash2, Calendar, MoreVertical } from "lucide-react";
+import { Edit, Clock, Trash2, Calendar, MoreVertical, PauseCircle } from "lucide-react";
 import DisplayModal from "../../../components/shared/Modal/DisplayModal";
 import { useState } from "react";
 import AddMovieForm from "./AddMovieForm";
@@ -20,6 +20,8 @@ import { deleteShowtime, getAllShowtimes } from "../../../store/slices/showtime"
 import { toast } from "react-toastify";
 import ConfirmationModal from "../../../components/shared/Modal/ConfirmationModal";
 import { getHumanDate, getHumanTime, getImageUrl } from "../../../utils";
+import { hasPermission, isAdminRole } from "../../../utils/permissions";
+import Movie from "../../../services/network/movie";
 
 const Movies = ({ movies, showtimes, loading, onAddShowtime, cinemas, totalShowtimes, onLoadMoreShowtimes }: any) => {
   const [isEditMovieModalOpen, setIsEditMovieModalOpen] = useState(false);
@@ -53,9 +55,21 @@ const Movies = ({ movies, showtimes, loading, onAddShowtime, cinemas, totalShowt
 
   // Handle Delete Showtime
   const { user } = useAppSelector((state) => state.accounts.data);
-  const isAdmin =
-    user?.role?.toLowerCase() === "admin" ||
-    user?.role?.toLowerCase() === "superadmin";
+  const isAdmin = isAdminRole(user);
+  const canAddEditMovie = hasPermission(user, "add_edit_movies");
+  const canScheduleShowtimes = hasPermission(user, "schedule_showtimes");
+  const canEditShowtimes = hasPermission(user, "edit_showtimes");
+  const canCancelShowtimes = hasPermission(user, "cancel_showtimes");
+
+  const handleDeactivateMovie = async (movie: any) => {
+    try {
+      const res = await Movie.deactivateMovie(movie.movie_id);
+      toast.success(res.data?.message || "Movie deactivated");
+      await dispatch(getAllMovies({ page, limit, filters: movieFilters }));
+    } catch (error: any) {
+      toast.error(error?.message || "Error deactivating movie");
+    }
+  };
 
   const handleDeleteShowtime = async () => {
     if (!selectedShowtime) return;
@@ -129,49 +143,69 @@ const Movies = ({ movies, showtimes, loading, onAddShowtime, cinemas, totalShowt
                     <CardTitle className="font-sans text-lg">
                     {movie.title}
                     </CardTitle>
-                    <Dropdown
+                    {(canScheduleShowtimes || canAddEditMovie) && (
+                      <Dropdown
                         menu={{
                             items: [
-                                {
-                                    key: '1',
-                                    label: 'Add Showtime',
-                                    icon: <Calendar className="w-4 h-4"/>,
-                                    onClick: () => onAddShowtime(movie)
-                                },
-                                {
-                                    key: '2',
-                                    label: 'Edit Movie',
-                                    icon: <Edit className="w-4 h-4"/>,
-                                    onClick: () => {
-                                        setSelectedMovie(movie);
-                                        setIsEditMovieModalOpen(true);
-                                    }
-                                },
-                                {
-                                    key: '3',
-                                    label: 'Delete Movie',
-                                    danger: true,
-                                    icon: <Trash2 className="w-4 h-4"/>,
-                                    onClick: () => {
-                                        setSelectedMovie(movie);
-                                        setShowDeleteMovieModal(true);
-                                    }
-                                }
+                                ...(canScheduleShowtimes
+                                  ? [
+                                      {
+                                        key: '1',
+                                        label: 'Add Showtime',
+                                        icon: <Calendar className="w-4 h-4"/>,
+                                        onClick: () => onAddShowtime(movie)
+                                      },
+                                    ]
+                                  : []),
+                                ...(canAddEditMovie
+                                  ? [
+                                      {
+                                        key: '2',
+                                        label: 'Edit Movie',
+                                        icon: <Edit className="w-4 h-4"/>,
+                                        onClick: () => {
+                                            setSelectedMovie(movie);
+                                            setIsEditMovieModalOpen(true);
+                                        }
+                                      },
+                                      ...(movie.is_active !== false
+                                        ? [
+                                            {
+                                              key: 'deactivate',
+                                              label: 'Deactivate Movie',
+                                              icon: <PauseCircle className="w-4 h-4"/>,
+                                              onClick: () => handleDeactivateMovie(movie)
+                                            },
+                                          ]
+                                        : []),
+                                      {
+                                        key: '3',
+                                        label: 'Delete Movie',
+                                        danger: true,
+                                        icon: <Trash2 className="w-4 h-4"/>,
+                                        onClick: () => {
+                                            setSelectedMovie(movie);
+                                            setShowDeleteMovieModal(true);
+                                        }
+                                      },
+                                    ]
+                                  : []),
                             ]
                         }}
                         trigger={['click']}
-                    >
+                      >
                          <Button
                           size="sm"
                           className="p-0 bg-transparent w-fit shadow-none text-black!"
                           icon={<MoreVertical className="" size={20} />}
                         />
-                    </Dropdown>
+                      </Dropdown>
+                    )}
                 </div>
                 
                 <CardDescription className="font-serif">
                   <p>{movie.language}</p>
-                  <p>{movie.movieClassification}</p>
+                  <p>{movie.movie_classification?.name || movie.movieClassification?.name || (typeof movie.movieClassification === "string" ? movie.movieClassification : "")}</p>
                   <p>
                     <strong>Genres:</strong> <span>{movie.genres}</span>
                   </p>
@@ -223,34 +257,44 @@ const Movies = ({ movies, showtimes, loading, onAddShowtime, cinemas, totalShowt
                                                         <Tag className="mr-0" color={st.showtimeStatus?.name === 'Scheduled' ? 'blue' : 'default'}>
                                                             {st.showtimeStatus?.name}
                                                         </Tag>
-                                                        <Dropdown
-                                                            menu={{
-                                                                items: [
-                                                                    {
-                                                                        key: '1',
-                                                                        label: 'Edit',
-                                                                        icon: <Edit className="w-3 h-3"/>,
-                                                                        onClick: () => {
-                                                                            setSelectedShowtime(st);
-                                                                            setIsEditShowtimeModalOpen(true);
-                                                                        }
-                                                                    },
-                                                                    {
-                                                                        key: '2',
-                                                                        label: 'Delete',
-                                                                        danger: true,
-                                                                        icon: <Trash2 className="w-3 h-3"/>,
-                                                                        onClick: () => {
-                                                                            setSelectedShowtime(st);
-                                                                            setShowDeleteShowtimeModal(true);
-                                                                        }
-                                                                    }
-                                                                ]
-                                                            }}
-                                                            trigger={['click']}
-                                                        >
-                                                            <MoreVertical size={14} className="cursor-pointer text-slate-400 hover:text-slate-700"/>
-                                                        </Dropdown>
+                                                        {(canEditShowtimes || canCancelShowtimes) && (
+                                                          <Dropdown
+                                                              menu={{
+                                                                  items: [
+                                                                      ...(canEditShowtimes
+                                                                        ? [
+                                                                            {
+                                                                              key: '1',
+                                                                              label: 'Edit',
+                                                                              icon: <Edit className="w-3 h-3"/>,
+                                                                              onClick: () => {
+                                                                                  setSelectedShowtime(st);
+                                                                                  setIsEditShowtimeModalOpen(true);
+                                                                              }
+                                                                            },
+                                                                          ]
+                                                                        : []),
+                                                                      ...(canCancelShowtimes
+                                                                        ? [
+                                                                            {
+                                                                              key: '2',
+                                                                              label: 'Delete',
+                                                                              danger: true,
+                                                                              icon: <Trash2 className="w-3 h-3"/>,
+                                                                              onClick: () => {
+                                                                                  setSelectedShowtime(st);
+                                                                                  setShowDeleteShowtimeModal(true);
+                                                                              }
+                                                                            },
+                                                                          ]
+                                                                        : []),
+                                                                  ]
+                                                              }}
+                                                              trigger={['click']}
+                                                          >
+                                                              <MoreVertical size={14} className="cursor-pointer text-slate-400 hover:text-slate-700"/>
+                                                          </Dropdown>
+                                                        )}
                                                     </div>
                                             </div>
                                         ))}

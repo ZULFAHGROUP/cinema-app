@@ -32,6 +32,7 @@ import InventoryHistoryModal from "./components/InventoryHistoryModal";
 import { InventoryFilters } from "../../../../services/network/inventory";
 import { useDebouncedValue } from "../../../../hooks/useDebouncedValue";
 import RecordHistory from "../../../../components/shared/RecordHistory";
+import { hasPermission, isAdminRole } from "../../../../utils/permissions";
 
 const getStockStatus = (quantity: number, reorderLevel: number) => {
   if (quantity <= 0) return { label: "Out of Stock", color: "bg-red-100 text-red-800" };
@@ -59,7 +60,11 @@ const InventoryManagement = () => {
   const { allCinemas } = useAppSelector((state) => state.cinema);
   const { user } = useAppSelector((state) => state.accounts.data);
 
-  const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "superadmin";
+  const isAdmin = isAdminRole(user);
+  const canStockIn = hasPermission(user, "stockin_inventory");
+  const canManageInv = hasPermission(user, "manage_inventories") || hasPermission(user, "manage_inventory");
+  const canTransfer = hasPermission(user, "transfer_inventory");
+  const canViewAudit = hasPermission(user, "view_audit_logs");
 
   // Admins can narrow to one cinema (blank = all); everyone else sees their own cinema.
   const activeCinemaId = isAdmin ? selectedCinemaId || undefined : undefined;
@@ -147,30 +152,42 @@ const InventoryManagement = () => {
         <Dropdown
           menu={{
             items: [
-              {
-                key: "1",
-                label: "Stock In",
-                icon: <TrendingUp className="w-4 h-4" />,
-                onClick: () => openModal(record, setShowStockInModal),
-              },
-              {
-                key: "2",
-                label: "Record Spoilage",
-                icon: <TrendingDown className="w-4 h-4" />,
-                onClick: () => openModal(record, setShowSpoilageModal),
-              },
-              {
-                key: "3",
-                label: "Correct Stock",
-                icon: <Edit2 className="w-4 h-4" />,
-                onClick: () => openModal(record, setShowCorrectionModal),
-              },
-              {
-                key: "4",
-                label: "Transfer Stock",
-                icon: <ArrowLeftRight className="w-4 h-4" />,
-                onClick: () => openModal(record, setShowTransferModal),
-              },
+              ...(canStockIn
+                ? [
+                    {
+                      key: "1",
+                      label: "Stock In",
+                      icon: <TrendingUp className="w-4 h-4" />,
+                      onClick: () => openModal(record, setShowStockInModal),
+                    },
+                  ]
+                : []),
+              ...(canManageInv
+                ? [
+                    {
+                      key: "2",
+                      label: "Record Spoilage",
+                      icon: <TrendingDown className="w-4 h-4" />,
+                      onClick: () => openModal(record, setShowSpoilageModal),
+                    },
+                    {
+                      key: "3",
+                      label: "Correct Stock",
+                      icon: <Edit2 className="w-4 h-4" />,
+                      onClick: () => openModal(record, setShowCorrectionModal),
+                    },
+                  ]
+                : []),
+              ...(canTransfer
+                ? [
+                    {
+                      key: "4",
+                      label: "Transfer Stock",
+                      icon: <ArrowLeftRight className="w-4 h-4" />,
+                      onClick: () => openModal(record, setShowTransferModal),
+                    },
+                  ]
+                : []),
               {
                 key: "5",
                 label: "Stock movements",
@@ -178,7 +195,7 @@ const InventoryManagement = () => {
                 onClick: () => openModal(record, setShowHistoryModal),
               },
               // Who changed this record and when (audit trail; Admins only).
-              ...(isAdmin
+              ...(canViewAudit
                 ? [
                     {
                       key: "6",
@@ -336,7 +353,7 @@ const InventoryManagement = () => {
             onCancel={() => setShowStockInModal(false)}
             inventoryId={selectedItem?.inventory_id}
             productName={selectedItem?.productName}
-            cinema_id={selectedCinemaId}
+            cinema_id={selectedCinemaId || selectedItem?.cinema_id}
           />
         )}
       </DisplayModal>
@@ -355,7 +372,7 @@ const InventoryManagement = () => {
             inventoryId={selectedItem?.inventory_id}
             productName={selectedItem?.productName}
             currentStock={selectedItem?.quantity}
-            cinema_id={selectedCinemaId}
+            cinema_id={selectedCinemaId || selectedItem?.cinema_id}
           />
         )}
       </DisplayModal>
@@ -374,7 +391,7 @@ const InventoryManagement = () => {
             inventoryId={selectedItem?.inventory_id}
             productName={selectedItem?.productName}
             currentStock={selectedItem?.quantity}         
-             cinema_id={selectedCinemaId}
+             cinema_id={selectedCinemaId || selectedItem?.cinema_id}
           />
         )}
       </DisplayModal>

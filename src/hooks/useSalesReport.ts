@@ -27,12 +27,17 @@ export const periodStart = (days?: number) => {
 };
 
 /** Completed-order sales for a range (ISO dates). Refetches when the range changes. */
-export const useSalesReport = (from?: string, to?: string) => {
+export const useSalesReport = (from?: string, to?: string, enabled = true) => {
   const [report, setReport] = useState<SalesReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!enabled) {
+      setReport(null);
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -43,7 +48,7 @@ export const useSalesReport = (from?: string, to?: string) => {
     return () => {
       cancelled = true;
     };
-  }, [from, to]);
+  }, [from, to, enabled]);
 
   return { report, loading, error };
 };

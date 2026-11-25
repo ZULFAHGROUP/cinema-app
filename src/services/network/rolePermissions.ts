@@ -10,6 +10,14 @@ const RolePermissions = {
   createRolePermission: (data: any) => {
     return Axios.post(urls.role_permission, data);
   },
+
+  unassignRolePermission: (data: {
+    role_id: string;
+    permission_id?: string;
+    permission_name?: string;
+  }) => {
+    return Axios.delete(urls.role_permission_unassign, { data });
+  },
 };
 
 export default RolePermissions;

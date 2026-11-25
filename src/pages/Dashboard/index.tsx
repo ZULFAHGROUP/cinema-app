@@ -25,53 +25,62 @@ import { formatAuditActivity, formatCurrencyToNGN  } from "../../utils";
 import { getOrderStats } from "../../store/slices/order";
 import { allRoutes } from "../../routes/allRoutes";
 import { useSalesReport } from "../../hooks/useSalesReport";
+import { hasAnyPermission, hasPermission } from "../../utils/permissions";
+import sideBarDetails from "../../constants/sidebar";
 
 function Dashboard() {
   const dispatch = useAppDispatch();
   const { limit, page } = useAppSelector((state) => state.movie);
+  const { user } = useAppSelector((state) => state.accounts.data);
+  const canViewSales = hasAnyPermission(user, ["view_sales_reports", "view_ticket_sales_reports"]);
+  const canViewAllAudit = hasPermission(user, "view_audit_logs");
+
   useEffect(() => {
     dispatch(getAllMovies({ page, limit })).unwrap();
     dispatch(
-    getAllAuditTrails({
-      page: 1,
-      limit: 5,
-    })
-  ).unwrap();
-  dispatch(getOrderStats()).unwrap();
-  }, [dispatch, page, limit]);
+      getAllAuditTrails({
+        page: 1,
+        limit: 5,
+        ownOnly: !canViewAllAudit,
+      })
+    ).unwrap();
+    if (canViewSales) {
+      dispatch(getOrderStats()).unwrap();
+    }
+  }, [dispatch, page, limit, canViewAllAudit, canViewSales]);
 
   const { total: totalMovies } = useAppSelector((state) => state.movie);
-const { auditTrails } = useAppSelector(
-  (state) => state.extras
-);
-const { orderStats } = useAppSelector(
-  (state) => state.order
-);
+  const { auditTrails } = useAppSelector((state) => state.extras);
+  const { orderStats } = useAppSelector((state) => state.order);
 
-  const { report } = useSalesReport();
+  const { report } = useSalesReport(undefined, undefined, canViewSales);
 
   const dashboardStats = [
-    {
-      title: "Total Revenue",
-      value: formatCurrencyToNGN(orderStats?.totalRevenue),
-      note: "Completed orders, incl. VAT",
-      icon: Banknote,
-      color: "text-green-600",
-    },
-    {
-      title: "Tickets Sold",
-      value: (report?.summary.tickets_sold ?? 0).toLocaleString(),
-      note: `Avg ${formatCurrencyToNGN(report?.summary.average_ticket_price)} per ticket`,
-      icon: Ticket,
-      color: "text-purple-600",
-    },
-    {
-      title: "Completed Orders",
-      value: Number(orderStats?.completedOrders || 0).toLocaleString(),
-      note: `of ${Number(orderStats?.totalOrders || 0).toLocaleString()} orders placed`,
-      icon: ShoppingCart,
-      color: "text-yellow-600",
-    },
+    ...(canViewSales
+      ? [
+          {
+            title: "Total Revenue",
+            value: formatCurrencyToNGN(orderStats?.totalRevenue),
+            note: "Completed orders, incl. VAT",
+            icon: Banknote,
+            color: "text-green-600",
+          },
+          {
+            title: "Tickets Sold",
+            value: (report?.summary.tickets_sold ?? 0).toLocaleString(),
+            note: `Avg ${formatCurrencyToNGN(report?.summary.average_ticket_price)} per ticket`,
+            icon: Ticket,
+            color: "text-purple-600",
+          },
+          {
+            title: "Completed Orders",
+            value: Number(orderStats?.completedOrders || 0).toLocaleString(),
+            note: `of ${Number(orderStats?.totalOrders || 0).toLocaleString()} orders placed`,
+            icon: ShoppingCart,
+            color: "text-yellow-600",
+          },
+        ]
+      : []),
     {
       title: "Movies",
       value: Number(totalMovies || 0).toLocaleString(),
@@ -81,7 +90,7 @@ const { orderStats } = useAppSelector(
     },
   ];
 
-  const quickActions = [
+  const allQuickActions = [
     {
       title: "Cinema Setup",
       description: "Manage theaters, screens & seating",
@@ -93,6 +102,12 @@ const { orderStats } = useAppSelector(
       description: "Add movies, showtimes & ratings",
       icon: Film,
       href: allRoutes.movies,
+    },
+    {
+      title: "Ticket Sales",
+      description: "Box office & seat bookings",
+      icon: Ticket,
+      href: allRoutes.tickets,
     },
     {
       title: "Staff Management",
@@ -125,6 +140,11 @@ const { orderStats } = useAppSelector(
       href: allRoutes.reports,
     },
   ];
+
+  const quickActions = allQuickActions.filter((action) => {
+    const navItem = sideBarDetails.find((s) => s.key === action.href);
+    return !navItem?.permissions?.length || hasAnyPermission(user, navItem.permissions);
+  });
 
   const recentActivity =
   auditTrails?.map(formatAuditActivity) || [];

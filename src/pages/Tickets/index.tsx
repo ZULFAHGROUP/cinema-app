@@ -19,6 +19,7 @@ import { toast } from "react-toastify";
 import { getHumanTime } from "../../utils";
 import { clearShowtimeSeats, getShowtimeSeats } from "../../store/slices/seat";
 import { newIdempotencyKey } from "../../services/httpClient";
+import { isAdminRole } from "../../utils/permissions";
 
 function TicketSalesPage() {
   const [currentStep, setCurrentStep] = useState("movie-selection");
@@ -40,6 +41,9 @@ function TicketSalesPage() {
   const { availableProducts, availableProductTotal } = useAppSelector((state) => state.product);
   const { initiateLoading, initiateData } = useAppSelector((state) => state.purchase);
   const { showtimeSeatMap, showtimeSeatsLoading } = useAppSelector((state) => state.seat);
+  const { user } = useAppSelector((state) => state.accounts.data);
+  const isAdmin = isAdminRole(user);
+  const scopedCinemaId = !isAdmin ? user?.cinema_id : user?.scoped_cinema_id || "";
 
   const loadSeats = (showtimeId?: string) => {
     setSelectedSeatIds([]);
@@ -127,8 +131,12 @@ function TicketSalesPage() {
     purchaseKey.current = null;
   };
 
-  // Filter showtimes by selected movie
-  const filteredShowtimes = showtimes.filter((s: any) => s.movie_id === selectedMovie?.movie_id);
+  // Filter showtimes by selected movie and staff's assigned cinema (if non-Admin or scoped)
+  const filteredShowtimes = showtimes.filter(
+    (s: any) =>
+      s.movie_id === selectedMovie?.movie_id &&
+      (!scopedCinemaId || s.screen?.cinema_id === scopedCinemaId)
+  );
 
   return (
     <div className="p-6 max-w-7xl mx-auto">

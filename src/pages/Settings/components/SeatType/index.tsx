@@ -34,7 +34,7 @@ const ScreenType = () => {
     if (!selectedItem) return;
     try {
       const response = await dispatch(
-        deleteScreenType(selectedItem?.seat_type_id)
+        deleteScreenType(selectedItem?.screen_type_id || selectedItem?.seat_type_id)
       ).unwrap();
       if (response.code === 200) {
         toast.success(response.message);

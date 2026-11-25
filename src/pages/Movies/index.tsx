@@ -16,6 +16,7 @@ import { getAllShowtimes } from "../../store/slices/showtime";
 import { getAllCinemas } from "../../store/slices/cinema";
 import { getAllShowtimeStatuses } from "../../store/slices/showtimeStatus";
 import { getAllMovies } from "../../store/slices/movie";
+import { hasPermission, isAdminRole } from "../../utils/permissions";
 // import ReusableSelect from "../../components/shared/Select";
 
 function MoviesPage() {
@@ -130,6 +131,16 @@ function MoviesPage() {
     },
   ];
   const { allCinemas } = useAppSelector((state) => state.cinema);
+  const { user } = useAppSelector((state) => state.accounts.data);
+  const isAdmin = isAdminRole(user);
+  const canAddEditMovie = hasPermission(user, "add_edit_movies");
+  const scopedCinemaId = !isAdmin ? user?.cinema_id : user?.scoped_cinema_id || "";
+  const visibleCinemas = scopedCinemaId
+    ? (allCinemas || []).filter((c: any) => c.cinema_id === scopedCinemaId)
+    : allCinemas;
+  const visibleShowtimes = scopedCinemaId
+    ? (showtimes || []).filter((s: any) => s.screen?.cinema_id === scopedCinemaId)
+    : showtimes;
 
   const handleAddShowtime = (movie: any) => {
     setPreSelectedMovie(movie);
@@ -145,27 +156,14 @@ function MoviesPage() {
            <p className="text-sm font-serif text-muted-foreground mt-1">Manage movies and showtimes</p>
         </div>
         <div className="flex gap-2 ml-4 items-center">
-             {/* {isAdmin && (
-               <div className="w-[300px]">
-                  <ReusableSelect
-                    label=""
-                    name="cinema_id"
-                    value={selectedCinemaId}
-                    onChange={(val: any) => setSelectedCinemaId(val)}
-                    options={allCinemas?.map((cinema: any) => ({
-                      label: cinema.name,
-                      value: cinema.cinema_id,
-                    }))}
-                    defaultOption="Select a cinema to see showtimes"
-                  />
-               </div>
-             )} */}
-            <Button
-              onClick={() => setIsAddMovieModalOpen(true)}
-              className="gap-2 rounded-md"
-              icon={<Film className="w-4 h-4" />}
-              title="Add Movie"
-            />
+            {canAddEditMovie && (
+              <Button
+                onClick={() => setIsAddMovieModalOpen(true)}
+                className="gap-2 rounded-md"
+                icon={<Film className="w-4 h-4" />}
+                title="Add Movie"
+              />
+            )}
         </div>
       </div>
 
@@ -211,9 +209,9 @@ function MoviesPage() {
       <Movies 
         loading={moviesLoading || showtimeLoading} 
         movies={movies} 
-        showtimes={showtimes}
+        showtimes={visibleShowtimes}
         onAddShowtime={handleAddShowtime}
-        cinemas={allCinemas}
+        cinemas={visibleCinemas}
         totalShowtimes={totalShowtimes}
         onLoadMoreShowtimes={() => setShowtimeLimitCount(prev => prev + 10)}
       />
@@ -255,7 +253,7 @@ function MoviesPage() {
       >
         <AddShowtimeForm
            movies={movies}
-           cinemas={allCinemas}
+           cinemas={visibleCinemas}
            onCancel={() => {
               setIsAddShowtimeModalOpen(false);
               setPreSelectedMovie(null);

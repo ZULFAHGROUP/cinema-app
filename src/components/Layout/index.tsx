@@ -12,6 +12,7 @@ import {
   Avatar,
   Drawer,
   ConfigProvider,
+  Upload,
 } from "antd";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
@@ -20,8 +21,18 @@ import ScrollToTop from "../../utils/ScrollToTop";
 import { IoIosArrowBack } from "react-icons/io";
 import sideBarDetails from "../../constants/sidebar";
 import PrivateRoute from "../../routes/privateRoute";
-import { signOut } from "../../store/slices/accounts";
-import { useAppDispatch } from "../../store/hook";
+import {
+  refreshProfile,
+  signOut,
+} from "../../store/slices/accounts";
+import { useAppDispatch, useAppSelector } from "../../store/hook";
+import { hasAnyPermission } from "../../utils/permissions";
+import DisplayModal from "../shared/Modal/DisplayModal";
+import Input from "../shared/Input";
+import SharedButton from "../shared/Button";
+import Accounts from "../../services/network/accounts";
+import { toast } from "react-toastify";
+import { formatUserLabel } from "../../utils";
 
 const { Header, Sider, Content } = Layout;
 
@@ -40,18 +51,80 @@ const AppLayout: React.FC = () => {
   const location = useLocation();
   const [canGoBack, setCanGoBack] = useState(false);
   const [openKeys, setOpenKeys] = useState<string[]>([]);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileUploading, setProfileUploading] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    surname: "",
+    other_names: "",
+    phone: "",
+    profile_temp_upload_id: "",
+    preview_url: "",
+  });
   const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.accounts.data);
 
   useEffect(() => {
     setCanGoBack(window.history.length > 1);
+    setActiveMenu(location.pathname);
   }, [location]);
+
+  const openProfileModal = () => {
+    setProfileForm({
+      surname: user?.surname || "",
+      other_names: user?.other_names || "",
+      phone: user?.phone || "",
+      profile_temp_upload_id: "",
+      preview_url: user?.profile_image_url || "",
+    });
+    setProfileOpen(true);
+  };
+
+  const handleProfileImageUpload = async (file: File) => {
+    setProfileUploading(true);
+    try {
+      const res = await Accounts.uploadProfileImage(file);
+      setProfileForm((prev) => ({
+        ...prev,
+        profile_temp_upload_id: res.data?.data?.temp_upload_id || "",
+        preview_url: res.data?.data?.url || prev.preview_url,
+      }));
+      toast.success("Profile image uploaded");
+    } catch (err: any) {
+      toast.error(err?.message || "Image upload failed");
+    } finally {
+      setProfileUploading(false);
+    }
+  };
+
+  const handleProfileSave = async () => {
+    setProfileSaving(true);
+    try {
+      const payload: any = {
+        surname: profileForm.surname,
+        other_names: profileForm.other_names,
+        phone: profileForm.phone,
+      };
+      if (profileForm.profile_temp_upload_id) {
+        payload.profile_temp_upload_id = profileForm.profile_temp_upload_id;
+      }
+      const res = await Accounts.updateProfile(payload);
+      toast.success(res.data?.message || "Profile updated");
+      await dispatch(refreshProfile());
+      setProfileOpen(false);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update profile");
+    } finally {
+      setProfileSaving(false);
+    }
+  };
 
   const profileMenu = (
     <Menu
       items={[
         {
-          key: "/profile",
-          label: "Profile",
+          key: "profile",
+          label: "My Profile",
           icon: <UserOutlined />,
         },
         {
@@ -63,9 +136,9 @@ const AppLayout: React.FC = () => {
       onClick={(e) => {
         if (e.key === "logout") {
           dispatch(signOut());
-          navigate("/");
-        } else {
-          navigate(e.key);
+          navigate("/auth/login");
+        } else if (e.key === "profile") {
+          openProfileModal();
         }
       }}
     />
@@ -94,8 +167,12 @@ const AppLayout: React.FC = () => {
     }
   };
 
+  const visibleSideBarDetails = sideBarDetails.filter(
+    (item) => !item.permissions?.length || hasAnyPermission(user, item.permissions)
+  );
+
   const renderMenuItems = () =>
-    sideBarDetails.map((item) => {
+    visibleSideBarDetails.map((item) => {
       if (item?.subMenu) {
         return {
           key: item.key,
@@ -245,9 +322,12 @@ const AppLayout: React.FC = () => {
                 }
                 style={{ fontSize: "16px" }}
               />
-              <Dropdown overlay={profileMenu} placement="bottomRight">
-                <Avatar style={{ backgroundColor: COLORS.secondary }}>
-                  USER
+              <Dropdown overlay={profileMenu} placement="bottomRight" trigger={["click"]}>
+                <Avatar
+                  src={user?.profile_image_url || undefined}
+                  style={{ backgroundColor: COLORS.secondary, cursor: "pointer" }}
+                >
+                  {(user?.surname?.[0] || "U").toUpperCase()}
                 </Avatar>
               </Dropdown>
             </Header>
@@ -270,6 +350,90 @@ const AppLayout: React.FC = () => {
             </Content>
           </Layout>
         </Layout>
+
+        <DisplayModal
+          open={profileOpen}
+          onClose={() => setProfileOpen(false)}
+          title="My Profile"
+        >
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <Avatar
+                size={64}
+                src={profileForm.preview_url || undefined}
+                style={{ backgroundColor: COLORS.secondary }}
+              >
+                {(profileForm.surname?.[0] || "U").toUpperCase()}
+              </Avatar>
+              <div>
+                <Upload
+                  accept="image/*"
+                  showUploadList={false}
+                  beforeUpload={(file) => {
+                    handleProfileImageUpload(file);
+                    return false;
+                  }}
+                >
+                  <SharedButton
+                    type="button"
+                    variant="outline"
+                    size="xs"
+                    className="rounded-md"
+                    loading={profileUploading}
+                    title={profileUploading ? "Uploading..." : "Change Photo"}
+                  />
+                </Upload>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {user?.email} · {formatUserLabel(user?.role)}
+                  {user?.cinema?.name ? ` · ${user.cinema.name}` : ""}
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="Surname"
+                value={profileForm.surname}
+                onChange={(e) =>
+                  setProfileForm((p) => ({ ...p, surname: e.target.value }))
+                }
+                required
+              />
+              <Input
+                label="Other Names"
+                value={profileForm.other_names}
+                onChange={(e) =>
+                  setProfileForm((p) => ({ ...p, other_names: e.target.value }))
+                }
+                required
+              />
+            </div>
+            <Input
+              label="Phone"
+              value={profileForm.phone}
+              onChange={(e) =>
+                setProfileForm((p) => ({ ...p, phone: e.target.value }))
+              }
+              required
+            />
+            <div className="flex gap-2 pt-4 border-t">
+              <SharedButton
+                type="button"
+                className="flex-1 rounded-md"
+                loading={profileSaving}
+                disabled={profileSaving || profileUploading}
+                title="Save Profile"
+                onClick={handleProfileSave}
+              />
+              <SharedButton
+                type="button"
+                variant="outline"
+                className="rounded-md"
+                title="Cancel"
+                onClick={() => setProfileOpen(false)}
+              />
+            </div>
+          </div>
+        </DisplayModal>
       </PrivateRoute>
     </ConfigProvider>
   );

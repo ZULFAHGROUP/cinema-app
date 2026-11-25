@@ -29,6 +29,7 @@ export default function SalesReports({ report, days }: SalesReportsProps) {
     { label: "Ticket revenue (before VAT)", value: formatCurrency(summary.ticket_revenue) },
     { label: "Concession items sold", value: summary.concessions_sold.toLocaleString() },
     { label: "Concession revenue (before VAT)", value: formatCurrency(summary.concession_revenue) },
+    { label: "Average ticket price (before VAT)", value: formatCurrency(summary.average_ticket_price) },
     { label: "VAT collected", value: formatCurrency(summary.vat) },
     { label: "Total collected", value: formatCurrency(summary.revenue) },
   ];

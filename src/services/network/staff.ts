@@ -13,6 +13,10 @@ export interface AssignmentFilters {
 }
 
 const Staff = {
+  getAdmins: (page: number, limit: number, filters: StaffFilters = {}) => {
+    return Axios.get(`${urls.staff}/admins`, { params: { page, limit, ...filters } });
+  },
+
   getPosCashiers: (page: number, limit: number, filters: StaffFilters = {}) => {
     return Axios.get(`${urls.staff}/pos-cashiers`, { params: { page, limit, ...filters } });
   },

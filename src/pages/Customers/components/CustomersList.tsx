@@ -13,6 +13,7 @@ import { getAllCustomers } from "../../../store/slices/customer";
 import Customer from "../../../services/network/customer";
 import Order from "../../../services/network/order";
 import { formatCurrency, humanDateAndTime } from "../../../utils";
+import { hasPermission } from "../../../utils/permissions";
 
 const STATUS_COLORS: Record<string, string> = {
   COMPLETED: "green",
@@ -92,6 +93,8 @@ function CustomerOrders({ customer }: { customer: any }) {
 export default function CustomersList() {
   const dispatch = useAppDispatch();
   const { customers, loading, page, limit, total, stats } = useAppSelector((state) => state.customer);
+  const { user } = useAppSelector((state) => state.accounts.data);
+  const canDeleteCustomer = hasPermission(user, "manage_users");
   const [searchText, setSearchText] = useState("");
   const [search, setSearch] = useState("");
   const [isVerified, setIsVerified] = useState<boolean | undefined>(undefined);
@@ -150,14 +153,18 @@ export default function CustomersList() {
                 icon: <Receipt className="w-4 h-4" />,
                 onClick: () => setOrdersFor(record),
               },
-              { type: "divider" },
-              {
-                key: "delete",
-                label: "Delete customer",
-                danger: true,
-                icon: <Trash2 className="w-4 h-4" />,
-                onClick: () => setToDelete(record),
-              },
+              ...(canDeleteCustomer
+                ? [
+                    { type: "divider" as const },
+                    {
+                      key: "delete",
+                      label: "Delete customer",
+                      danger: true,
+                      icon: <Trash2 className="w-4 h-4" />,
+                      onClick: () => setToDelete(record),
+                    },
+                  ]
+                : []),
             ],
           }}
         >

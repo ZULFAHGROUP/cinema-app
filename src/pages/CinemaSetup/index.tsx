@@ -8,6 +8,7 @@ import DisplayModal from "../../components/shared/Modal/DisplayModal";
 import AddTheaterForm from "./components/AddTheaterForm";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { getAllCinemas } from "../../store/slices/cinema";
+import { hasPermission, isAdminRole } from "../../utils/permissions";
 // import { getAllScreen } from "../../store/slices/screen";
 
 // function CinemaSetup() {
@@ -101,6 +102,13 @@ function CinemaSetup() {
   const { cinemaLoading, allCinemas, total } = useAppSelector(
     (state) => state.cinema
   );
+  const { user } = useAppSelector((state) => state.accounts.data);
+  const isAdmin = isAdminRole(user);
+  const canAddCinema = hasPermission(user, "add_cinemas");
+  const scopedCinemaId = !isAdmin ? user?.cinema_id : user?.scoped_cinema_id || "";
+  const visibleCinemas = scopedCinemaId
+    ? (allCinemas || []).filter((c: any) => c.cinema_id === scopedCinemaId)
+    : allCinemas;
 
   const dispatch = useAppDispatch();
 
@@ -120,22 +128,26 @@ function CinemaSetup() {
         <div>
           <h1 className="text-2xl font-sans font-bold">Cinema Locations</h1>
           <p className="text-sm font-serif text-muted-foreground mt-1">
-            Manage your cinema locations and screens
+            {scopedCinemaId
+              ? "Manage your assigned cinema location and screens"
+              : "Manage your cinema locations and screens"}
           </p>
         </div>
-        <Button
-          title="Add Location"
-          onClick={() => setIsAddTheaterModalOpen(true)}
-          className="gap-2 rounded-md"
-          icon={<Building2 className="w-4 h-4" />}
-        />
+        {canAddCinema && (
+          <Button
+            title="Add Location"
+            onClick={() => setIsAddTheaterModalOpen(true)}
+            className="gap-2 rounded-md"
+            icon={<Building2 className="w-4 h-4" />}
+          />
+        )}
       </div>
 
       {/* Theater Content */}
-      <Theater loading={cinemaLoading} cinemas={allCinemas} />
+      <Theater loading={cinemaLoading} cinemas={visibleCinemas} />
 
       {/* Pagination */}
-      {!cinemaLoading && allCinemas?.length > 0 && (
+      {!cinemaLoading && !scopedCinemaId && allCinemas?.length > 0 && (
         <div className="flex justify-center mt-6">
           <Pagination
             current={currentPage}

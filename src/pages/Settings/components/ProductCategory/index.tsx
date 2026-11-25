@@ -131,7 +131,7 @@ const ProductCategory = () => {
         <ReusableTable
           data={productCats || []}
           columns={columns}
-          title="Roles"
+          title="Product Categories"
           searchField={["name"]}
           paginationMode="backend"
           paginationProps={{
@@ -146,7 +146,7 @@ const ProductCategory = () => {
       {/* Add / Edit Modal */}
       <DisplayModal
         open={showFormModal}
-        title={editMode ? "Edit Role" : "Add Role"}
+        title={editMode ? "Edit Product Category" : "Add Product Category"}
         onClose={() => setShowFormModal(false)}
       >
         <ProductCategoryForm

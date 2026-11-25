@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Tabs } from "antd";
 import Button from "../../components/shared/Button";
-import { Users, Plus, ShieldCheck, BadgeDollarSign, Building2 } from "lucide-react";
+import { Users, Plus, ShieldCheck, BadgeDollarSign, Building2, Crown } from "lucide-react";
 import StaffList from "./components/StaffList";
 import AddStaffForm from "./components/AddStaffForm";
 import CinemaStaffAssignment from "./components/CinemaStaffAssignment";
@@ -10,13 +10,34 @@ import DisplayModal from "../../components/shared/Modal/DisplayModal";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { getAllRoles } from "../../store/slices/roles";
 import { 
+  getAdmins,
   getManagers, 
   getPosCashiers, 
   getGeneralStaff 
 } from "../../store/slices/staff";
+import { hasPermission } from "../../utils/permissions";
 
 function StaffPage() {
-  const [activeTab, setActiveTab] = useState("managers");
+  const { user } = useAppSelector((state) => state.accounts.data);
+  const canManageUsers = hasPermission(user, "manage_users");
+  const canAssignRoles = hasPermission(user, "assign_roles");
+  const canViewAdmins = hasPermission(user, "view_admin_users");
+  const canViewManagers = hasPermission(user, "view_manager_users");
+  const canViewCashiers = hasPermission(user, "view_pos_cashier_users");
+  const canViewStaff = hasPermission(user, "view_staff_users");
+  const canViewCinemaStaff = hasPermission(user, "view_cinema_users");
+
+  const defaultTab = canViewManagers
+    ? "managers"
+    : canViewCashiers
+    ? "cashiers"
+    : canViewStaff
+    ? "staff"
+    : canViewAdmins
+    ? "admins"
+    : "cinema-staff";
+
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const [isAddStaffModalOpen, setIsAddStaffModalOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
 
@@ -28,85 +49,129 @@ function StaffPage() {
   } = useAppSelector((state) => state.role);
   
   const {
+    admins,
     managers,
     cashiers,
     generalStaff,
+    adminsStats,
     managersStats,
     cashiersStats,
     staffStats,
   } = useAppSelector((state) => state.staff);
 
   useEffect(() => {
-    dispatch(getAllRoles({ page: rolePage, limit: roleLimit })).unwrap();
-  }, [dispatch, rolePage, roleLimit]);
+    if (canAssignRoles) {
+      dispatch(getAllRoles({ page: rolePage, limit: roleLimit })).unwrap();
+    }
+  }, [dispatch, rolePage, roleLimit, canAssignRoles]);
 
   const handleAddedStaff = () => {
     setIsAddStaffModalOpen(false);
     setSelectedStaff(null);
-    
   };
 
   const tabItems = [
-    {
-      key: "managers",
-      label: (
-        <span className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4" /> Managers
-        </span>
-      ),
-      children: (
-        <StaffList
-          staff={managers}
-          role={roles}
-          staffTab="managers"
-          stats={managersStats}
-          onFetch={(filters) => dispatch(getManagers({ page: 1, limit: 50, filters }))}
-        />
-      ),
-    },
-    {
-      key: "cashiers",
-      label: (
-        <span className="flex items-center gap-2">
-          <BadgeDollarSign className="w-4 h-4" /> POS / Cashiers
-        </span>
-      ),
-      children: (
-        <StaffList
-          staff={cashiers}
-          role={roles}
-          staffTab="cashiers"
-          stats={cashiersStats}
-          onFetch={(filters) => dispatch(getPosCashiers({ page: 1, limit: 50, filters }))}
-        />
-      ),
-    },
-    {
-      key: "staff",
-      label: (
-        <span className="flex items-center gap-2">
-          <Users className="w-4 h-4" /> General Staff
-        </span>
-      ),
-      children: (
-        <StaffList
-          staff={generalStaff}
-          role={roles}
-          staffTab="staff"
-          stats={staffStats}
-          onFetch={(filters) => dispatch(getGeneralStaff({ page: 1, limit: 50, filters }))}
-        />
-      ),
-    },
-    {
-      key: "cinema-staff",
-      label: (
-        <span className="flex items-center gap-2">
-          <Building2 className="w-4 h-4" /> Cinema Staff
-        </span>
-      ),
-      children: <CinemaStaffAssignment />,
-    },
+    ...(canViewManagers
+      ? [
+          {
+            key: "managers",
+            label: (
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4" /> Managers
+              </span>
+            ),
+            children: (
+              <StaffList
+                staff={managers}
+                role={roles}
+                staffTab="managers"
+                stats={managersStats}
+                canManage={canManageUsers}
+                onFetch={(filters) => dispatch(getManagers({ page: 1, limit: 50, filters }))}
+              />
+            ),
+          },
+        ]
+      : []),
+    ...(canViewCashiers
+      ? [
+          {
+            key: "cashiers",
+            label: (
+              <span className="flex items-center gap-2">
+                <BadgeDollarSign className="w-4 h-4" /> POS / Cashiers
+              </span>
+            ),
+            children: (
+              <StaffList
+                staff={cashiers}
+                role={roles}
+                staffTab="cashiers"
+                stats={cashiersStats}
+                canManage={canManageUsers}
+                onFetch={(filters) => dispatch(getPosCashiers({ page: 1, limit: 50, filters }))}
+              />
+            ),
+          },
+        ]
+      : []),
+    ...(canViewStaff
+      ? [
+          {
+            key: "staff",
+            label: (
+              <span className="flex items-center gap-2">
+                <Users className="w-4 h-4" /> General Staff
+              </span>
+            ),
+            children: (
+              <StaffList
+                staff={generalStaff}
+                role={roles}
+                staffTab="staff"
+                stats={staffStats}
+                canManage={canManageUsers}
+                onFetch={(filters) => dispatch(getGeneralStaff({ page: 1, limit: 50, filters }))}
+              />
+            ),
+          },
+        ]
+      : []),
+    ...(canViewAdmins
+      ? [
+          {
+            key: "admins",
+            label: (
+              <span className="flex items-center gap-2">
+                <Crown className="w-4 h-4" /> Admins
+              </span>
+            ),
+            children: (
+              <StaffList
+                staff={admins}
+                role={roles}
+                staffTab="admins"
+                stats={adminsStats}
+                canManage={canManageUsers}
+                onFetch={(filters) => dispatch(getAdmins({ page: 1, limit: 50, filters }))}
+              />
+            ),
+          },
+        ]
+      : []),
+    ...(canViewCinemaStaff
+      ? [
+          {
+            key: "cinema-staff",
+            label: (
+              <span className="flex items-center gap-2">
+                <Building2 className="w-4 h-4" /> Cinema Staff
+              </span>
+            ),
+            children: <CinemaStaffAssignment />,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -123,7 +188,7 @@ function StaffPage() {
             </p>
           </div>
           <div className="flex gap-2">
-            {activeTab !== "cinema-staff" && (
+            {canManageUsers && activeTab !== "cinema-staff" && (
               <Button
                 onClick={() => setIsAddStaffModalOpen(true)}
                 className="gap-2 rounded-md"
