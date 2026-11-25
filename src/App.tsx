@@ -22,7 +22,6 @@ import ConcessionsRoutes from "./routes/concessionsRoute";
 import TicketsRoutes from "./routes/ticketsRoute";
 import StaffsRoutes from "./routes/staffRoutes";
 import CustomersRoutes from "./routes/customersRoutes";
-import SchedulingRoutes from "./routes/schedulingRoutes";
 import SignageRoutes from "./routes/signageRoute";
 import ReportsRoutes from "./routes/reportsRoutes";
 import SettingsRoutes from "./routes/settingsRoutes";
@@ -64,10 +63,6 @@ const App = () => {
                 <Route
                   path={`${allRoutes.customers}/*`}
                   element={<CustomersRoutes />}
-                />
-                <Route
-                  path={`${allRoutes.scheduling}/*`}
-                  element={<SchedulingRoutes />}
                 />
                 <Route
                   path={`${allRoutes.signage}/*`}

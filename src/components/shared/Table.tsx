@@ -51,18 +51,19 @@ const ReusableTable = <T extends Record<string, any>>({
   onTableChange,
   paginationMode,
 }: ReusableTableProps<T>) => {
-  const [filteredData, setFilteredData] = useState<T[]>(data);
+  const safeData = Array.isArray(data) ? data : [];
+  const [filteredData, setFilteredData] = useState<T[]>(safeData);
   const [searchText, setSearchText] = useState<string>("");
 
   useEffect(() => {
-    setFilteredData(data);
+    setFilteredData(Array.isArray(data) ? data : []);
   }, [data]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toLowerCase();
     setSearchText(value);
 
-    const filtered = data.filter((item) =>
+    const filtered = safeData.filter((item) =>
       Array.isArray(searchField)
         ? searchField.some((field) =>
             String(item[field] || "")

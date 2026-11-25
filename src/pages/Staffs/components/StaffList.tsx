@@ -20,11 +20,12 @@ interface StaffListProps {
   role: any;
   staffTab: string;
   stats?: StaffStats | null;
+  canManage?: boolean;
   /** Reloads this tab's list on the server with the given search and filters. */
   onFetch: (filters: StaffFilters) => void;
 }
 
-export default function StaffList({ staff, role, staffTab, stats, onFetch }: StaffListProps) {
+export default function StaffList({ staff, role, staffTab, stats, canManage = true, onFetch }: StaffListProps) {
   const [searchText, setSearchText] = useState("");
   const [isActive, setIsActive] = useState<boolean | undefined>(undefined);
   const search = useDebouncedValue(searchText.trim());
@@ -190,17 +191,21 @@ export default function StaffList({ staff, role, staffTab, stats, onFetch }: Sta
     //   ],
     //   onFilter: (value: any, record: any) => record.status === value,
     // },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_: any, record: any) => (
-        <Dropdown overlay={getMenu(record)} trigger={["click"]}>
-          <button className="p-2 hover:bg-gray-100 rounded">
-            <MoreHorizontal className="w-4 h-4" />
-          </button>
-        </Dropdown>
-      ),
-    },
+    ...(canManage
+      ? [
+          {
+            title: "Actions",
+            key: "actions",
+            render: (_: any, record: any) => (
+              <Dropdown overlay={getMenu(record)} trigger={["click"]}>
+                <button className="p-2 hover:bg-gray-100 rounded">
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+              </Dropdown>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -228,7 +233,15 @@ export default function StaffList({ staff, role, staffTab, stats, onFetch }: Sta
       <ReusableTable
         data={staff}
         columns={columns}
-        title={staffTab === 'managers'? "Managers List" : staffTab === "cashiers" ? "Cashiers List" : "General Staff List"}
+        title={
+          staffTab === "managers"
+            ? "Managers List"
+            : staffTab === "cashiers"
+            ? "Cashiers List"
+            : staffTab === "admins"
+            ? "Admins List"
+            : "General Staff List"
+        }
         showSearch={false}
         showPagination={true}
         excludeColumns={["id"]}

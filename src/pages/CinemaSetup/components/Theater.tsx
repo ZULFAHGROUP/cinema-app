@@ -20,6 +20,7 @@ import { deleteScreen, getAllScreen } from "../../../store/slices/screen";
 import AddScreensForm from "./AddScreensForm";
 import SeatLayoutEditor from "./SeatLayoutEditor";
 import Loader from "../../../components/shared/Loader";
+import { hasPermission } from "../../../utils/permissions";
 
 const { Panel } = Collapse;
 
@@ -38,6 +39,10 @@ const Theater = ({ cinemas, loading }: any) => {
   const { screensByCinema, loadingCinemas } = useAppSelector(
     (state) => state.screen
   );
+  const { user } = useAppSelector((state) => state.accounts.data);
+  const canEditCinema = hasPermission(user, "edit_cinemas");
+  const canDeleteCinema = hasPermission(user, "delete_cinemas");
+  const canConfigureSeats = hasPermission(user, "configure_screen_layouts");
 
   const handleDeleteCinema = async () => {
     if (!selectedCinema) return;
@@ -135,34 +140,42 @@ const Theater = ({ cinemas, loading }: any) => {
                        <Dropdown
                         menu={{
                           items: [
-                            {
-                              key: "1",
-                              label: "Add Screen",
-                              icon: <Monitor className="w-4 h-4" />,
-                              onClick: () => {
-                                setSelectedCinema(theater);
-                                setShowAddScreenModal(true);
-                              },
-                            },
-                            {
-                              key: "2",
-                              label: "Edit Cinema",
-                              icon: <Edit className="w-4 h-4" />,
-                              onClick: () => {
-                                setSelectedCinema(theater);
-                                setShowEditCinemaModal(true);
-                              },
-                            },
-                            {
-                              key: "3",
-                              label: "Delete Cinema",
-                              danger: true,
-                              icon: <Trash2 className="w-4 h-4" />,
-                              onClick: () => {
-                                setSelectedCinema(theater);
-                                setShowDeleteCinemaModal(true);
-                              },
-                            },
+                            ...(canEditCinema
+                              ? [
+                                  {
+                                    key: "1",
+                                    label: "Add Screen",
+                                    icon: <Monitor className="w-4 h-4" />,
+                                    onClick: () => {
+                                      setSelectedCinema(theater);
+                                      setShowAddScreenModal(true);
+                                    },
+                                  },
+                                  {
+                                    key: "2",
+                                    label: "Edit Cinema",
+                                    icon: <Edit className="w-4 h-4" />,
+                                    onClick: () => {
+                                      setSelectedCinema(theater);
+                                      setShowEditCinemaModal(true);
+                                    },
+                                  },
+                                ]
+                              : []),
+                            ...(canDeleteCinema
+                              ? [
+                                  {
+                                    key: "3",
+                                    label: "Delete Cinema",
+                                    danger: true,
+                                    icon: <Trash2 className="w-4 h-4" />,
+                                    onClick: () => {
+                                      setSelectedCinema(theater);
+                                      setShowDeleteCinemaModal(true);
+                                    },
+                                  },
+                                ]
+                              : []),
                           ],
                         }}
                         trigger={["click"]}
@@ -230,34 +243,46 @@ const Theater = ({ cinemas, loading }: any) => {
                                       <Dropdown
                                         menu={{
                                           items: [
-                                            {
-                                              key: "1",
-                                              label: "Edit Screen",
-                                              icon: <Edit className="w-4 h-4" />,
-                                              onClick: () => {
-                                                setSelectedScreen(screen);
-                                                setShowEditScreenModal(true);
-                                              },
-                                            },
-                                            {
-                                              key: "seats",
-                                              label: "Seat Layout",
-                                              icon: <Armchair className="w-4 h-4" />,
-                                              onClick: () => {
-                                                setSelectedScreen(screen);
-                                                setShowSeatLayoutModal(true);
-                                              },
-                                            },
-                                            {
-                                              key: "2",
-                                              label: "Delete Screen",
-                                              danger: true,
-                                              icon: <Trash2 className="w-4 h-4" />,
-                                              onClick: () => {
-                                                setSelectedScreen(screen);
-                                                setShowDeleteScreenModal(true);
-                                              },
-                                            },
+                                            ...(canEditCinema
+                                              ? [
+                                                  {
+                                                    key: "1",
+                                                    label: "Edit Screen",
+                                                    icon: <Edit className="w-4 h-4" />,
+                                                    onClick: () => {
+                                                      setSelectedScreen(screen);
+                                                      setShowEditScreenModal(true);
+                                                    },
+                                                  },
+                                                ]
+                                              : []),
+                                            ...(canConfigureSeats
+                                              ? [
+                                                  {
+                                                    key: "seats",
+                                                    label: "Seat Layout",
+                                                    icon: <Armchair className="w-4 h-4" />,
+                                                    onClick: () => {
+                                                      setSelectedScreen(screen);
+                                                      setShowSeatLayoutModal(true);
+                                                    },
+                                                  },
+                                                ]
+                                              : []),
+                                            ...(canDeleteCinema
+                                              ? [
+                                                  {
+                                                    key: "2",
+                                                    label: "Delete Screen",
+                                                    danger: true,
+                                                    icon: <Trash2 className="w-4 h-4" />,
+                                                    onClick: () => {
+                                                      setSelectedScreen(screen);
+                                                      setShowDeleteScreenModal(true);
+                                                    },
+                                                  },
+                                                ]
+                                              : []),
                                           ],
                                         }}
                                         trigger={["click"]}

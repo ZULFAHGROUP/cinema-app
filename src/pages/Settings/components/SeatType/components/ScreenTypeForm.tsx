@@ -40,7 +40,7 @@ const ScreenTypeForm = ({
       if (editMode) {
         response = await dispatch(
           updateScreenType({
-            id: seatTypeData?.seat_type_id,
+            id: seatTypeData?.screen_type_id || seatTypeData?.seat_type_id,
             payload: values,
           })
         ).unwrap();

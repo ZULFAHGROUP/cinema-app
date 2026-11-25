@@ -20,6 +20,11 @@ const Extras = {
     return Axios.get(urls.audit, { params: { page, limit, ...filters } });
   },
 
+  /** The signed-in staff member's own activity (works for all roles without view_audit_logs). */
+  myAuditTrails: (page: number, limit: number, filters: AuditFilters = {}) => {
+    return Axios.get(urls.audit_me, { params: { page, limit, ...filters } });
+  },
+
   /** One audit record with its actor, request details and row changes. */
   auditById: (auditId: string) => {
     return Axios.get(`${urls.audit}/${auditId}`);

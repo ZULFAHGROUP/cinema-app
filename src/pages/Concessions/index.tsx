@@ -17,6 +17,7 @@ import AddProductForm from "./components/AddProductForm";
 import DisplayModal from "../../components/shared/Modal/DisplayModal";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { getAllProducts } from "../../store/slices/product";
+import { hasAnyPermission, hasPermission, isAdminRole } from "../../utils/permissions";
 
 function ConcessionsPage() {
   const [activeTab, setActiveTab] = useState("inventory");
@@ -30,7 +31,10 @@ function ConcessionsPage() {
   );
   const { user } = useAppSelector((state) => state.accounts.data);
   // Determine if user is admin
-  const isAdmin = user?.role?.toLowerCase() === "admin";
+  const isAdmin = isAdminRole(user);
+  const canManageProducts = hasPermission(user, "manage_products");
+  const canViewSales = hasAnyPermission(user, ["view_sales_reports", "view_ticket_sales_reports"]);
+  const canRefund = hasPermission(user, "refund_tickets");
 
   // Use selected cinema for admin, undefined for others (backend uses auth token)
   const activeCinemaId = isAdmin ? selectedCinemaId : undefined;
@@ -100,24 +104,32 @@ function ConcessionsPage() {
       ),
       children: <InventoryManagement />,
     },
-    {
-      key: "sales",
-      label: (
-        <span className="flex items-center gap-2">
-          <BarChart3 className="w-4 h-4" /> Sales
-        </span>
-      ),
-      children: <Sales />,
-    },
-    {
-      key: "refunds",
-      label: (
-        <span className="flex items-center gap-2">
-          <RotateCcw className="w-4 h-4" /> Refunds
-        </span>
-      ),
-      children: <Refunds />,
-    },
+    ...(canViewSales
+      ? [
+          {
+            key: "sales",
+            label: (
+              <span className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4" /> Sales
+              </span>
+            ),
+            children: <Sales />,
+          },
+        ]
+      : []),
+    ...(canRefund
+      ? [
+          {
+            key: "refunds",
+            label: (
+              <span className="flex items-center gap-2">
+                <RotateCcw className="w-4 h-4" /> Refunds
+              </span>
+            ),
+            children: <Refunds />,
+          },
+        ]
+      : []),
     // {
     //   key: "suppliers",
     //   label: (
@@ -160,12 +172,14 @@ function ConcessionsPage() {
               icon={<ShoppingCart className="w-4 h-4" />}
               title={isPOSMode ? "Exit POS" : "POS Mode"}
             /> */}
-            <Button
-              onClick={() => setIsAddProductModalOpen(true)}
-              className="gap-2 rounded-md"
-              icon={<Plus className="w-4 h-4" />}
-              title="Add Product"
-            />
+            {canManageProducts && (
+              <Button
+                onClick={() => setIsAddProductModalOpen(true)}
+                className="gap-2 rounded-md"
+                icon={<Plus className="w-4 h-4" />}
+                title="Add Product"
+              />
+            )}
           </div>
         </div>
 

@@ -105,8 +105,8 @@ const ShowtimeStatusForm = ({
                     ? "Updating..."
                     : "Adding..."
                   : editMode
-                  ? "Update Classification"
-                  : "Add Classification"
+                  ? "Update Showtime Status"
+                  : "Add Showtime Status"
               }
             />
             <Button

@@ -50,18 +50,56 @@ export const login = createAsyncThunk(
     const profile = await Accounts.getProfile({
       headers: { Authorization: `Bearer ${token}` },
     });
-    const cinema = profile.data.data?.cinema || null;
+    const profileData = profile.data.data || {};
+    const cinema = profileData.cinema || null;
 
     return {
       jwtToken: token,
       user: {
         ...admin,
+        ...profileData,
         role: primaryRole(admin.roles),
         cinema,
         cinema_id: cinema?.cinema_id || "",
       },
       status: true,
     };
+  }
+);
+
+export const refreshProfile = createAsyncThunk(
+  "account/refreshProfile",
+  async () => {
+    const profile = await Accounts.getProfile();
+    const profileData = profile.data.data || {};
+    const cinema = profileData.cinema || null;
+    const roleNames = Array.isArray(profileData.roles)
+      ? profileData.roles.map((r: any) => (typeof r === "string" ? r : r.role_name))
+      : [];
+    return {
+      ...profileData,
+      role: primaryRole(roleNames),
+      cinema,
+      cinema_id: cinema?.cinema_id || "",
+    };
+  }
+);
+
+export const switchCinemaContext = createAsyncThunk(
+  "account/switchCinemaContext",
+  async ({ cinema_id, cinema }: { cinema_id: string; cinema?: any }) => {
+    const response = await Accounts.switchContext(cinema_id);
+    const { token } = response.data.data;
+    return { jwtToken: token, cinema_id, cinema };
+  }
+);
+
+export const exitCinemaContext = createAsyncThunk(
+  "account/exitCinemaContext",
+  async () => {
+    const response = await Accounts.exitSwitchContext();
+    const { token } = response.data.data;
+    return { jwtToken: token };
   }
 );
 
@@ -128,6 +166,28 @@ const accountSlice = createSlice({
       })
       .addCase(signOut.fulfilled, (state) => {
         state.data = initialState.data;
+      })
+      .addCase(refreshProfile.fulfilled, (state, action: PayloadAction<any>) => {
+        if (state.data.user) {
+          state.data.user = {
+            ...state.data.user,
+            ...action.payload,
+          };
+        }
+      })
+      .addCase(switchCinemaContext.fulfilled, (state, action: PayloadAction<any>) => {
+        state.data.jwtToken = action.payload.jwtToken;
+        if (state.data.user) {
+          state.data.user.scoped_cinema_id = action.payload.cinema_id;
+          state.data.user.scoped_cinema = action.payload.cinema || null;
+        }
+      })
+      .addCase(exitCinemaContext.fulfilled, (state, action: PayloadAction<any>) => {
+        state.data.jwtToken = action.payload.jwtToken;
+        if (state.data.user) {
+          state.data.user.scoped_cinema_id = "";
+          state.data.user.scoped_cinema = null;
+        }
       });
     // .addCase(updateProfile.fulfilled, (state, action: PayloadAction<any>) => {
     //   console.log(action.payload);

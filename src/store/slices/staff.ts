@@ -9,6 +9,27 @@ export interface StaffStats {
   inactive_staff: number;
 }
 
+export const getAdmins = createAsyncThunk(
+  "staff/getAdmins",
+  async (
+    { page = 1, limit = 10, filters = {} }: { page?: number; limit?: number; filters?: StaffFilters },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await Staff.getAdmins(page, limit, filters);
+      return {
+        data: response.data.data.admins,
+        page,
+        limit,
+        total: response.data.data.pagination.total,
+        stats: response.data.data.stats as StaffStats,
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data);
+    }
+  }
+);
+
 export const getManagers = createAsyncThunk(
   "staff/getManagers",
   async (
@@ -141,14 +162,17 @@ export const deleteStaff = createAsyncThunk(
 const staffSlice = createSlice({
   name: "staff",
   initialState: {
+    admins: [],
     managers: [],
     cashiers: [],
     generalStaff: [],
     loading: false,
     error: null,
+    adminsPagination: { page: 1, limit: 10, total: 0 },
     managersPagination: { page: 1, limit: 10, total: 0 },
     cashiersPagination: { page: 1, limit: 10, total: 0 },
     staffPagination: { page: 1, limit: 10, total: 0 },
+    adminsStats: null as StaffStats | null,
     managersStats: null as StaffStats | null,
     cashiersStats: null as StaffStats | null,
     staffStats: null as StaffStats | null,
@@ -156,6 +180,23 @@ const staffSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+      // Admins
+      .addCase(getAdmins.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getAdmins.fulfilled, (state, action) => {
+        state.loading = false;
+        state.admins = action.payload.data || [];
+        state.adminsStats = action.payload.stats || null;
+        state.adminsPagination = {
+          page: action.payload.page,
+          limit: action.payload.limit,
+          total: action.payload.total,
+        };
+      })
+      .addCase(getAdmins.rejected, (state) => {
+        state.loading = false;
+      })
       // Managers
       .addCase(getManagers.pending, (state) => {
         state.loading = true;

@@ -5,11 +5,13 @@ import Extras from "../../services/network/extras";
 export const getAllAuditTrails = createAsyncThunk(
   "extras/getAllAuditTrails",
   async (
-    { page = 1, limit = 10 }: { page?: number; limit?: number },
+    { page = 1, limit = 10, ownOnly = false }: { page?: number; limit?: number; ownOnly?: boolean },
     { rejectWithValue }
   ) => {
     try {
-      const response = await Extras.allAuditTrails(page, limit);
+      const response = ownOnly
+        ? await Extras.myAuditTrails(page, limit)
+        : await Extras.allAuditTrails(page, limit);
       return {
         data: response.data.data.audits,
         page,

@@ -90,7 +90,7 @@ const ProductCategoryForm = ({
             />
 
             <Input
-              label="Role Description"
+              label="Category Description"
               name="description"
               value={values.description}
               onChange={handleChange}

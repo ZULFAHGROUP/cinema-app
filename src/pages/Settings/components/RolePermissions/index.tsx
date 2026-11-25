@@ -6,9 +6,13 @@ import DisplayModal from "../../../../components/shared/Modal/DisplayModal";
 import ReusableTable from "../../../../components/shared/Table";
 import RolePermissionsForm from "./components/RolePermissionsForm";
 import { getAllRolePermissions } from "../../../../store/slices/rolePermissions";
+import { getAllRoles } from "../../../../store/slices/roles";
+import RolePermissionsService from "../../../../services/network/rolePermissions";
 import Loader from "../../../../components/shared/Loader";
 import { Tag } from "antd";
 import { formatUserLabel } from "../../../../utils";
+import { toast } from "react-toastify";
+import { BUILT_IN_ROLES } from "../../../../constants";
 
 const RolePermissions = () => {
   const [showFormModal, setShowFormModal] = useState(false);
@@ -17,9 +21,30 @@ const RolePermissions = () => {
   const { rolePermissions, rolePermissionLoading, page, limit } = useAppSelector(
     (state) => state.rolePermission
   );
+  const { roles } = useAppSelector((state) => state.role);
+
   useEffect(() => {
     dispatch(getAllRolePermissions({ page, limit })).unwrap();
+    dispatch(getAllRoles({ page: 1, limit: 50 }));
   }, [dispatch, page, limit]);
+
+  const handleUnassign = async (roleName: string, permissionName: string) => {
+    const role = (roles as any[])?.find((r) => r.role_name === roleName);
+    if (!role?.role_id) {
+      toast.error("Could not find role ID to unassign permission");
+      return;
+    }
+    try {
+      const res = await RolePermissionsService.unassignRolePermission({
+        role_id: role.role_id,
+        permission_name: permissionName,
+      });
+      toast.success(res.data?.message || "Permission unassigned");
+      await dispatch(getAllRolePermissions({ page, limit }));
+    } catch (error: any) {
+      toast.error(error?.message || "Could not unassign permission");
+    }
+  };
 
   const columns = [
     {
@@ -31,13 +56,25 @@ const RolePermissions = () => {
       title: "Permissions",
       dataIndex: "permissions",
       key: "permissions",
-      render: (permissions: string[]) => (
-        <div className="flex flex-wrap gap-1">
-          {permissions?.map((permission) => (
-            <Tag key={permission}>{formatUserLabel(permission)}</Tag>
-          ))}
-        </div>
-      ),
+      render: (permissions: string[], record: any) => {
+        const isBuiltInAdmin = record.role_name === "Admin";
+        return (
+          <div className="flex flex-wrap gap-1">
+            {permissions?.map((permission) => (
+              <Tag
+                key={permission}
+                closable={!isBuiltInAdmin && !BUILT_IN_ROLES.includes(record.role_name)}
+                onClose={(e) => {
+                  e.preventDefault();
+                  handleUnassign(record.role_name, permission);
+                }}
+              >
+                {formatUserLabel(permission)}
+              </Tag>
+            ))}
+          </div>
+        );
+      },
     },
   ];
 

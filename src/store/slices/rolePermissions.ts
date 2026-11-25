@@ -12,7 +12,14 @@ export const getAllRolePermissions = createAsyncThunk(
     try {
       // Every role with its permission names, unpaginated: [{ role_name, permissions }]
       const response = await RolePermissions.allRolePermissions(page, limit);
-      const roles = response.data.data || [];
+      const raw = response.data.data;
+      const roles = Array.isArray(raw)
+        ? raw
+        : raw && typeof raw === "object"
+        ? Object.keys(raw)
+            .filter((k) => !isNaN(Number(k)))
+            .map((k) => raw[k])
+        : [];
       return {
         data: roles,
         page,
@@ -43,7 +50,7 @@ export const createRolePermission = createAsyncThunk(
 const rolePermissionSlice = createSlice({
   name: "rolePermission",
   initialState: {
-    rolePermissions: [],
+    rolePermissions: [] as any[],
     rolePermissionLoading: false,
     error: null,
     page: 1,

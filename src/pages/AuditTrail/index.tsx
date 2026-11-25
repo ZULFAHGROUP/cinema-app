@@ -11,9 +11,13 @@ import { ACTION_COLORS, AUDIT_ACTIONS, describeResource } from "./constants";
 import StatCards from "../../components/shared/StatCards";
 import { Activity, LogIn, PencilLine, ShieldAlert } from "lucide-react";
 import { formatUserLabel, humanDateAndTime } from "../../utils";
+import { useAppSelector } from "../../store/hook";
+import { hasPermission } from "../../utils/permissions";
 
 
 const AuditTrail = () => {
+  const { user } = useAppSelector((state) => state.accounts.data);
+  const canViewAllAudit = hasPermission(user, "view_audit_logs");
   const [audits, setAudits] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 });
@@ -28,7 +32,9 @@ const AuditTrail = () => {
     async (page: number, limit: number, activeFilters: AuditFilters) => {
       setLoading(true);
       try {
-        const response = await Extras.allAuditTrails(page, limit, activeFilters);
+        const response = canViewAllAudit
+          ? await Extras.allAuditTrails(page, limit, activeFilters)
+          : await Extras.myAuditTrails(page, limit, activeFilters);
         setAudits(response.data.data.audits || []);
         setStats(response.data.data.stats || null);
         setPagination({ page, limit, total: response.data.data.pagination.total });
@@ -38,7 +44,7 @@ const AuditTrail = () => {
         setLoading(false);
       }
     },
-    []
+    [canViewAllAudit]
   );
 
   useEffect(() => {
@@ -48,10 +54,11 @@ const AuditTrail = () => {
   }, [filters, loadAudits]);
 
   useEffect(() => {
+    if (!canViewAllAudit) return;
     Extras.auditResources()
       .then((response) => setResources(response.data.data || []))
       .catch(() => setResources([]));
-  }, []);
+  }, [canViewAllAudit]);
 
   // Search after the user stops typing.
   useEffect(() => {
@@ -132,9 +139,13 @@ const AuditTrail = () => {
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-2">
         <div>
-          <h2 className="text-lg font-semibold">Audit Trail</h2>
+          <h2 className="text-lg font-semibold">
+            {canViewAllAudit ? "Audit Trail" : "My Activity Log"}
+          </h2>
           <p className="text-sm text-muted-foreground">
-            Every create, update and delete made through the API, newest first.
+            {canViewAllAudit
+              ? "Every create, update and delete made through the API, newest first."
+              : "Your actions and sign-ins recorded by the API, newest first."}
           </p>
         </div>
       </div>

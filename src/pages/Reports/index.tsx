@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Tabs } from "antd";
-import { BarChart3, DollarSign, Download, Film, Receipt, Ticket } from "lucide-react";
+import { BarChart3, DollarSign, Download, Film, Receipt, ShoppingBag, Ticket } from "lucide-react";
 import Button from "../../components/shared/Button";
 import ReusableSelect from "../../components/shared/Select";
 import Loader from "../../components/shared/Loader";
@@ -76,9 +76,16 @@ function ReportsPage() {
         {
           title: "Completed Orders",
           value: report.summary.orders.toLocaleString(),
-          note: `${formatCurrency(report.summary.concession_revenue)} concessions`,
+          note: `${report.summary.concessions_sold.toLocaleString()} concessions sold (${formatCurrency(report.summary.concession_revenue)})`,
           icon: Receipt,
           color: "text-orange-600",
+        },
+        {
+          title: "Concessions Sold",
+          value: report.summary.concessions_sold.toLocaleString(),
+          note: formatCurrency(report.summary.concession_revenue),
+          icon: ShoppingBag,
+          color: "text-teal-600",
         },
       ]
     : [];
@@ -149,7 +156,7 @@ function ReportsPage() {
         <p className="text-red-600">{error}</p>
       ) : report ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
             {kpis.map((kpi) => (
               <div key={kpi.title} className="border rounded-lg p-6">
                 <div className="flex items-center justify-between">

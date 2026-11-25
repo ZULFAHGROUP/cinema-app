@@ -54,9 +54,10 @@ const TransferForm = ({ onCancel, inventory }: TransferFormProps) => {
           data: {
             quantity: Number(values.quantity),
             reason: values.reason,
+            ...(inventory?.cinema_id ? { cinema_id: inventory.cinema_id } : {}),
             destination_cinema_id: values.destination_cinema_id,
             destination_inventory_id: values.destination_inventory_id,
-          },
+          } as any,
         })
       ).unwrap();
 

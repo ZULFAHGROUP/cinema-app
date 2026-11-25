@@ -25,6 +25,16 @@ const Movie = {
   deleteMovie: (id: string | number) => {
     return Axios.delete(`${urls.movie}/${id}`);
   },
+
+  deactivateMovie: (id: string | number) => {
+    return Axios.patch(`${urls.movie_deactivate}/${id}`);
+  },
+
+  uploadPoster: (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return Axios.post(urls.upload, formData, { params: { type: "movie" } });
+  },
 };
 
 export default Movie;

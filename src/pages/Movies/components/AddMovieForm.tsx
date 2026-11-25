@@ -12,6 +12,7 @@ import {
   getAllMovies,
   updateMovie,
 } from "../../../store/slices/movie";
+import Movie from "../../../services/network/movie";
 import TagInput from "../../../components/shared/TagInput";
 
 interface AddMovieProps {
@@ -73,36 +74,39 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
   ) {
     try {
       let response;
-      const formData = new FormData();
+      let poster_temp_upload_id: string | undefined;
 
-      // Append all fields to FormData
-      formData.append("title", values.title);
-      formData.append("director", values.director);
-      formData.append("duration", values.duration.toString());
-      formData.append("rating", values.rating.toString());
-      formData.append("release_date", values.release_date);
-      formData.append("language", values.language);
-      formData.append("description", values.description);
-      formData.append("genres", values.genres.join(","));
-      formData.append("cast", values.cast.join(","));
-
-      if (!editMode) {
-        formData.append("movie_classification_id", values.movie_classification_id);
+      if (values.poster instanceof File) {
+        const uploadRes = await Movie.uploadPoster(values.poster);
+        poster_temp_upload_id = uploadRes.data?.data?.temp_upload_id;
       }
 
-      if (values.poster) {
-        formData.append("poster", values.poster);
+      const payload: Record<string, any> = {
+        title: values.title,
+        director: values.director,
+        duration: Number(values.duration),
+        rating: values.rating.toString(),
+        release_date: values.release_date,
+        language: values.language,
+        description: values.description,
+        genres: values.genres.join(","),
+        cast: values.cast.join(","),
+        ...(poster_temp_upload_id ? { poster_temp_upload_id } : {}),
+      };
+
+      if (!editMode) {
+        payload.movie_classification_id = values.movie_classification_id;
       }
 
       if (editMode && movieData?.movie_id) {
         response = await dispatch(
           updateMovie({
             id: movieData.movie_id,
-            data: formData,
+            data: payload,
           })
         ).unwrap();
       } else {
-        response = await dispatch(createMovie(formData)).unwrap();
+        response = await dispatch(createMovie(payload)).unwrap();
       }
 
       if (response.code === 200 || response.code === 201) {
