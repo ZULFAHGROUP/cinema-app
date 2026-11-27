@@ -9,6 +9,7 @@ import Accounts from "../../../services/network/accounts";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { allRoutes } from "../../../routes/allRoutes";
+import { ShieldCheck } from "lucide-react";
 
 const ResetPassword = () => {
   const [phase, setPhase] = useState(1);
@@ -33,10 +34,12 @@ const ResetPassword = () => {
     }
   };
 
-  // This runs when user submits OTP form
   const verifyOtp = () => {
     const joinedOtp = otp.join("");
-    if (joinedOtp.length !== 6) return alert("Please enter full OTP");
+    if (joinedOtp.length !== 6) {
+      toast.error("Please enter the complete 6-digit OTP");
+      return;
+    }
     setPhase(2);
   };
 
@@ -64,7 +67,6 @@ const ResetPassword = () => {
       resetForm();
       navigate(`${allRoutes.auth}/login`);
     } catch (error: any) {
-      // A wrong or expired code: go back and enter it again.
       toast.error(error?.message || "Something went wrong");
       setOtp(["", "", "", "", "", ""]);
       setPhase(1);
@@ -73,14 +75,24 @@ const ResetPassword = () => {
 
   return (
     <AuthLayout>
-      <div className="p-12 space-y-4 text- w-full shadow-lg rounded-lg border border-gray-200">
-        {phase === 1 && (
-          <>
-            <p className="font-medium text-lg md:text-2xl">
-              Enter the 6-digit code sent to your email
-            </p>
+      <div className="w-full max-w-md bg-white p-8 sm:p-10 rounded-3xl shadow-[0_20px_50px_-12px_rgba(117,79,44,0.14)] border border-[#c77e3b]/20">
+        <div className="flex flex-col items-center text-center mb-6">
+          <div className="w-12 h-12 rounded-2xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] mb-3 shadow-2xs">
+            <ShieldCheck className="w-6 h-6" />
+          </div>
+          <h1 className="font-extrabold text-2xl text-stone-900">
+            {phase === 1 ? "Verify Recovery Code" : "Set New Password"}
+          </h1>
+          <p className="text-sm text-stone-500 mt-1">
+            {phase === 1
+              ? "Enter the 6-digit verification code sent to your email"
+              : "Choose a strong password for your account"}
+          </p>
+        </div>
 
-            <div className="flex justify-center gap-3 my-6">
+        {phase === 1 && (
+          <div className="space-y-6">
+            <div className="flex justify-center gap-2.5 my-4">
               {otp.map((digit, index) => (
                 <input
                   key={index}
@@ -92,67 +104,68 @@ const ResetPassword = () => {
                       handleOtpBackspace(e.target.value, index);
                   }}
                   maxLength={1}
-                  className="w-12 h-12 text-center text-xl border border-gray-300 rounded-md focus:border-black outline-none"
+                  className="w-12 h-14 text-center text-xl font-bold border border-stone-200 bg-[#fff8ea]/40 rounded-xl focus:border-[#c77e3b] focus:ring-2 focus:ring-[#c77e3b]/20 outline-none transition-all"
                 />
               ))}
             </div>
 
-            <Button title="Verify OTP" className="w-full" onClick={verifyOtp} />
-          </>
+            <Button
+              title="Verify Code"
+              className="w-full py-3"
+              onClick={verifyOtp}
+            />
+          </div>
         )}
 
         {phase === 2 && (
-          <>
-            <p className="font-medium text-lg md:text-2xl">
-              Reset Your Password
-            </p>
+          <Formik
+            initialValues={{
+              password: "",
+              confirmPassword: "",
+            }}
+            validationSchema={resetPasswordValidationSchema}
+            onSubmit={handleResetSubmit}
+          >
+            {({
+              handleChange,
+              values,
+              errors,
+              handleSubmit,
+              isValid,
+              isSubmitting,
+            }) => (
+              <Form className="space-y-5" onSubmit={handleSubmit}>
+                <Input
+                  label="New Password"
+                  type="password"
+                  name="password"
+                  value={values.password}
+                  onChange={handleChange}
+                  error={errors.password}
+                  required
+                />
 
-            <Formik
-              initialValues={{
-                password: "",
-                confirmPassword: "",
-              }}
-              validationSchema={resetPasswordValidationSchema}
-              onSubmit={handleResetSubmit}
-            >
-              {({
-                handleChange,
-                values,
-                errors,
-                handleSubmit,
-                isValid,
-                isSubmitting,
-              }) => (
-                <Form className="space-y-4 my-6" onSubmit={handleSubmit}>
-                  <Input
-                    label="New Password"
-                    type="password"
-                    name="password"
-                    value={values.password}
-                    onChange={handleChange}
-                    error={errors.password}
-                  />
+                <Input
+                  label="Confirm Password"
+                  type="password"
+                  name="confirmPassword"
+                  value={values.confirmPassword}
+                  onChange={handleChange}
+                  error={errors.confirmPassword}
+                  required
+                />
 
-                  <Input
-                    label="Confirm Password"
-                    type="password"
-                    name="confirmPassword"
-                    value={values.confirmPassword}
-                    onChange={handleChange}
-                    error={errors.confirmPassword}
-                  />
-
-                  <Button
-                    title={isSubmitting ? "Resetting..." : "Reset Password"}
-                    variant="secondary"
-                    type="submit"
-                    disabled={!isValid}
-                    className="w-full rounded-md"
-                  />
-                </Form>
-              )}
-            </Formik>
-          </>
+                <Button
+                  title={isSubmitting ? "Resetting..." : "Reset Password"}
+                  variant="primary"
+                  type="submit"
+                  loading={isSubmitting}
+                  disabled={!isValid || isSubmitting}
+                  className="w-full py-3"
+                />
+              </Form>
+            )}
+          </Formik>
         )}
       </div>
     </AuthLayout>

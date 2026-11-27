@@ -88,29 +88,36 @@ export default function PurchaseSelection({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Ticket Section */}
-        <div className="bg-card border rounded-xl p-6 shadow-sm">
+        <div className="bg-white border border-[#c77e3b]/15 rounded-2xl p-6 shadow-2xs">
           <div className="flex items-center gap-2 mb-4 group">
-            <h3 className="text-lg font-sans font-bold">1. Select Tickets</h3>
-            <Info className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            <h3 className="text-base font-extrabold text-stone-900">1. Select Tickets</h3>
+            <Info className="w-4 h-4 text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
-          <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-[#fff8ea]/70 border border-[#c77e3b]/20 rounded-xl">
             <div>
-              <p className="font-sans font-semibold">Ticket</p>
-              <p>Price per ticket: {formatCurrency(showtime?.price || 0)}</p>
-              <p className="text-xs">Concessions: {showtime?.products?.map((product: any) => product.name).join(", ") || "No concessions"}</p>
+              <p className="font-bold text-stone-900">Standard Admission</p>
+              <p className="text-sm font-semibold text-[#c77e3b]">
+                {formatCurrency(showtime?.price || 0)} per ticket
+              </p>
+              <p className="text-xs text-stone-500 mt-0.5">
+                Included concessions:{" "}
+                {showtime?.products?.map((product: any) => product.name).join(", ") || "None"}
+              </p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setTicketQuantity(Math.max(0, ticketQuantity - 1))}
-                className="w-10 h-10 flex items-center justify-center border-2 rounded-full hover:bg-muted transition-colors disabled:opacity-30"
+                className="w-9 h-9 flex items-center justify-center border border-[#c77e3b]/30 bg-white rounded-xl hover:bg-[#c77e3b] hover:text-white transition-colors disabled:opacity-30 cursor-pointer"
                 disabled={ticketQuantity === 0 || selectedSeatIds.length > 0}
               >
                 <Minus className="w-4 h-4" />
               </button>
-              <span className="w-8 text-center text-xl font-sans font-bold">{ticketQuantity}</span>
+              <span className="w-8 text-center text-lg font-extrabold text-stone-900">
+                {ticketQuantity}
+              </span>
               <button
                 onClick={() => setTicketQuantity(ticketQuantity + 1)}
-                className="w-10 h-10 flex items-center justify-center border-2 rounded-full hover:bg-muted transition-colors disabled:opacity-30"
+                className="w-9 h-9 flex items-center justify-center border border-[#c77e3b]/30 bg-white rounded-xl hover:bg-[#c77e3b] hover:text-white transition-colors disabled:opacity-30 cursor-pointer"
                 disabled={selectedSeatIds.length > 0}
               >
                 <Plus className="w-4 h-4" />
@@ -146,38 +153,46 @@ export default function PurchaseSelection({
         </div>
 
         {/* Concessions Section */}
-        <div className="bg-card border rounded-xl p-6 shadow-sm">
-          <h3 className="text-lg font-sans font-bold mb-4">2. Add Concessions</h3>
-          <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+        <div className="bg-white border border-[#c77e3b]/15 rounded-2xl p-6 shadow-2xs">
+          <h3 className="text-base font-extrabold text-stone-900 mb-4">2. Add Concessions</h3>
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
             {availableProducts?.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">No concessions available at this time.</p>
+              <p className="text-center text-stone-500 py-8 text-sm">
+                No concessions available at this time.
+              </p>
             ) : (
               availableProducts?.map((product) => (
-                <div key={product.product_id} className="flex items-center justify-between p-3 border rounded-lg hover:border-primary/50 transition-colors">
+                <div
+                  key={product.product_id}
+                  className="flex items-center justify-between p-3 border border-stone-200/80 rounded-xl hover:border-[#c77e3b]/50 bg-[#fff8ea]/30 transition-colors"
+                >
                   <div className="flex gap-3 items-center">
-                    <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
-                       {/* Placeholder for product image */}
-                       <span className="text-xs text-muted-foreground font-bold">{product.name.charAt(0)}</span>
+                    <div className="w-10 h-10 bg-[#fff8ea] border border-[#c77e3b]/25 rounded-xl flex items-center justify-center">
+                      <span className="text-sm text-[#c77e3b] font-extrabold">
+                        {product.name.charAt(0)}
+                      </span>
                     </div>
                     <div>
-                      <p className="font-sans font-medium text-sm">{product.name}</p>
-                      <p className="text-xs text-muted-foreground font-serif">{formatCurrency(product.price)}</p>
+                      <p className="font-bold text-sm text-stone-800">{product.name}</p>
+                      <p className="text-xs text-[#754f2c] font-semibold">
+                        {formatCurrency(product.price)}
+                      </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
                     <button
                       onClick={() => handleProductQuantity(product, -1)}
-                      className="p-1 border rounded hover:bg-muted disabled:opacity-30"
+                      className="w-7 h-7 flex items-center justify-center border border-[#c77e3b]/30 bg-white rounded-lg hover:bg-[#c77e3b] hover:text-white disabled:opacity-30 cursor-pointer transition-colors"
                       disabled={getProductQuantity(product.product_id) === 0}
                     >
                       <Minus className="w-3 h-3" />
                     </button>
-                    <span className="w-6 text-center text-sm font-sans font-semibold">
+                    <span className="w-6 text-center text-sm font-bold text-stone-900">
                       {getProductQuantity(product.product_id)}
                     </span>
                     <button
                       onClick={() => handleProductQuantity(product, 1)}
-                      className="p-1 border rounded hover:bg-muted"
+                      className="w-7 h-7 flex items-center justify-center border border-[#c77e3b]/30 bg-white rounded-lg hover:bg-[#c77e3b] hover:text-white cursor-pointer transition-colors"
                     >
                       <Plus className="w-3 h-3" />
                     </button>
@@ -203,7 +218,7 @@ export default function PurchaseSelection({
         <Button
           onClick={onConfirm}
           disabled={ticketQuantity === 0}
-          className="w-full md:w-auto px-12 rounded-xl py-6 h-auto text-lg font-bold shadow-lg shadow-primary/20"
+          className="w-full md:w-auto px-10 py-3.5 text-base"
           title="Proceed to Payment"
         />
       </div>

@@ -7,6 +7,7 @@ import * as XLSX from "xlsx";
 import Button from "./Button";
 import { Link } from "react-router-dom";
 import { FaPlus } from "react-icons/fa";
+import { Search } from "lucide-react";
 
 interface ReusableTableProps<T> {
   data: T[];
@@ -116,65 +117,69 @@ const ReusableTable = <T extends Record<string, any>>({
     title: "S/N",
     dataIndex: "sn",
     key: "sn",
-    render: (_: any, __: any, index: number) => index + 1,
+    width: 64,
+    render: (_: any, __: any, index: number) => (
+      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#fff8ea] text-[#754f2c] text-xs font-semibold">
+        {index + 1}
+      </span>
+    ),
   };
 
   const updatedColumns = [snColumn, ...(columns || [])];
 
   return (
-    <div className="shadow-md bg-white flex flex-col gap-3 rounded-md p-4 w-full text-center">
-      <div className="flex justify-between flex-wrap gap-4 items-center w-full mb-">
-        {showSearch ? (
-          <Input
-            placeholder="Search here..."
-            name="searchText"
-            id="searchText"
-            value={searchText}
-            onChange={handleSearch}
-            className=""
-            conClassName="md:w-[30rem] flex-1"
-          />
-        ) : (
-          <p>{tableText}</p>
-        )}
-        {pathLink && (
-          <Link to={pathLink}>
+    <div className="bg-white rounded-2xl border border-[#c77e3b]/15 shadow-[0_4px_20px_-4px_rgba(117,79,44,0.06)] overflow-hidden w-full">
+      {/* Modern Table Header Bar */}
+      <div className="px-6 py-4 border-b border-[#c77e3b]/10 bg-gradient-to-r from-[#fff8ea]/70 via-white to-[#fff8ea]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span className="w-2.5 h-6 rounded-full bg-gradient-to-b from-[#c77e3b] to-[#5480c7]" />
+          <div>
+            <h3 className="text-base font-bold text-stone-900">{title}</h3>
+            {tableText && <p className="text-xs text-stone-500 mt-0.5">{tableText}</p>}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          {showSearch && (
+            <div className="w-full sm:w-72">
+              <Input
+                placeholder="Search records..."
+                name="searchText"
+                id="searchText"
+                value={searchText}
+                onChange={handleSearch}
+                prefix={<Search className="w-4 h-4 text-stone-400 mr-1" />}
+              />
+            </div>
+          )}
+          {showPdfDownload && (
             <Button
-              title={pathText}
-              className="rounded-md py-1"
-              icon={<FaPlus />}
+              icon={<FileExcelOutlined />}
+              onClick={handleExport}
+              type="button"
+              variant="outline"
+              size="xs"
+              title="Export Excel"
             />
-          </Link>
-        )}
+          )}
+          {pathLink && (
+            <Link to={pathLink}>
+              <Button
+                title={pathText}
+                size="xs"
+                icon={<FaPlus />}
+              />
+            </Link>
+          )}
+        </div>
       </div>
 
-      {showPdfDownload && (
-        <div className="flex gap-2 items-center mt-2">
-          <Button
-            icon={<FileExcelOutlined />}
-            onClick={handleExport}
-            type="button"
-            className="py-1 px-2 rounded-md"
-          />
-          <p>Export to CSV</p>
-        </div>
-      )}
-      {/* Table */}
-      <div id="table-content">
+      {/* Table Body */}
+      <div id="table-content" className="p-2 sm:p-4">
         <Table
           columns={updatedColumns}
           dataSource={filteredData}
-          bordered
-          // pagination={paginationConfig}
-          // pagination={
-          //   showPagination
-          //     ? {
-          //         ...paginationProps,
-          //         showSizeChanger: true,
-          //         pageSizeOptions: ["10", "20", "50", "100"],
-          //       }
-          //     : false
-          // }
+          bordered={false}
           pagination={
             showPagination
               ? paginationMode === "backend"
@@ -186,28 +191,8 @@ const ReusableTable = <T extends Record<string, any>>({
                 : paginationConfig
               : false
           }
-          // onChange={onTableChange}
           onChange={paginationMode === "backend" ? onTableChange : undefined}
-          title={() => (
-            <div
-              className="bg-extra"
-              style={{
-                fontSize: "16px",
-                fontWeight: "bold",
-                textAlign: "center",
-                color: "#ffffff",
-                padding: "8px",
-                borderRadius: "5px 5px 0 0",
-              }}
-            >
-              {title}
-            </div>
-          )}
           scroll={{ x: "max-content" }}
-          style={{
-            border: "1px solid #ddd",
-            borderRadius: "5px",
-          }}
           className={`${onRowClick ? "cursor-pointer" : ""}`}
           onRow={handleRow}
         />

@@ -5,9 +5,9 @@ export default function MoviesReports({ report }: { report: SalesReport }) {
   const topRevenue = report.movies[0]?.revenue || 0;
 
   return (
-    <div className="border rounded-lg p-6">
-      <h3 className="font-sans font-semibold text-lg mb-1">Movie Performance</h3>
-      <p className="text-sm text-muted-foreground font-serif mb-4">
+    <div className="bg-white border border-[#c77e3b]/15 rounded-2xl p-6 shadow-2xs">
+      <h3 className="font-bold text-lg text-stone-900 mb-0.5">Movie Performance</h3>
+      <p className="text-xs text-stone-500 mb-4">
         Top movies by ticket revenue (before VAT)
       </p>
       {report.movies.length === 0 ? (

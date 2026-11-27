@@ -5,9 +5,8 @@ import {
   Package,
   BarChart3,
   RotateCcw,
-  // ShoppingCart,
+  ShoppingCart,
   Plus,
-  // Minus,
 } from "lucide-react";
 import InventoryManagement from "./components/InventoryManagement";
 import Sales from "./components/Sales";
@@ -151,59 +150,52 @@ function ConcessionsPage() {
   ];
 
   return (
-    <div className="p-6">
+    <div className="space-y-6 pb-8">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-6 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0">
+            <ShoppingCart className="w-6 h-6" />
+          </div>
           <div>
-            <h1 className="text-2xl font-sans font-bold text-foreground">
+            <h1 className="text-2xl font-extrabold text-stone-900">
               Concessions & Inventory
             </h1>
-            <p className="text-sm text-muted-foreground font-serif">
-              Manage food, drinks, and inventory
+            <p className="text-sm text-stone-500 mt-0.5">
+              Manage food, drinks, stock movements, and order refunds
             </p>
           </div>
-          <div className="flex gap-2">
-            {/* POS Mode Button - Commented out for now */}
-            {/* <Button
-              onClick={() => setIsPOSMode(!isPOSMode)}
-              className="gap-2 rounded-md"
-              variant={isPOSMode ? "primary" : "outline"}
-              icon={<ShoppingCart className="w-4 h-4" />}
-              title={isPOSMode ? "Exit POS" : "POS Mode"}
-            /> */}
-            {canManageProducts && (
-              <Button
-                onClick={() => setIsAddProductModalOpen(true)}
-                className="gap-2 rounded-md"
-                icon={<Plus className="w-4 h-4" />}
-                title="Add Product"
-              />
-            )}
-          </div>
+        </div>
+        <div className="flex gap-2">
+          {canManageProducts && (
+            <Button
+              onClick={() => setIsAddProductModalOpen(true)}
+              icon={<Plus className="w-4 h-4" />}
+              title="Add Product"
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Tabs and Content */}
+      <div className="space-y-4">
+        <div className="bg-white rounded-2xl border border-[#c77e3b]/15 px-6 pt-2 shadow-2xs">
+          <Tabs
+            activeKey={activeTab}
+            onChange={setActiveTab}
+            items={tabItems.map((item) => ({
+              key: item.key,
+              label: item.label,
+            }))}
+            className="concessions-tabs"
+          />
         </div>
 
-        {/* Tabs and Content */}
-        <>
-          <div className="flex items-center flex-col md:flex-row justify-between mb-6">
-            <div className="flex-1">
-              <Tabs
-                activeKey={activeTab}
-                onChange={setActiveTab}
-                items={tabItems.map((item) => ({
-                  key: item.key,
-                  label: item.label,
-                }))}
-                className="concessions-tabs"
-              />
-            </div>
-          </div>
-
-          {/* Tab Content */}
-          <div className="tab-content">
-            {tabItems.find((item) => item.key === activeTab)?.children}
-          </div>
-        </>
+        {/* Tab Content */}
+        <div className="tab-content">
+          {tabItems.find((item) => item.key === activeTab)?.children}
+        </div>
+      </div>
         {/* POS Mode UI - Commented out for now */}
         {/* {!isPOSMode ? (
           <>
@@ -304,9 +296,6 @@ function ConcessionsPage() {
               </div>
             </div>
           </div>
-        )} */}
-      </div>
-
       {/* Add Product Modal */}
       <DisplayModal
         open={isAddProductModalOpen}

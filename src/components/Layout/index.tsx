@@ -17,6 +17,7 @@ import {
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
 import { FiLogOut } from "react-icons/fi";
+import { Clapperboard } from "lucide-react";
 import ScrollToTop from "../../utils/ScrollToTop";
 import { IoIosArrowBack } from "react-icons/io";
 import sideBarDetails from "../../constants/sidebar";
@@ -37,8 +38,10 @@ import { formatUserLabel } from "../../utils";
 const { Header, Sider, Content } = Layout;
 
 const COLORS = {
-  primary: "#fff8ea", // light
-  secondary: "#c77e3b", // dark
+  primary: "#fff8ea", // light warm cream
+  secondary: "#c77e3b", // brand bronze
+  secondaryDark: "#754f2c", // deep bronze
+  extra: "#5480c7", // royal blue accent
   header: "#ffffff",
 };
 
@@ -66,7 +69,12 @@ const AppLayout: React.FC = () => {
 
   useEffect(() => {
     setCanGoBack(window.history.length > 1);
-    setActiveMenu(location.pathname);
+    const matchingItem = sideBarDetails.find(
+      (item) =>
+        location.pathname === item.key ||
+        (item.key !== "/dashboard" && location.pathname.startsWith(`${item.key}/`))
+    );
+    setActiveMenu(matchingItem?.key || location.pathname);
   }, [location]);
 
   const openProfileModal = () => {
@@ -121,16 +129,20 @@ const AppLayout: React.FC = () => {
 
   const profileMenu = (
     <Menu
+      className="rounded-xl p-1.5 shadow-lg border border-[#c77e3b]/15 min-w-44"
       items={[
         {
           key: "profile",
-          label: "My Profile",
+          label: <span className="font-medium">My Profile</span>,
           icon: <UserOutlined />,
         },
         {
+          type: "divider",
+        },
+        {
           key: "logout",
-          label: <span style={{ color: "red" }}>Logout</span>,
-          icon: <FiLogOut style={{ color: "red" }} />,
+          label: <span className="text-red-600 font-medium">Logout</span>,
+          icon: <FiLogOut className="text-red-600" />,
         },
       ]}
       onClick={(e) => {
@@ -171,12 +183,17 @@ const AppLayout: React.FC = () => {
     (item) => !item.permissions?.length || hasAnyPermission(user, item.permissions)
   );
 
+  const currentNavTitle =
+    visibleSideBarDetails.find((item) => item.key === activeMenu)?.title ||
+    "Dashboard";
+
   const renderMenuItems = () =>
     visibleSideBarDetails.map((item) => {
+      const isSelected = activeMenu === item.key;
       if (item?.subMenu) {
         return {
           key: item.key,
-          icon: <item.icon size={20} />,
+          icon: <item.icon size={19} />,
           label: item.title,
           children: item.subMenu.map((subItem) => ({
             key: subItem.key,
@@ -186,24 +203,30 @@ const AppLayout: React.FC = () => {
                 ? {
                     background: COLORS.secondary,
                     color: "#fff",
-                    borderRadius: "6px",
+                    borderRadius: "10px",
                   }
-                : {},
+                : { borderRadius: "10px" },
           })),
         };
       }
       return {
         key: item.key,
-        icon: <item.icon size={20} />,
+        icon: <item.icon size={19} />,
         label: item.title,
-        style:
-          activeMenu === item.key
-            ? {
-                background: COLORS.secondary,
-                color: "#fff",
-                borderRadius: "6px",
-              }
-            : {},
+        style: isSelected
+          ? {
+              background: `linear-gradient(135deg, ${COLORS.secondary}, ${COLORS.secondaryDark})`,
+              color: "#fff",
+              borderRadius: "12px",
+              boxShadow: "0 4px 12px rgba(199, 126, 59, 0.28)",
+              margin: "4px 10px",
+              width: "calc(100% - 20px)",
+            }
+          : {
+              borderRadius: "12px",
+              margin: "4px 10px",
+              width: "calc(100% - 20px)",
+            },
       };
     });
 
@@ -211,83 +234,113 @@ const AppLayout: React.FC = () => {
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: COLORS.secondary, // active color
-          // colorText: COLORS.secondary, // default text
+          colorPrimary: COLORS.secondary,
+          borderRadius: 10,
         },
         components: {
           Menu: {
-            itemBg: COLORS.primary, // default background
-            // itemColor: COLORS.secondary, // text color
-            itemHoverBg: "#5480c7", // 👈 hover background
-            itemHoverColor: "#fff", // 👈 hover text color
-            itemSelectedBg: COLORS.secondary, // selected bg
-            itemSelectedColor: "#fff", // selected text
+            itemBg: "transparent",
+            itemColor: "#57534e",
+            itemHoverBg: "rgba(84, 128, 199, 0.14)",
+            itemHoverColor: COLORS.extra,
+            itemSelectedBg: COLORS.secondary,
+            itemSelectedColor: "#fff",
           },
         },
       }}
     >
       <PrivateRoute>
-        <Layout className="max-h-screen">
+        <Layout className="h-screen overflow-hidden bg-[#fff8ea]">
           <ScrollToTop />
 
-          {/* 🖥 Desktop Sidebar */}
+          {/* Desktop Sidebar */}
           {!isMobile ? (
             <Sider
               trigger={null}
               collapsible
               collapsed={collapsed}
               style={{
-                backgroundColor: COLORS.primary,
-                minHeight: "100vh",
-                borderRight: `1px solid ${COLORS.secondary}30`,
+                background: "linear-gradient(180deg, #fffdf8 0%, #fff8ea 100%)",
+                height: "100vh",
+                borderRight: `1px solid ${COLORS.secondary}26`,
               }}
-              width={250}
+              width={256}
+              collapsedWidth={80}
             >
               <div
-                className="logo p-4 flex justify-center text-lg font-bold"
+                className="px-4 py-4 flex items-center justify-center"
                 style={{
-                  color: COLORS.secondary,
-                  borderBottom: `1px solid ${COLORS.secondary}30`,
+                  borderBottom: `1px solid ${COLORS.secondary}20`,
                 }}
               >
-                <Link to={"/dashboard"} style={{ color: COLORS.secondary }}>
-                  Logo
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-3 w-full justify-center group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#c77e3b] to-[#754f2c] flex items-center justify-center text-white shadow-md shadow-[#c77e3b]/25 shrink-0 group-hover:scale-105 transition-transform">
+                    <Clapperboard className="w-5 h-5" />
+                  </div>
+                  {!collapsed && (
+                    <div className="flex flex-col text-left overflow-hidden">
+                      <span className="text-base font-extrabold tracking-tight text-stone-900 leading-none">
+                        Cinema<span className="text-[#c77e3b]">OS</span>
+                      </span>
+                      <span className="text-[11px] font-medium text-stone-500 mt-1 truncate">
+                        Theater Management
+                      </span>
+                    </div>
+                  )}
                 </Link>
               </div>
 
-              <Menu
-                mode="inline"
-                selectedKeys={activeMenu ? [activeMenu] : []}
-                openKeys={openKeys}
-                onOpenChange={handleOpenChange}
-                style={{
-                  backgroundColor: COLORS.primary,
-                  color: COLORS.secondary,
-                  fontWeight: 500,
-                }}
-                items={renderMenuItems()}
-                onClick={(e) => handleMenuClick(e.key)}
-              />
+              <div className="py-3 overflow-y-auto hide-scrollbar h-[calc(100vh-76px)]">
+                <Menu
+                  mode="inline"
+                  selectedKeys={activeMenu ? [activeMenu] : []}
+                  openKeys={openKeys}
+                  onOpenChange={handleOpenChange}
+                  style={{
+                    backgroundColor: "transparent",
+                    borderRight: "none",
+                    fontWeight: 600,
+                    fontSize: "13.5px",
+                  }}
+                  items={renderMenuItems()}
+                  onClick={(e) => handleMenuClick(e.key)}
+                />
+              </div>
             </Sider>
           ) : (
-            /* 📱 Mobile Drawer Sidebar */
+            /* Mobile Drawer Sidebar */
             <Drawer
               placement="left"
               closable
               onClose={() => setIsDrawerVisible(false)}
               open={isDrawerVisible}
-              bodyStyle={{
-                padding: 0,
-                background: COLORS.primary,
+              styles={{
+                body: {
+                  padding: 0,
+                  background: COLORS.primary,
+                },
               }}
             >
+              <div className="px-4 py-4 flex items-center gap-3 border-b border-[#c77e3b]/20">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#c77e3b] to-[#754f2c] flex items-center justify-center text-white shadow-sm">
+                  <Clapperboard className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-base font-extrabold text-stone-900">
+                    Cinema<span className="text-[#c77e3b]">OS</span>
+                  </span>
+                </div>
+              </div>
               <Menu
                 mode="inline"
                 selectedKeys={activeMenu ? [activeMenu] : []}
                 style={{
-                  backgroundColor: COLORS.primary,
-                  color: COLORS.secondary,
-                  fontWeight: 500,
+                  backgroundColor: "transparent",
+                  borderRight: "none",
+                  fontWeight: 600,
                 }}
                 items={renderMenuItems()}
                 onClick={(e) => {
@@ -299,33 +352,44 @@ const AppLayout: React.FC = () => {
           )}
 
           {/* Main Layout */}
-          <Layout>
+          <Layout className="bg-[#fff8ea] flex flex-col h-screen overflow-hidden">
             <Header
               style={{
-                padding: "0 16px",
-                background: COLORS.primary,
+                padding: "0 24px",
+                background: "rgba(255, 248, 234, 0.88)",
+                backdropFilter: "blur(12px)",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                position: "sticky",
-                top: 0,
-                zIndex: 1,
-                width: "100%",
+                borderBottom: `1px solid ${COLORS.secondary}22`,
+                height: 64,
+                flexShrink: 0,
+                zIndex: 10,
               }}
             >
-              <Button
-                type="text"
-                icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                onClick={() =>
-                  isMobile ? setIsDrawerVisible(true) : setCollapsed(!collapsed)
-                }
-                style={{ fontSize: "16px" }}
-              />
+              <div className="flex items-center gap-3">
+                <Button
+                  type="text"
+                  icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                  onClick={() =>
+                    isMobile ? setIsDrawerVisible(true) : setCollapsed(!collapsed)
+                  }
+                  className="hover:bg-[#c77e3b]/10! text-[#754f2c]! rounded-xl!"
+                  style={{ fontSize: "16px", width: 38, height: 38 }}
+                />
+                <span className="text-sm font-bold text-stone-700 hidden sm:inline">
+                  {currentNavTitle}
+                </span>
+              </div>
+
               <Dropdown overlay={profileMenu} placement="bottomRight" trigger={["click"]}>
                 <Avatar
                   src={user?.profile_image_url || undefined}
-                  style={{ backgroundColor: COLORS.secondary, cursor: "pointer" }}
+                  className="ring-2 ring-[#c77e3b]/30 hover:ring-[#c77e3b] transition-all shadow-sm"
+                  style={{
+                    backgroundColor: COLORS.secondary,
+                    cursor: "pointer",
+                  }}
                 >
                   {(user?.surname?.[0] || "U").toUpperCase()}
                 </Avatar>
@@ -333,20 +397,23 @@ const AppLayout: React.FC = () => {
             </Header>
 
             <Content
-              className="hide-scrollbar min-h-screen p-5 rounded-lg overflow-y-auto"
+              className="hide-scrollbar flex-1 p-4 md:p-6 overflow-y-auto"
               style={{ background: COLORS.primary }}
             >
-              {canGoBack &&
-                !location.pathname.startsWith("/auth") &&
-                !location.pathname.includes("/dashboard") && (
-                  <p
-                    onClick={goBack}
-                    className="inline-flex gap-2 text-lg items-center cursor-pointer mb-3"
-                  >
-                    <IoIosArrowBack /> Back
-                  </p>
-                )}
-              <Outlet />
+              <div className="max-w-[1440px] mx-auto">
+                {canGoBack &&
+                  !location.pathname.startsWith("/auth") &&
+                  !location.pathname.includes("/dashboard") && (
+                    <button
+                      type="button"
+                      onClick={goBack}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 hover:bg-white text-stone-700 hover:text-[#c77e3b] border border-[#c77e3b]/20 text-xs font-semibold shadow-2xs transition-all cursor-pointer mb-4"
+                    >
+                      <IoIosArrowBack className="text-sm" /> Back
+                    </button>
+                  )}
+                <Outlet />
+              </div>
             </Content>
           </Layout>
         </Layout>
@@ -357,10 +424,11 @@ const AppLayout: React.FC = () => {
           title="My Profile"
         >
           <div className="space-y-4">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#fff8ea]/70 border border-[#c77e3b]/20">
               <Avatar
                 size={64}
                 src={profileForm.preview_url || undefined}
+                className="ring-2 ring-[#c77e3b]/30 shrink-0"
                 style={{ backgroundColor: COLORS.secondary }}
               >
                 {(profileForm.surname?.[0] || "U").toUpperCase()}
@@ -378,12 +446,11 @@ const AppLayout: React.FC = () => {
                     type="button"
                     variant="outline"
                     size="xs"
-                    className="rounded-md"
                     loading={profileUploading}
                     title={profileUploading ? "Uploading..." : "Change Photo"}
                   />
                 </Upload>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-stone-500 mt-1.5">
                   {user?.email} · {formatUserLabel(user?.role)}
                   {user?.cinema?.name ? ` · ${user.cinema.name}` : ""}
                 </p>
@@ -415,10 +482,10 @@ const AppLayout: React.FC = () => {
               }
               required
             />
-            <div className="flex gap-2 pt-4 border-t">
+            <div className="flex gap-2 pt-4 border-t border-stone-100">
               <SharedButton
                 type="button"
-                className="flex-1 rounded-md"
+                className="flex-1"
                 loading={profileSaving}
                 disabled={profileSaving || profileUploading}
                 title="Save Profile"
@@ -427,7 +494,6 @@ const AppLayout: React.FC = () => {
               <SharedButton
                 type="button"
                 variant="outline"
-                className="rounded-md"
                 title="Cancel"
                 onClick={() => setProfileOpen(false)}
               />

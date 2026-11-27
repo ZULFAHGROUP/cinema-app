@@ -10,6 +10,7 @@ import { loginValidationSchema } from "../../../validations";
 import { allRoutes } from "../../../routes/allRoutes";
 import AuthLayout from "../../../components/shared/AuthLayout";
 import { toast } from "react-toastify";
+import { LockKeyhole } from "lucide-react";
 
 const initialValues = { email: "", password: "" };
 
@@ -27,20 +28,32 @@ const Login = () => {
         navigate("/dashboard");
       }
       resetForm();
-    } catch (error :any) {
-      if(error.code === 'ERR_BAD_REQUEST'){
-        toast.error(`${error.message}. Confirm your email and password then try again`);
-      }else{
-        toast.error(error.message ||"Something went wrong");
+    } catch (error: any) {
+      if (error.code === "ERR_BAD_REQUEST") {
+        toast.error(
+          `${error.message}. Confirm your email and password then try again`
+        );
+      } else {
+        toast.error(error.message || "Something went wrong");
       }
     }
   }
 
   return (
     <AuthLayout>
-      <div className="p-12 text-center space-y-2 w-full md:w-[30rem] shadow-lg rounded-lg border border-gray-200">
-        <p className="font-medium text-lg md:text-3xl">Welcome Back!</p>
-        <p>Login to continue to see what is happening with your cinemas.</p>
+      <div className="w-full max-w-md bg-white p-8 sm:p-10 rounded-3xl shadow-[0_20px_50px_-12px_rgba(117,79,44,0.14)] border border-[#c77e3b]/20">
+        <div className="flex flex-col items-center text-center mb-6">
+          <div className="w-12 h-12 rounded-2xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] mb-3 shadow-2xs">
+            <LockKeyhole className="w-6 h-6" />
+          </div>
+          <h1 className="font-extrabold text-2xl sm:text-3xl text-stone-900">
+            Welcome Back
+          </h1>
+          <p className="text-sm text-stone-500 mt-1">
+            Sign in to manage your cinema operations
+          </p>
+        </div>
+
         <Formik
           initialValues={initialValues}
           validationSchema={loginValidationSchema}
@@ -55,19 +68,16 @@ const Login = () => {
             dirty,
             isSubmitting,
           }) => (
-            <Form
-              className="flex-1 space-y-4 text-start my-6"
-              onSubmit={handleSubmit}
-            >
+            <Form className="space-y-5 text-start" onSubmit={handleSubmit}>
               <Input
-                label="Email"
+                label="Email Address"
                 type="email"
                 name="email"
                 value={values.email}
                 onChange={handleChange}
                 error={errors.email}
-                className=""
-                placeholder="example@example.com"
+                placeholder="name@company.com"
+                required
               />
 
               <Input
@@ -77,36 +87,38 @@ const Login = () => {
                 value={values.password}
                 onChange={handleChange}
                 error={errors.password}
-                placeholder="********"
+                placeholder="••••••••"
+                required
               />
 
-              <div className="flex items-center justify-between">
-                <div className="flex gap-2 items-center">
-                  <Input
+              <div className="flex items-center justify-between pt-1">
+                <label className="flex gap-2 items-center cursor-pointer select-none">
+                  <input
                     type="checkbox"
                     id="rememberMe"
-                    className="accent-[#c77e3b]"
-                    // checked={}
+                    className="w-4 h-4 rounded accent-[#c77e3b] cursor-pointer"
                     onChange={handleChange}
                   />
-                  <p className="text-xs font-semibold">Remember me</p>
-                </div>
-                <span className="text-[#c77e3b] text-xs font-normal">
+                  <span className="text-xs font-semibold text-stone-600">
+                    Remember me
+                  </span>
+                </label>
+                <span className="text-xs text-stone-500">
                   Forgot Password?{" "}
                   <Link
                     to={allRoutes.forgetPassword}
-                    className="text-[#c77e3b] font-semibold transition ease-in-out duration-300"
+                    className="text-[#c77e3b] hover:text-[#754f2c] font-bold underline-offset-4 hover:underline transition"
                   >
                     Reset
                   </Link>
                 </span>
               </div>
 
-              <div className="flex justify-center">
+              <div className="pt-2">
                 <Button
-                  title="Login"
-                  variant="secondary"
-                  className="rounded-md w-full"
+                  title="Sign In to Dashboard"
+                  variant="primary"
+                  className="w-full py-3"
                   loading={isSubmitting}
                   disabled={!isValid || !dirty || isSubmitting}
                 />

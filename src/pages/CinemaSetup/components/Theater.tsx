@@ -2,13 +2,21 @@
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "../../../components/shared/Cards";
 import Button from "../../../components/shared/Button";
 import { Collapse, Dropdown } from "antd";
-import { Edit, Trash2, Monitor, ChevronDown, MoreVertical, Armchair } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  Monitor,
+  ChevronDown,
+  MoreVertical,
+  Armchair,
+  MapPin,
+  Building2,
+} from "lucide-react";
 import { deleteCinema, getAllCinemas } from "../../../store/slices/cinema";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
@@ -72,7 +80,6 @@ const Theater = ({ cinemas, loading }: any) => {
         })
       ).unwrap();
       if (response.code === 200) {
-        // Re-fetch screens for this specific cinema
         const cinemaId = selectedScreen?.cinema_id;
         if (cinemaId) {
           await dispatch(
@@ -95,9 +102,7 @@ const Theater = ({ cinemas, loading }: any) => {
     return screensByCinema[cinemaId] || [];
   };
 
-  // Fetch screens when collapse is opened
   const handleCollapseChange = (cinemaId: string) => {
-    // Only fetch if we haven't fetched for this cinema yet
     if (!screensByCinema[cinemaId]) {
       dispatch(
         getAllScreen({
@@ -113,31 +118,54 @@ const Theater = ({ cinemas, loading }: any) => {
     <>
       {loading ? (
         <Loader rows={6} />
+      ) : !cinemas?.length ? (
+        <div className="bg-white rounded-2xl border border-dashed border-[#c77e3b]/30 p-16 text-center">
+          <Building2 className="w-10 h-10 text-[#c77e3b] mx-auto mb-3 opacity-80" />
+          <p className="font-bold text-stone-800">No cinema locations found</p>
+          <p className="text-sm text-stone-500 mt-1">
+            Add your first theater location to configure screens and seat maps.
+          </p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {cinemas?.length > 0 &&
-            cinemas?.map((theater: any) => {
-              const cinemaScreens = getCinemaScreens(theater?.cinema_id);
-              const isLoadingScreens = loadingCinemas[theater?.cinema_id];
-              // Loaded screens are fresher (after adds/edits); the cinema list has them too.
-              const screensForCount = cinemaScreens?.length ? cinemaScreens : theater?.screens || [];
-              const screenCount = screensForCount.length;
-              const seatCount = screensForCount.reduce(
-                (sum: number, screen: any) => sum + (Number(screen.seat_count) || 0),
-                0
-              );
+          {cinemas.map((theater: any) => {
+            const cinemaScreens = getCinemaScreens(theater?.cinema_id);
+            const isLoadingScreens = loadingCinemas[theater?.cinema_id];
+            const screensForCount = cinemaScreens?.length
+              ? cinemaScreens
+              : theater?.screens || [];
+            const screenCount = screensForCount.length;
+            const seatCount = screensForCount.reduce(
+              (sum: number, screen: any) =>
+                sum + (Number(screen.seat_count) || 0),
+              0
+            );
 
-              return (
-                <Card
-                  key={theater?.cinema_id}
-                  className="hover:shadow-md transition-shadow relative"
-                >
-                  <CardHeader>
-                    <div className="flex items-center justify-between!">
-                      <CardTitle className="font-sans">
-                        {theater?.name}
-                      </CardTitle>
-                       <Dropdown
+            return (
+              <Card
+                key={theater?.cinema_id}
+                className="relative overflow-hidden group"
+              >
+                <span className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#c77e3b] via-[#754f2c] to-[#5480c7]" />
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0 mt-0.5">
+                        <Building2 className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <CardTitle className="text-lg truncate">
+                          {theater?.name}
+                        </CardTitle>
+                        <p className="text-xs text-stone-500 flex items-center gap-1 mt-1 truncate">
+                          <MapPin className="w-3.5 h-3.5 text-[#c77e3b] shrink-0" />
+                          <span className="truncate">{theater?.location}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {(canEditCinema || canDeleteCinema) && (
+                      <Dropdown
                         menu={{
                           items: [
                             ...(canEditCinema
@@ -181,141 +209,156 @@ const Theater = ({ cinemas, loading }: any) => {
                         trigger={["click"]}
                       >
                         <Button
-                          size="sm"
-                          className="p-0 bg-transparent w-fit shadow-none text-black!"
-                          icon={<MoreVertical className="" size={20} />}
+                          size="xs"
+                          variant="outline"
+                          className="p-1.5! border-stone-200! text-stone-600! hover:text-white!"
+                          icon={<MoreVertical size={16} />}
                         />
                       </Dropdown>
-                    </div>
-                    <CardDescription className="font-serif">
-                      <p>{theater?.location}</p>
-                      {screenCount} screen{screenCount === 1 ? "" : "s"} ·{" "}
+                    )}
+                  </div>
+
+                  {/* Quick Stat Badges */}
+                  <div className="flex items-center gap-2 pt-3">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fff8ea] text-[#754f2c] border border-[#c77e3b]/20 text-xs font-semibold">
+                      <Monitor className="w-3.5 h-3.5 text-[#c77e3b]" />
+                      {screenCount} screen{screenCount === 1 ? "" : "s"}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#5480c7]/10 text-[#5480c7] border border-[#5480c7]/20 text-xs font-semibold">
+                      <Armchair className="w-3.5 h-3.5" />
                       {seatCount.toLocaleString()} seat{seatCount === 1 ? "" : "s"}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {/* Screens Dropdown */}
-                      <div className="mb-6">
-                        <Collapse
-                          bordered={false}
-                          onChange={() =>
-                            handleCollapseChange(theater?.cinema_id)
-                          }
-                          expandIcon={({ isActive }) => (
-                            <ChevronDown
-                              className={`w-4 h-4 transition-transform ${
-                                isActive ? "rotate-180" : ""
-                              }`}
-                            />
-                          )}
-                          className="bg-white shadow-md rounded-md"
-                        >
-                          <Panel
-                            header={
-                              <span className="font-serif text-sm">
-                                Screens (
-                                {cinemaScreens?.length ||
-                                  theater?.screens?.length}
-                                )
-                              </span>
-                            }
-                            key="1"
-                          >
-                            <div className="space-y-2">
-                              {isLoadingScreens ? (
-                                <Loader rows={2} />
-                              ) : cinemaScreens?.length > 0 ? (
-                                cinemaScreens?.map((screen: any) => (
-                                  <div
-                                    key={screen.screen_id}
-                                    className="flex items-center justify-between p-1 bg-white rounded border border-gray-200"
+                    </span>
+                  </div>
+                </CardHeader>
+
+                <CardContent>
+                  <Collapse
+                    bordered={false}
+                    onChange={() => handleCollapseChange(theater?.cinema_id)}
+                    expandIcon={({ isActive }) => (
+                      <ChevronDown
+                        className={`w-4 h-4 text-[#c77e3b] transition-transform ${
+                          isActive ? "rotate-180" : ""
+                        }`}
+                      />
+                    )}
+                    className="bg-[#fff8ea]/60 border border-[#c77e3b]/15 rounded-xl overflow-hidden"
+                  >
+                    <Panel
+                      header={
+                        <span className="text-xs font-bold uppercase tracking-wider text-[#754f2c]">
+                          Auditorium Screens ({screenCount})
+                        </span>
+                      }
+                      key="1"
+                    >
+                      <div className="space-y-2 pt-1">
+                        {isLoadingScreens ? (
+                          <Loader rows={2} />
+                        ) : cinemaScreens?.length > 0 ? (
+                          cinemaScreens.map((screen: any) => (
+                            <div
+                              key={screen.screen_id}
+                              className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-[#c77e3b]/15 shadow-2xs hover:border-[#c77e3b]/40 transition-colors"
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-8 h-8 rounded-lg bg-[#fff8ea] text-[#c77e3b] flex items-center justify-center shrink-0">
+                                  <Monitor className="w-4 h-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-bold text-stone-800 truncate">
+                                    {screen.name}
+                                  </p>
+                                  <p className="text-xs text-stone-500">
+                                    <span className="font-semibold text-[#5480c7]">
+                                      {screen.screenType?.name || "Standard"}
+                                    </span>{" "}
+                                    · {screen.seat_count} seats
+                                  </p>
+                                </div>
+                              </div>
+
+                              {(canEditCinema ||
+                                canConfigureSeats ||
+                                canDeleteCinema) && (
+                                <Dropdown
+                                  menu={{
+                                    items: [
+                                      ...(canEditCinema
+                                        ? [
+                                            {
+                                              key: "1",
+                                              label: "Edit Screen",
+                                              icon: (
+                                                <Edit className="w-4 h-4" />
+                                              ),
+                                              onClick: () => {
+                                                setSelectedScreen(screen);
+                                                setShowEditScreenModal(true);
+                                              },
+                                            },
+                                          ]
+                                        : []),
+                                      ...(canConfigureSeats
+                                        ? [
+                                            {
+                                              key: "seats",
+                                              label: "Seat Layout",
+                                              icon: (
+                                                <Armchair className="w-4 h-4" />
+                                              ),
+                                              onClick: () => {
+                                                setSelectedScreen(screen);
+                                                setShowSeatLayoutModal(true);
+                                              },
+                                            },
+                                          ]
+                                        : []),
+                                      ...(canDeleteCinema
+                                        ? [
+                                            {
+                                              key: "2",
+                                              label: "Delete Screen",
+                                              danger: true,
+                                              icon: (
+                                                <Trash2 className="w-4 h-4" />
+                                              ),
+                                              onClick: () => {
+                                                setSelectedScreen(screen);
+                                                setShowDeleteScreenModal(true);
+                                              },
+                                            },
+                                          ]
+                                        : []),
+                                    ],
+                                  }}
+                                  trigger={["click"]}
+                                >
+                                  <button
+                                    type="button"
+                                    className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500 cursor-pointer"
                                   >
-                                    <div className="flex-1">
-                                      <p className="font-sans text-sm font-medium">
-                                        {screen.name}
-                                      </p>
-                                      <p className="font-serif text-xs text-muted-foreground">
-                                        {screen.screenType?.name} • {screen.seat_count} seats
-                                      </p>
-                                    </div>
-                                    <div className="flex gap-1">
-                                      <Dropdown
-                                        menu={{
-                                          items: [
-                                            ...(canEditCinema
-                                              ? [
-                                                  {
-                                                    key: "1",
-                                                    label: "Edit Screen",
-                                                    icon: <Edit className="w-4 h-4" />,
-                                                    onClick: () => {
-                                                      setSelectedScreen(screen);
-                                                      setShowEditScreenModal(true);
-                                                    },
-                                                  },
-                                                ]
-                                              : []),
-                                            ...(canConfigureSeats
-                                              ? [
-                                                  {
-                                                    key: "seats",
-                                                    label: "Seat Layout",
-                                                    icon: <Armchair className="w-4 h-4" />,
-                                                    onClick: () => {
-                                                      setSelectedScreen(screen);
-                                                      setShowSeatLayoutModal(true);
-                                                    },
-                                                  },
-                                                ]
-                                              : []),
-                                            ...(canDeleteCinema
-                                              ? [
-                                                  {
-                                                    key: "2",
-                                                    label: "Delete Screen",
-                                                    danger: true,
-                                                    icon: <Trash2 className="w-4 h-4" />,
-                                                    onClick: () => {
-                                                      setSelectedScreen(screen);
-                                                      setShowDeleteScreenModal(true);
-                                                    },
-                                                  },
-                                                ]
-                                              : []),
-                                          ],
-                                        }}
-                                        trigger={["click"]}
-                                      >
-                                        <Button
-                                          size="sm"
-                          className="p-0 bg-transparent w-fit shadow-none text-black!"
-                                          icon={
-                                            <MoreVertical className="" size={18} />
-                                          }
-                                        />
-                                      </Dropdown>
-                                    </div>
-                                  </div>
-                                ))
-                              ) : (
-                                <p className="text-sm text-gray-500 text-center py-2">
-                                  No screens available
-                                </p>
+                                    <MoreVertical size={16} />
+                                  </button>
+                                </Dropdown>
                               )}
                             </div>
-                          </Panel>
-                        </Collapse>
+                          ))
+                        ) : (
+                          <p className="text-xs text-stone-500 text-center py-3">
+                            No screens configured yet
+                          </p>
+                        )}
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                    </Panel>
+                  </Collapse>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 
-      {/* All your modals remain the same */}
       <ConfirmationModal
         open={showDeleteCinemaModal}
         onCancel={() => setShowDeleteCinemaModal(false)}
@@ -357,7 +400,7 @@ const Theater = ({ cinemas, loading }: any) => {
 
       <DisplayModal
         open={showSeatLayoutModal}
-        title={`Seat layout: ${selectedScreen?.name}`}
+        title={`Seat Layout: ${selectedScreen?.name}`}
         onClose={() => setShowSeatLayoutModal(false)}
       >
         {showSeatLayoutModal && selectedScreen && (

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Armchair, Sparkles } from "lucide-react";
 import { toast } from "react-toastify";
 import Button from "../../../components/shared/Button";
 import Input from "../../../components/shared/Input";
@@ -47,9 +47,13 @@ const nextRowLabel = (rows: SeatLayoutRow[]) => {
   return chars.join("");
 };
 
+const SEAT_TYPE_PRESETS = ["Standard", "VIP", "Recliner", "Couple"];
+
 const SeatLayoutEditor = ({ screen, onCancel }: SeatLayoutEditorProps) => {
   const dispatch = useAppDispatch();
-  const { screenSeats, screenSeatsLoading } = useAppSelector((state) => state.seat);
+  const { screenSeats, screenSeatsLoading } = useAppSelector(
+    (state) => state.seat
+  );
   const [rows, setRows] = useState<SeatLayoutRow[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -66,8 +70,9 @@ const SeatLayoutEditor = ({ screen, onCancel }: SeatLayoutEditorProps) => {
       current.map((row, i) => {
         if (i !== index) return row;
         const updated = { ...row, ...changes };
-        // Seats beyond the new row length no longer exist.
-        updated.disabled = (updated.disabled || []).filter((n) => n <= updated.seats);
+        updated.disabled = (updated.disabled || []).filter(
+          (n) => n <= updated.seats
+        );
         return updated;
       })
     );
@@ -95,12 +100,15 @@ const SeatLayoutEditor = ({ screen, onCancel }: SeatLayoutEditorProps) => {
     ]);
   };
 
-  const removeRow = (index: number) => setRows(rows.filter((_, i) => i !== index));
+  const removeRow = (index: number) =>
+    setRows(rows.filter((_, i) => i !== index));
 
-  const activeSeatCount = rows.reduce(
-    (sum, row) => sum + row.seats - (row.disabled?.length || 0),
+  const totalSeats = rows.reduce((sum, row) => sum + row.seats, 0);
+  const disabledSeatCount = rows.reduce(
+    (sum, row) => sum + (row.disabled?.length || 0),
     0
   );
+  const activeSeatCount = totalSeats - disabledSeatCount;
 
   const handleSave = async () => {
     const labels = rows.map((row) => row.row.trim().toUpperCase());
@@ -127,8 +135,13 @@ const SeatLayoutEditor = ({ screen, onCancel }: SeatLayoutEditorProps) => {
         })
       ).unwrap();
       toast.success(response.message);
-      // seat_count follows the number of active seats.
-      dispatch(getAllScreen({ screensPage: 1, screensLimit: 10, cinema_id: screen.cinema_id }));
+      dispatch(
+        getAllScreen({
+          screensPage: 1,
+          screensLimit: 10,
+          cinema_id: screen.cinema_id,
+        })
+      );
       onCancel();
     } catch (error: any) {
       toast.error(error?.message || "Could not save the seat layout");
@@ -140,116 +153,216 @@ const SeatLayoutEditor = ({ screen, onCancel }: SeatLayoutEditorProps) => {
   if (screenSeatsLoading) return <Loader rows={4} />;
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        Rows are numbered from seat 1. Click a seat in the preview to disable it (broken,
-        removed or an aisle). Saving again updates the layout in place; seats already sold
-        keep their tickets.
-      </p>
-
-      <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-1">
-        {rows.length === 0 && (
-          <p className="text-sm text-gray-500 text-center py-4">
-            No seat map yet. Without one, this screen sells by ticket count only.
-          </p>
-        )}
-        {rows.map((row, index) => (
-          <div key={index} className="flex items-end gap-2">
-            <Input
-              label={index === 0 ? "Row" : undefined}
-              value={row.row}
-              maxLength={3}
-              onChange={(e) => updateRow(index, { row: e.target.value.toUpperCase() })}
-              conClassName="w-20"
-            />
-            <Input
-              label={index === 0 ? "Seats" : undefined}
-              type="number"
-              min={1}
-              max={100}
-              value={row.seats}
-              onChange={(e) =>
-                updateRow(index, { seats: Math.min(100, Math.max(1, Number(e.target.value) || 1)) })
-              }
-              conClassName="w-24"
-            />
-            <Input
-              label={index === 0 ? "Seat type" : undefined}
-              value={row.seat_type || ""}
-              maxLength={30}
-              placeholder="Standard"
-              onChange={(e) => updateRow(index, { seat_type: e.target.value })}
-              conClassName="flex-1"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              className="rounded-md mb-1"
-              icon={<Trash2 className="w-4 h-4" />}
-              onClick={() => removeRow(index)}
-            />
+    <div className="space-y-5">
+      {/* Summary Header Bar */}
+      <div className="rounded-xl bg-[#fff8ea]/80 border border-[#c77e3b]/20 p-3.5 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-lg bg-[#c77e3b]/15 text-[#754f2c] flex items-center justify-center shrink-0">
+            <Armchair size={18} />
           </div>
-        ))}
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-[#754f2c]">
+              Auditorium Seat Map Designer
+            </p>
+            <p className="text-xs text-stone-500">
+              Add rows below, then click any seat in the live preview to mark it
+              as disabled or an aisle gap.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="px-2.5 py-1 rounded-lg bg-white border border-stone-200 text-xs font-semibold text-stone-700">
+            {rows.length} {rows.length === 1 ? "Row" : "Rows"}
+          </span>
+          <span className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-700">
+            {activeSeatCount} Sellable
+          </span>
+          {disabledSeatCount > 0 && (
+            <span className="px-2.5 py-1 rounded-lg bg-stone-100 border border-stone-200 text-xs font-medium text-stone-500">
+              {disabledSeatCount} Disabled
+            </span>
+          )}
+        </div>
       </div>
 
-      <Button
-        type="button"
-        variant="outline"
-        className="rounded-md"
-        icon={<Plus className="w-4 h-4" />}
-        title="Add row"
-        onClick={addRow}
-        disabled={rows.length >= 60}
-      />
-
-      {rows.length > 0 && (
-        <div className="border rounded-lg p-3 bg-gray-50 overflow-x-auto">
-          <div className="text-center text-xs text-muted-foreground mb-3 border-b pb-1">
-            SCREEN
+      {/* Row Builder List */}
+      <div className="space-y-2.5 max-h-[34vh] overflow-y-auto pr-1">
+        {rows.length === 0 ? (
+          <div className="rounded-2xl border-2 border-dashed border-stone-200 bg-stone-50/60 py-8 px-4 text-center space-y-2">
+            <Sparkles className="w-7 h-7 text-[#c77e3b] mx-auto" />
+            <p className="text-sm font-semibold text-stone-700">
+              No seat map configured yet
+            </p>
+            <p className="text-xs text-stone-500 max-w-sm mx-auto">
+              Without a seat map, this screen sells tickets by general admission
+              count. Click <strong>Add Row</strong> below to design an
+              interactive seat layout.
+            </p>
           </div>
-          <div className="space-y-1 w-max mx-auto">
+        ) : (
+          rows.map((row, index) => (
+            <div
+              key={index}
+              className="flex flex-wrap sm:flex-nowrap items-end gap-2.5 p-2.5 rounded-xl bg-stone-50/80 border border-stone-200/80 hover:border-[#c77e3b]/30 transition-colors"
+            >
+              <Input
+                label={index === 0 ? "Row Label" : undefined}
+                value={row.row}
+                maxLength={3}
+                onChange={(e) =>
+                  updateRow(index, { row: e.target.value.toUpperCase() })
+                }
+                conClassName="w-20"
+                className="text-center font-bold"
+              />
+              <Input
+                label={index === 0 ? "Seats" : undefined}
+                type="number"
+                min={1}
+                max={100}
+                value={row.seats}
+                onChange={(e) =>
+                  updateRow(index, {
+                    seats: Math.min(
+                      100,
+                      Math.max(1, Number(e.target.value) || 1)
+                    ),
+                  })
+                }
+                conClassName="w-24"
+              />
+              <div className="flex-1 min-w-[160px]">
+                <Input
+                  label={index === 0 ? "Seat Category" : undefined}
+                  value={row.seat_type || ""}
+                  maxLength={30}
+                  placeholder="Standard"
+                  onChange={(e) =>
+                    updateRow(index, { seat_type: e.target.value })
+                  }
+                />
+                {index === rows.length - 1 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {SEAT_TYPE_PRESETS.map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => updateRow(index, { seat_type: preset })}
+                        className={`text-[10px] px-2 py-0.5 rounded-md border transition-colors cursor-pointer ${
+                          row.seat_type === preset
+                            ? "bg-[#c77e3b]/15 border-[#c77e3b] text-[#754f2c] font-semibold"
+                            : "bg-white border-stone-200 text-stone-500 hover:border-[#c77e3b]/40"
+                        }`}
+                      >
+                        {preset}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="text-red-500! hover:bg-red-50! border-stone-200! h-[38px]"
+                icon={<Trash2 className="w-4 h-4" />}
+                onClick={() => removeRow(index)}
+              />
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="flex items-center justify-between">
+        <Button
+          type="button"
+          variant="outline"
+          icon={<Plus className="w-4 h-4" />}
+          title="Add Row"
+          onClick={addRow}
+          disabled={rows.length >= 60}
+        />
+        {rows.length > 0 && (
+          <div className="flex items-center gap-3 text-xs text-stone-500">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-3.5 h-3.5 rounded-t bg-[#c77e3b] inline-block" />
+              Active Seat
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-3.5 h-3.5 rounded-t bg-stone-200 inline-block" />
+              Disabled / Aisle (Click to toggle)
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Live Auditorium Preview */}
+      {rows.length > 0 && (
+        <div className="border border-stone-200/90 rounded-2xl p-4 bg-gradient-to-b from-stone-900 to-stone-800 text-white overflow-x-auto shadow-inner">
+          <div className="max-w-md mx-auto mb-5 text-center">
+            <div className="h-2 rounded-full bg-gradient-to-r from-transparent via-[#c77e3b] to-transparent shadow-[0_4px_20px_rgba(199,126,59,0.7)]" />
+            <p className="text-[10px] font-bold tracking-[0.25em] uppercase text-stone-400 mt-1.5">
+              Auditorium Screen
+            </p>
+          </div>
+
+          <div className="space-y-1.5 w-max mx-auto pb-1">
             {rows.map((row, index) => (
-              <div key={index} className="flex items-center gap-1">
-                <span className="w-7 text-xs font-medium text-right pr-1">{row.row}</span>
-                {Array.from({ length: row.seats }, (_, i) => i + 1).map((seatNumber) => {
-                  const isDisabled = row.disabled?.includes(seatNumber);
-                  return (
-                    <button
-                      key={seatNumber}
-                      type="button"
-                      title={`${row.row}${seatNumber}${isDisabled ? " (disabled)" : ""}`}
-                      onClick={() => toggleSeat(index, seatNumber)}
-                      className={`w-5 h-5 rounded-t text-[9px] leading-5 ${
-                        isDisabled
-                          ? "bg-gray-200 text-gray-400 line-through"
-                          : "bg-[#c77e3b] text-white"
-                      }`}
-                    >
-                      {seatNumber}
-                    </button>
-                  );
-                })}
+              <div key={index} className="flex items-center gap-1.5">
+                <span className="w-7 text-xs font-bold text-stone-400 text-right pr-1">
+                  {row.row}
+                </span>
+                {Array.from({ length: row.seats }, (_, i) => i + 1).map(
+                  (seatNumber) => {
+                    const isDisabled = row.disabled?.includes(seatNumber);
+                    return (
+                      <button
+                        key={seatNumber}
+                        type="button"
+                        title={`${row.row}${seatNumber} (${
+                          row.seat_type || "Standard"
+                        })${
+                          isDisabled
+                            ? " — Disabled (click to enable)"
+                            : " — Active (click to disable)"
+                        }`}
+                        onClick={() => toggleSeat(index, seatNumber)}
+                        className={`w-6 h-6 rounded-t-md text-[10px] font-semibold transition-all cursor-pointer ${
+                          isDisabled
+                            ? "bg-stone-700/60 text-stone-500 line-through border border-stone-600/50"
+                            : "bg-[#c77e3b] hover:bg-[#b06a2b] text-white shadow-sm"
+                        }`}
+                      >
+                        {seatNumber}
+                      </button>
+                    );
+                  }
+                )}
+                <span className="text-[10px] text-stone-400 pl-1.5">
+                  {row.seat_type || "Standard"}
+                </span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      <div className="flex items-center justify-between pt-4 border-t">
-        <span className="text-sm text-muted-foreground">{activeSeatCount} sellable seats</span>
-        <div className="flex gap-2">
+      <div className="flex items-center justify-between pt-4 border-t border-stone-200/80">
+        <span className="text-xs font-semibold text-stone-500">
+          Total active capacity:{" "}
+          <strong className="text-stone-900">{activeSeatCount} seats</strong>
+        </span>
+        <div className="flex gap-2.5">
           <Button
             type="button"
             variant="outline"
-            className="rounded-md"
             title="Cancel"
             onClick={onCancel}
             disabled={saving}
           />
           <Button
             type="button"
-            className="rounded-md"
-            title="Save layout"
+            title="Save Seat Layout"
             loading={saving}
             onClick={handleSave}
             disabled={saving || rows.length === 0}

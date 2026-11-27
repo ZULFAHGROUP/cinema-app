@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Formik, Form } from "formik";
+import { Layers } from "lucide-react";
 import Input from "../../../../../components/shared/Input";
+import TextArea from "../../../../../components/shared/TextArea";
 import Button from "../../../../../components/shared/Button";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../../../../store/hook";
@@ -72,10 +74,25 @@ const ProductCategoryForm = ({
         isSubmitting,
         handleSubmit,
       }) => (
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit} className="space-y-5">
+          <div className="rounded-xl bg-[#fff8ea]/70 border border-[#c77e3b]/20 p-3.5 flex items-start gap-3">
+            <div className="w-9 h-9 rounded-lg bg-[#c77e3b]/15 text-[#754f2c] flex items-center justify-center shrink-0">
+              <Layers size={18} />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#754f2c]">
+                Concession Category
+              </p>
+              <p className="text-xs text-stone-500 mt-0.5">
+                Group concession items (e.g., Popcorn, Drinks, Combos) for faster
+                POS filtering.
+              </p>
+            </div>
+          </div>
+
           <div className="space-y-4">
             <Input
-              label="Product Category Name"
+              label="Category Name"
               name="name"
               value={values.name}
               onChange={handleChange}
@@ -85,11 +102,11 @@ const ProductCategoryForm = ({
                   ? errors.name
                   : undefined
               }
-              placeholder="Snacks"
+              placeholder="e.g., Popcorn & Snacks"
               required
             />
 
-            <Input
+            <TextArea
               label="Category Description"
               name="description"
               value={values.description}
@@ -100,15 +117,23 @@ const ProductCategoryForm = ({
                   ? errors.description
                   : undefined
               }
-              placeholder="Yummy snacks"
+              placeholder="Describe what products belong in this category..."
+              rows={3}
               required
             />
           </div>
 
-          <div className="flex gap-2 pt-6 border-t mt-6">
+          <div className="flex items-center justify-end gap-2.5 pt-5 border-t border-stone-200/80">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+              title="Cancel"
+            />
             <Button
               type="submit"
-              className="flex-1 rounded-md"
+              className="min-w-[160px]"
               disabled={isSubmitting}
               loading={isSubmitting}
               title={
@@ -117,17 +142,9 @@ const ProductCategoryForm = ({
                     ? "Updating..."
                     : "Adding..."
                   : editMode
-                  ? "Update Product Cat."
-                  : "Add Product Cat."
+                  ? "Save Category"
+                  : "Create Category"
               }
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-              title="Cancel"
-              className="rounded-md"
             />
           </div>
         </Form>

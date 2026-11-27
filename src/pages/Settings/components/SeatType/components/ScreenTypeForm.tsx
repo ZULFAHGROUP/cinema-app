@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Formik, Form } from "formik";
+import { MonitorPlay } from "lucide-react";
 import Input from "../../../../../components/shared/Input";
 import Button from "../../../../../components/shared/Button";
 import { toast } from "react-toastify";
@@ -17,6 +18,8 @@ interface ScreenTypeFormProps {
   seatTypeData?: any;
 }
 
+const SCREEN_TYPE_PRESETS = ["2D Standard", "3D", "IMAX", "VIP Lounge", "4DX"];
+
 const ScreenTypeForm = ({
   onCancel,
   editMode,
@@ -27,8 +30,6 @@ const ScreenTypeForm = ({
 
   const initialValues = {
     name: seatTypeData?.name || "",
-    // description: seatTypeData?.description || "",
-    // price: seatTypeData?.price || "",
   };
 
   const handleSubmit = async (
@@ -72,79 +73,82 @@ const ScreenTypeForm = ({
         touched,
         handleChange,
         handleBlur,
+        setFieldValue,
         isSubmitting,
         handleSubmit,
       }) => (
-        <Form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Seat Type Name"
-            name="name"
-            value={values.name}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={
-              touched.name && typeof errors.name === "string"
-                ? errors.name
-                : undefined
-            }
-            placeholder="e.g. VIP"
-            required
-          />
+        <Form onSubmit={handleSubmit} className="space-y-5">
+          <div className="rounded-xl bg-[#fff8ea]/70 border border-[#c77e3b]/20 p-3.5 flex items-start gap-3">
+            <div className="w-9 h-9 rounded-lg bg-[#c77e3b]/15 text-[#754f2c] flex items-center justify-center shrink-0">
+              <MonitorPlay size={18} />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#754f2c]">
+                Screen Experience Format
+              </p>
+              <p className="text-xs text-stone-500 mt-0.5">
+                Define auditorium experience formats used when configuring
+                screens and ticket price rules.
+              </p>
+            </div>
+          </div>
 
-          {/*<Input
-            label="Description"
-            name="description"
-            value={values.description}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={
-              touched.description && typeof errors.description === "string"
-                ? errors.description
-                : undefined
-            }
-            placeholder="e.g. Comfortable recliner with snacks"
-            required
-          />
-
-          <Input
-            label="Price (#)"
-            type="number"
-            name="price"
-            value={values.price}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={
-              touched.price && typeof errors.price === "string"
-                ? errors.price
-                : undefined
-            }
-            placeholder="5000"
-            required
-          />*/}
-
-          <div className="flex gap-2 pt-6 border-t mt-6">
-            <Button
-              type="submit"
-              className="flex-1 rounded-md"
-              disabled={isSubmitting}
-              loading={isSubmitting}
-              title={
-                isSubmitting
-                  ? editMode
-                    ? "Updating Screen Type..."
-                    : "Adding Screen Type..."
-                  : editMode
-                  ? "Update Screen Type"
-                  : "Add Screen Type"
+          <div>
+            <Input
+              label="Screen Type Name"
+              name="name"
+              value={values.name}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={
+                touched.name && typeof errors.name === "string"
+                  ? errors.name
+                  : undefined
               }
+              placeholder="e.g., VIP / IMAX / 3D"
+              required
             />
+            <div className="flex flex-wrap items-center gap-1.5 mt-2">
+              <span className="text-[11px] text-stone-400">Quick presets:</span>
+              {SCREEN_TYPE_PRESETS.map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => setFieldValue("name", preset)}
+                  className={`text-[11px] px-2.5 py-0.5 rounded-md border transition-colors cursor-pointer ${
+                    values.name === preset
+                      ? "bg-[#fff8ea] border-[#c77e3b] text-[#754f2c] font-bold"
+                      : "bg-stone-50 border-stone-200 text-stone-600 hover:border-[#c77e3b]/40"
+                  }`}
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 pt-5 border-t border-stone-200/80">
             <Button
               type="button"
               variant="outline"
               onClick={onCancel}
               disabled={isSubmitting}
               title="Cancel"
-              className="rounded-md"
+            />
+            <Button
+              type="submit"
+              className="min-w-[160px]"
+              disabled={isSubmitting}
+              loading={isSubmitting}
+              title={
+                isSubmitting
+                  ? editMode
+                    ? "Updating..."
+                    : "Adding..."
+                  : editMode
+                  ? "Save Screen Type"
+                  : "Add Screen Type"
+              }
             />
           </div>
         </Form>

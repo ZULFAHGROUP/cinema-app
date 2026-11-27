@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Formik, Form } from "formik";
+import { ShoppingBag, Image as ImageIcon } from "lucide-react";
 import Input from "../../../components/shared/Input";
+import TextArea from "../../../components/shared/TextArea";
 import Button from "../../../components/shared/Button";
 import ReusableSelect from "../../../components/shared/Select";
 import { toast } from "react-toastify";
@@ -37,8 +39,9 @@ const AddProductForm = ({
   const { allCinemas } = useAppSelector((state) => state.cinema);
   const { user } = useAppSelector((state) => state.accounts.data);
 
-  // Determine if user is admin (adjust role check as needed)
-  const isAdmin = user?.role?.toLowerCase() === "admin";
+  const isAdmin =
+    user?.role?.toLowerCase() === "admin" ||
+    user?.role?.toLowerCase() === "superadmin";
   const userCinemaId = user?.cinema_id;
 
   useEffect(() => {
@@ -122,9 +125,24 @@ const AddProductForm = ({
         isSubmitting,
         handleSubmit,
       }) => (
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit} className="space-y-5">
+          <div className="rounded-xl bg-[#fff8ea]/70 border border-[#c77e3b]/20 p-3.5 flex items-start gap-3">
+            <div className="w-9 h-9 rounded-lg bg-[#c77e3b]/15 text-[#754f2c] flex items-center justify-center shrink-0">
+              <ShoppingBag size={18} />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#754f2c]">
+                Concession Item Details
+              </p>
+              <p className="text-xs text-stone-500 mt-0.5">
+                Configure product name, category, pricing, and image for the
+                Concessions POS catalog.
+              </p>
+            </div>
+          </div>
+
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="Product Name"
                 name="name"
@@ -136,7 +154,7 @@ const AddProductForm = ({
                     ? errors.name
                     : undefined
                 }
-                placeholder="Large Popcorn"
+                placeholder="e.g., Large Caramel Popcorn"
                 required
               />
 
@@ -162,32 +180,29 @@ const AddProductForm = ({
               />
             </div>
 
-            {/* Cinema Selection - Only for Admin */}
             {isAdmin && (
-              <div className="grid grid-cols-1 gap-4">
-                <ReusableSelect
-                  label="Cinema Location"
-                  name="cinema_id"
-                  value={values.cinema_id}
-                  onChange={(value) => {
-                    setFieldValue("cinema_id", value);
-                    setSelectedCinema(value);
-                  }}
-                  options={cinemas}
-                  defaultOption="Select cinema"
-                  error={
-                    touched.cinema_id && typeof errors.cinema_id === "string"
-                      ? errors.cinema_id
-                      : undefined
-                  }
-                  required
-                />
-              </div>
+              <ReusableSelect
+                label="Cinema Branch"
+                name="cinema_id"
+                value={values.cinema_id}
+                onChange={(value) => {
+                  setFieldValue("cinema_id", value);
+                  setSelectedCinema(value);
+                }}
+                options={cinemas}
+                defaultOption="Select cinema branch"
+                error={
+                  touched.cinema_id && typeof errors.cinema_id === "string"
+                    ? errors.cinema_id
+                    : undefined
+                }
+                required
+              />
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="Sale Price"
+                label="Sale Price (₦)"
                 name="price"
                 type="number"
                 step="0.01"
@@ -199,19 +214,23 @@ const AddProductForm = ({
                     ? errors.price
                     : undefined
                 }
-                placeholder="8.99"
+                placeholder="e.g., 2500"
+                prefix={
+                  <span className="text-stone-400 font-semibold text-xs mr-1">
+                    ₦
+                  </span>
+                }
                 required
               />
 
               <Input
-                label="Product Image"
+                label="Product Image URL"
                 name="product_image"
-                // type="file"
-                // onChange={(e) =>
-                //   setFieldValue("product_image", e.currentTarget.files?.[0])
-                // }
+                value={values.product_image}
                 onChange={handleChange}
                 onBlur={handleBlur}
+                placeholder="https://images.unsplash.com/..."
+                prefix={<ImageIcon size={14} className="text-stone-400 mr-1" />}
                 error={
                   touched.product_image &&
                   typeof errors.product_image === "string"
@@ -222,38 +241,33 @@ const AddProductForm = ({
               />
             </div>
 
-            <div>
-              <label className="block font-medium md:text-lg mb-2">
-                Description
-              </label>
-              <textarea
-                name="description"
-                value={values.description}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                placeholder="Product description..."
-                rows={3}
-                className={`w-full p-2 border rounded-md ${
-                  touched.description && errors.description
-                    ? "border-red-500"
-                    : "border-gray-300"
-                }`}
-              />
-              {touched.description && errors.description && (
-                <p className="text-sm text-red-500 italic mt-1">
-                  {typeof errors.description === "string"
-                    ? errors.description
-                    : undefined}
-                </p>
-              )}
-            </div>
+            <TextArea
+              label="Description"
+              name="description"
+              value={values.description}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              placeholder="Describe portion size, ingredients, or combo items..."
+              rows={3}
+              error={
+                touched.description && typeof errors.description === "string"
+                  ? errors.description
+                  : undefined
+              }
+            />
           </div>
 
-          {/* FOOTER ACTIONS */}
-          <div className="flex gap-2 pt-6 border-t mt-6">
+          <div className="flex items-center justify-end gap-2.5 pt-5 border-t border-stone-200/80">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+              title="Cancel"
+            />
             <Button
               type="submit"
-              className="flex-1 rounded-md"
+              className="min-w-[150px]"
               disabled={isSubmitting}
               loading={isSubmitting}
               title={
@@ -262,17 +276,9 @@ const AddProductForm = ({
                     ? "Updating..."
                     : "Adding..."
                   : editMode
-                  ? "Update Product"
-                  : "Add Product"
+                  ? "Save Changes"
+                  : "Create Product"
               }
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-              title="Cancel"
-              className="rounded-md"
             />
           </div>
         </Form>

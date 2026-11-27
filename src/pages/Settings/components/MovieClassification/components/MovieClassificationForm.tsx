@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Formik, Form } from "formik";
+import { ShieldAlert } from "lucide-react";
 import Input from "../../../../../components/shared/Input";
 import Button from "../../../../../components/shared/Button";
 import { toast } from "react-toastify";
@@ -16,6 +17,8 @@ interface MovieClassificationFormProps {
   editMode?: boolean;
   classificationData?: any;
 }
+
+const RATING_PRESETS = ["G", "PG", "PG-13", "15", "18", "R"];
 
 const MovieClassificationForm = ({
   onCancel,
@@ -44,7 +47,6 @@ const MovieClassificationForm = ({
       } else {
         response = await dispatch(createClassification(values)).unwrap();
       }
-      console.log("coming response", response);
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message);
         await dispatch(getAllClassifications({ limit, page })).unwrap();
@@ -70,13 +72,29 @@ const MovieClassificationForm = ({
         touched,
         handleChange,
         handleBlur,
+        setFieldValue,
         isSubmitting,
         handleSubmit,
       }) => (
-        <Form onSubmit={handleSubmit}>
-          <div className="space-y-4">
+        <Form onSubmit={handleSubmit} className="space-y-5">
+          <div className="rounded-xl bg-[#fff8ea]/70 border border-[#c77e3b]/20 p-3.5 flex items-start gap-3">
+            <div className="w-9 h-9 rounded-lg bg-[#c77e3b]/15 text-[#754f2c] flex items-center justify-center shrink-0">
+              <ShieldAlert size={18} />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#754f2c]">
+                Age Rating Classification
+              </p>
+              <p className="text-xs text-stone-500 mt-0.5">
+                Define age suitability badges displayed on movie posters and
+                ticket receipts.
+              </p>
+            </div>
+          </div>
+
+          <div>
             <Input
-              label="Classification Name"
+              label="Classification Code / Name"
               name="name"
               value={values.name}
               onChange={handleChange}
@@ -86,15 +104,39 @@ const MovieClassificationForm = ({
                   ? errors.name
                   : undefined
               }
-              placeholder="PG-13"
+              placeholder="e.g., PG-13"
               required
             />
+            <div className="flex flex-wrap items-center gap-1.5 mt-2">
+              <span className="text-[11px] text-stone-400">Common ratings:</span>
+              {RATING_PRESETS.map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => setFieldValue("name", preset)}
+                  className={`text-[11px] px-2.5 py-0.5 rounded-md border transition-colors cursor-pointer ${
+                    values.name === preset
+                      ? "bg-[#fff8ea] border-[#c77e3b] text-[#754f2c] font-bold"
+                      : "bg-stone-50 border-stone-200 text-stone-600 hover:border-[#c77e3b]/40"
+                  }`}
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="flex gap-2 pt-6 border-t mt-6">
+          <div className="flex items-center justify-end gap-2.5 pt-5 border-t border-stone-200/80">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+              title="Cancel"
+            />
             <Button
               type="submit"
-              className="flex-1 rounded-md"
+              className="min-w-[160px]"
               disabled={isSubmitting}
               loading={isSubmitting}
               title={
@@ -103,17 +145,9 @@ const MovieClassificationForm = ({
                     ? "Updating..."
                     : "Adding..."
                   : editMode
-                  ? "Update Classification"
+                  ? "Save Classification"
                   : "Add Classification"
               }
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-              title="Cancel"
-              className="rounded-md"
             />
           </div>
         </Form>

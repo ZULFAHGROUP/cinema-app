@@ -175,49 +175,49 @@ function StaffPage() {
   ];
 
   return (
-    <div className="p-6">
+    <div className="space-y-6 pb-8">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-6 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0">
+            <Users className="w-6 h-6" />
+          </div>
           <div>
-            <h1 className="text-2xl font-sans font-bold text-foreground">
+            <h1 className="text-2xl font-extrabold text-stone-900">
               Staff Management
             </h1>
-            <p className="text-sm text-muted-foreground font-serif">
-              Manage staff accounts and assignments
+            <p className="text-sm text-stone-500 mt-0.5">
+              Manage staff accounts, roles, and cinema branch assignments
             </p>
           </div>
-          <div className="flex gap-2">
-            {canManageUsers && activeTab !== "cinema-staff" && (
-              <Button
-                onClick={() => setIsAddStaffModalOpen(true)}
-                className="gap-2 rounded-md"
-                icon={<Plus className="w-4 h-4" />}
-                title="Add Staff"
-              />
-            )}
-          </div>
         </div>
-
-        {/* Tabs */}
-        <div className="flex items-center flex-col md:flex-row justify-between mb-6">
-          <div className="flex-1">
-            <Tabs
-              activeKey={activeTab}
-              onChange={setActiveTab}
-              items={tabItems.map((item) => ({
-                key: item.key,
-                label: item.label,
-              }))}
-              className="staff-tabs"
+        <div className="flex gap-2">
+          {canManageUsers && activeTab !== "cinema-staff" && (
+            <Button
+              onClick={() => setIsAddStaffModalOpen(true)}
+              icon={<Plus className="w-4 h-4" />}
+              title="Add Staff"
             />
-          </div>
+          )}
         </div>
+      </div>
 
-        {/* Tab Content */}
-        <div className="tab-content">
-          {tabItems.find((item) => item.key === activeTab)?.children}
-        </div>
+      {/* Tabs */}
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 px-6 pt-2 shadow-2xs">
+        <Tabs
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          items={tabItems.map((item) => ({
+            key: item.key,
+            label: item.label,
+          }))}
+          className="staff-tabs"
+        />
+      </div>
+
+      {/* Tab Content */}
+      <div className="tab-content">
+        {tabItems.find((item) => item.key === activeTab)?.children}
       </div>
 
       {/* Add Staff Modal */}

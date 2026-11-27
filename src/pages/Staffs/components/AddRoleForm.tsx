@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
+import { Check, ShieldCheck } from "lucide-react";
 import Input from "../../../components/shared/Input";
+import TextArea from "../../../components/shared/TextArea";
 import Button from "../../../components/shared/Button";
 import ReusableSelect from "../../../components/shared/Select";
-import { Checkbox } from "antd";
 
 const validationSchema = Yup.object({
   name: Yup.string()
@@ -48,7 +49,7 @@ const AddRoleForm = ({ onSubmit, onCancel }: AddRoleFormProps) => {
     name: "",
     description: "",
     level: "",
-    permissions: [],
+    permissions: [] as string[],
   };
 
   return (
@@ -69,22 +70,62 @@ const AddRoleForm = ({ onSubmit, onCancel }: AddRoleFormProps) => {
         setFieldValue,
         isSubmitting,
         handleSubmit,
-      }) => (
-        <Form onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <Input
-              label="Role Name"
-              name="name"
-              value={values.name}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.name && errors.name ? errors.name : ""}
-              placeholder="Concession Manager"
-              required
-            />
+      }) => {
+        const togglePermission = (perm: string) => {
+          const current = values.permissions || [];
+          if (current.includes(perm)) {
+            setFieldValue(
+              "permissions",
+              current.filter((p) => p !== perm)
+            );
+          } else {
+            setFieldValue("permissions", [...current, perm]);
+          }
+        };
 
-            <Input
-              label="Description"
+        return (
+          <Form onSubmit={handleSubmit} className="space-y-5">
+            <div className="rounded-xl bg-[#fff8ea]/70 border border-[#c77e3b]/20 p-3.5 flex items-start gap-3">
+              <div className="w-9 h-9 rounded-lg bg-[#c77e3b]/15 text-[#754f2c] flex items-center justify-center shrink-0">
+                <ShieldCheck size={18} />
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-[#754f2c]">
+                  Role & Access Template
+                </p>
+                <p className="text-xs text-stone-500 mt-0.5">
+                  Define a role tier and select the functional modules this role
+                  can access.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Role Name"
+                name="name"
+                value={values.name}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={touched.name && errors.name ? errors.name : ""}
+                placeholder="e.g., Concession Supervisor"
+                required
+              />
+
+              <ReusableSelect
+                label="Access Tier Level"
+                name="level"
+                value={values.level}
+                onChange={(value) => setFieldValue("level", value)}
+                options={levelOptions}
+                defaultOption="Select access tier"
+                error={touched.level && errors.level ? errors.level : ""}
+                required
+              />
+            </div>
+
+            <TextArea
+              label="Role Description"
               name="description"
               value={values.description}
               onChange={handleChange}
@@ -94,71 +135,71 @@ const AddRoleForm = ({ onSubmit, onCancel }: AddRoleFormProps) => {
                   ? errors.description
                   : ""
               }
-              placeholder="Manages concession operations"
-              required
-            />
-
-            <ReusableSelect
-              label="Access Level"
-              name="level"
-              value={values.level}
-              onChange={(value) => setFieldValue("level", value)}
-              options={levelOptions}
-              defaultOption="Select level"
-              error={touched.level && errors.level ? errors.level : ""}
+              placeholder="Briefly describe what responsibilities this role covers..."
+              rows={2}
               required
             />
 
             <div>
-              <label className="block font-medium md:text-lg mb-2">
-                Permissions <span className="text-red-500">*</span>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2">
+                Module Permissions <span className="text-[#c77e3b]">*</span>
               </label>
-              <div className="border rounded-md p-4 space-y-2">
-                <Checkbox.Group
-                  value={values.permissions}
-                  onChange={(checkedValues) =>
-                    setFieldValue("permissions", checkedValues)
-                  }
-                >
-                  <div className="grid grid-cols-2 gap-2">
-                    {permissionOptions.map((permission) => (
-                      <Checkbox
-                        key={permission.value}
-                        value={permission.value}
-                        className="font-serif"
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {permissionOptions.map((permission) => {
+                  const selected = values.permissions.includes(
+                    permission.value
+                  );
+                  return (
+                    <button
+                      key={permission.value}
+                      type="button"
+                      onClick={() => togglePermission(permission.value)}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border text-left transition-all cursor-pointer ${
+                        selected
+                          ? "bg-[#fff8ea] border-[#c77e3b] text-[#754f2c] shadow-xs"
+                          : "bg-white border-stone-200 text-stone-600 hover:border-[#c77e3b]/40"
+                      }`}
+                    >
+                      <span
+                        className={`w-4 h-4 rounded flex items-center justify-center shrink-0 ${
+                          selected
+                            ? "bg-[#c77e3b] text-white"
+                            : "border border-stone-300"
+                        }`}
                       >
-                        {permission.label}
-                      </Checkbox>
-                    ))}
-                  </div>
-                </Checkbox.Group>
+                        {selected && <Check size={11} />}
+                      </span>
+                      <span className="truncate">{permission.label}</span>
+                    </button>
+                  );
+                })}
               </div>
               {touched.permissions && errors.permissions && (
-                <p className="text-sm text-red-500 italic mt-1">
-                  {errors.permissions}
+                <p className="text-xs text-red-500 font-medium mt-1.5">
+                  {errors.permissions as string}
                 </p>
               )}
             </div>
-          </div>
 
-          <div className="flex gap-2 pt-6 border-t mt-6">
-            <Button
-              type="submit"
-              className="flex-1 rounded-md"
-              disabled={isSubmitting}
-              title={isSubmitting ? "Creating Role..." : "Create Role"}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-              title="Cancel"
-              className="rounded-md"
-            />
-          </div>
-        </Form>
-      )}
+            <div className="flex items-center justify-end gap-2.5 pt-5 border-t border-stone-200/80">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                disabled={isSubmitting}
+                title="Cancel"
+              />
+              <Button
+                type="submit"
+                className="min-w-[150px]"
+                disabled={isSubmitting}
+                loading={isSubmitting}
+                title={isSubmitting ? "Creating Role..." : "Create Role"}
+              />
+            </div>
+          </Form>
+        );
+      }}
     </Formik>
   );
 };

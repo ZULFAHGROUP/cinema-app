@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Formik, Form } from "formik";
+import { Monitor, Info } from "lucide-react";
 import Input from "../../../components/shared/Input";
 import Button from "../../../components/shared/Button";
 import { toast } from "react-toastify";
@@ -36,8 +37,9 @@ const AddScreensForm = ({
   const { screensPage, screensLimit } = useAppSelector((state) => state.screen);
 
   useEffect(() => {
-    dispatch(getAllScreenTypes({ page, limit: total }));
+    dispatch(getAllScreenTypes({ page, limit: total || 50 }));
   }, [dispatch, page, limit, total]);
+
   const initialValues = {
     cinema_id: preSelectedCinema || screenData?.cinema_id || "",
     name: screenData?.name || "",
@@ -52,9 +54,9 @@ const AddScreensForm = ({
     try {
       let response;
       if (editMode && screenData?.screen_id) {
-        // Only name and seat_count can change. A screen with a seat map gets its
-        // seat_count from the layout, so only send it when it was edited.
-        const payload: { name: string; seat_count?: number } = { name: values.name };
+        const payload: { name: string; seat_count?: number } = {
+          name: values.name,
+        };
         if (Number(values.seat_count) !== Number(screenData.seat_count)) {
           payload.seat_count = Number(values.seat_count);
         }
@@ -75,7 +77,7 @@ const AddScreensForm = ({
           })
         );
         resetForm();
-        onCancel(); // close modal after success
+        onCancel();
       }
     } catch (error: any) {
       console.error("Error submitting screen form", error);
@@ -114,15 +116,30 @@ const AddScreensForm = ({
         handleSubmit,
         setFieldValue,
       }) => (
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit} className="space-y-5">
+          <div className="rounded-xl bg-[#fff8ea]/70 border border-[#c77e3b]/20 p-3.5 flex items-start gap-3">
+            <div className="w-9 h-9 rounded-lg bg-[#c77e3b]/15 text-[#754f2c] flex items-center justify-center shrink-0">
+              <Monitor size={18} />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#754f2c]">
+                Auditorium Configuration
+              </p>
+              <p className="text-xs text-stone-500 mt-0.5">
+                Assign this screen to a cinema branch, set its display format,
+                and specify default seating capacity.
+              </p>
+            </div>
+          </div>
+
           <div className="space-y-4">
             <ReusableSelect
-              label="Cinema"
+              label="Cinema Branch"
               name="cinema_id"
               value={values.cinema_id}
               onChange={(value) => setFieldValue("cinema_id", value)}
               options={allCinema}
-              defaultOption="Select Cinema"
+              defaultOption="Select cinema branch"
               error={
                 touched.cinema_id && typeof errors.cinema_id === "string"
                   ? errors.cinema_id
@@ -130,9 +147,10 @@ const AddScreensForm = ({
               }
               required
               disabled={editMode || Boolean(preSelectedCinema)}
-            />{" "}
+            />
+
             <Input
-              label="Screen Name"
+              label="Screen / Auditorium Name"
               name="name"
               value={values.name}
               onChange={handleChange}
@@ -142,12 +160,13 @@ const AddScreensForm = ({
                   ? errors.name
                   : undefined
               }
-              placeholder="Screen 1"
+              placeholder="e.g., Screen 1 (Main Hall)"
               required
             />
-            <div className="flex gap-3 w-full">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="Seat Count"
+                label="Default Seat Capacity"
                 name="seat_count"
                 type="number"
                 value={values.seat_count}
@@ -158,26 +177,43 @@ const AddScreensForm = ({
                     ? errors.seat_count
                     : undefined
                 }
-                placeholder="10"
-                conClassName="flex-1"
+                placeholder="e.g., 120"
+                hint="Auto-updates if you design a custom seat map"
               />
 
               <ReusableSelect
-                label="Screen Type"
+                label="Experience / Screen Type"
                 name="screen_type_id"
                 value={values.screen_type_id}
-                onChange={(value) => setFieldValue(`screen_type_id`, value)}
+                onChange={(value) => setFieldValue("screen_type_id", value)}
                 onBlur={handleBlur}
                 options={allScreenType}
-                conClassName="flex-1"
+                defaultOption="Select format (2D, 3D, VIP...)"
+                disabled={editMode}
+                hint={editMode ? "Screen format is locked after creation" : "Used for pricing rules"}
               />
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-stone-500 bg-stone-50 border border-stone-200/70 rounded-xl px-3 py-2.5">
+              <Info size={14} className="text-[#c77e3b] shrink-0" />
+              <span>
+                Tip: After saving, click the <strong>Seats</strong> button on
+                this screen row to build an interactive row-by-row seat map.
+              </span>
             </div>
           </div>
 
-          <div className="flex gap-2 pt-6 border-t mt-6">
+          <div className="flex items-center justify-end gap-2.5 pt-5 border-t border-stone-200/80">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+              title="Cancel"
+            />
             <Button
               type="submit"
-              className="flex-1 rounded-md"
+              className="min-w-[150px]"
               disabled={isSubmitting}
               loading={isSubmitting}
               title={
@@ -186,17 +222,9 @@ const AddScreensForm = ({
                     ? "Updating Screen..."
                     : "Adding Screen..."
                   : editMode
-                  ? "Update Screen"
-                  : "Add Screen"
+                  ? "Save Changes"
+                  : "Create Screen"
               }
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-              title="Cancel"
-              className="rounded-md"
             />
           </div>
         </Form>

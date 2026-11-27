@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Form, Formik } from "formik";
+import { Tag, Sliders, Clock, AlertCircle } from "lucide-react";
 import Input from "../../../../../components/shared/Input";
 import Button from "../../../../../components/shared/Button";
 import ReusableSelect from "../../../../../components/shared/Select";
@@ -45,9 +46,11 @@ const PriceRuleForm = ({
   const { allCinemas } = useAppSelector((state) => state.cinema);
   const { products } = useAppSelector((state) => state.product);
   const { user } = useAppSelector((state) => state.accounts.data);
-  
+
   const userCinemaId = user?.cinema_id;
-  const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "superadmin";
+  const isAdmin =
+    user?.role?.toLowerCase() === "admin" ||
+    user?.role?.toLowerCase() === "superadmin";
 
   useEffect(() => {
     if (isAdmin) {
@@ -70,7 +73,7 @@ const PriceRuleForm = ({
   };
 
   const cinemaOptions = [
-    { label: "General (All Cinemas)", value: "" },
+    { label: "General (All Cinemas)", value: "GLOBAL_ALL" },
     ...(allCinemas?.map((cinema: any) => ({
       label: cinema.name,
       value: cinema.cinema_id,
@@ -82,11 +85,12 @@ const PriceRuleForm = ({
     { resetForm }: { resetForm: () => void }
   ) {
     try {
-      // Prepare payload - remove cinema_id if empty (for general rules)
+      const isGlobal =
+        !values.cinema_id || values.cinema_id === "GLOBAL_ALL";
       const payload = {
         ...values,
-        cinema_id: values.cinema_id || undefined,
-        is_global: values.cinema_id === "",
+        cinema_id: isGlobal ? undefined : values.cinema_id,
+        is_global: isGlobal,
       };
 
       if (editMode) {
@@ -115,7 +119,7 @@ const PriceRuleForm = ({
   }
 
   return (
-   <Formik
+    <Formik
       enableReinitialize
       initialValues={initialValues}
       validationSchema={priceRuleSchema}
@@ -131,15 +135,24 @@ const PriceRuleForm = ({
         isSubmitting,
         handleSubmit,
       }) => (
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit} className="space-y-5">
           {errors && (errors as any).atLeastOneSelection && (
-            <div className="bg-red-50 text-red-700 p-3 rounded-md text-sm mb-4 border border-red-100">
-               {(errors as any).atLeastOneSelection}
+            <div className="bg-red-50 text-red-700 p-3.5 rounded-xl text-xs font-medium border border-red-200 flex items-center gap-2">
+              <AlertCircle size={15} className="shrink-0" />
+              <span>{(errors as any).atLeastOneSelection}</span>
             </div>
           )}
-          <div className="space-y-4">
-            {/* Name and Price */}
-            <div className="grid grid-cols-2 gap-4">
+
+          {/* Section 1: Rule Identity & Pricing */}
+          <div className="rounded-2xl bg-stone-50/80 border border-stone-200/80 p-4 space-y-3.5">
+            <div className="flex items-center gap-2">
+              <Tag size={15} className="text-[#c77e3b]" />
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                1. Rule Identity & Price
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
               <Input
                 label="Rule Name"
                 name="name"
@@ -151,12 +164,13 @@ const PriceRuleForm = ({
                     ? errors.name
                     : undefined
                 }
-                placeholder="Weekend Premium"
+                placeholder="e.g., Weekend Premium"
+                conClassName="sm:col-span-1"
                 required
               />
 
               <Input
-                label="Price"
+                label="Ticket Price (₦)"
                 name="price"
                 type="number"
                 step="0.01"
@@ -168,67 +182,10 @@ const PriceRuleForm = ({
                     ? errors.price
                     : undefined
                 }
-                placeholder="15.50"
+                placeholder="e.g., 4500"
                 required
               />
-            </div>
 
-            {/* Movie and Screen Type */}
-            <div className="grid grid-cols-2 gap-4">
-              <ReusableSelect
-                label="Movie"
-                name="movie_id"
-                value={values.movie_id}
-                onChange={(value) => setFieldValue("movie_id", value)}
-                options={movies.map((movie: any) => ({
-                  label: movie.title,
-                  value: movie.movie_id,
-                }))}
-                defaultOption="Select movie"
-                error={
-                  touched.movie_id && typeof errors.movie_id === "string"
-                    ? errors.movie_id
-                    : undefined
-                }
-              />
-
-              <ReusableSelect
-                label="Screen Type"
-                name="screen_type_id"
-                value={values.screen_type_id}
-                onChange={(value) => setFieldValue("screen_type_id", value)}
-                options={screenTypes.map((type: any) => ({
-                  label: type.name,
-                  value: type.screen_type_id,
-                }))}
-                defaultOption="Select screen type"
-                error={
-                  touched.screen_type_id && typeof errors.screen_type_id === "string"
-                    ? errors.screen_type_id
-                    : undefined
-                }
-              />
-            </div>
-
-            {/* Cinema (Admin only) */}
-            {isAdmin && (
-              <ReusableSelect
-                label="Cinema"
-                name="cinema_id"
-                value={values.cinema_id}
-                onChange={(value) => setFieldValue("cinema_id", value)}
-                options={cinemaOptions}
-                defaultOption="Select cinema"
-                error={
-                  touched.cinema_id && typeof errors.cinema_id === "string"
-                    ? errors.cinema_id
-                    : undefined
-                }
-              />
-            )}
-
-            {/* Priority and Days of Week */}
-            <div className="grid grid-cols-2 gap-4">
               <Input
                 label="Priority"
                 name="priority"
@@ -242,49 +199,139 @@ const PriceRuleForm = ({
                     : undefined
                 }
                 placeholder="1"
+                hint="Higher overrides lower"
                 required
+              />
+            </div>
+
+            {isAdmin && (
+              <ReusableSelect
+                label="Cinema Branch Scope"
+                name="cinema_id"
+                value={values.cinema_id || "GLOBAL_ALL"}
+                onChange={(value) =>
+                  setFieldValue(
+                    "cinema_id",
+                    value === "GLOBAL_ALL" ? "" : value
+                  )
+                }
+                options={cinemaOptions}
+                defaultOption="General (All Cinemas)"
+                error={
+                  touched.cinema_id && typeof errors.cinema_id === "string"
+                    ? errors.cinema_id
+                    : undefined
+                }
+              />
+            )}
+          </div>
+
+          {/* Section 2: Target Scope */}
+          <div className="rounded-2xl bg-stone-50/80 border border-stone-200/80 p-4 space-y-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sliders size={15} className="text-[#c77e3b]" />
+                <span className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                  2. Target Conditions
+                </span>
+              </div>
+              <span className="text-[11px] text-stone-400">
+                Choose at least one condition or day below
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <ReusableSelect
+                label="Specific Movie (Optional)"
+                name="movie_id"
+                value={values.movie_id}
+                onChange={(value) => setFieldValue("movie_id", value || "")}
+                options={movies.map((movie: any) => ({
+                  label: movie.title,
+                  value: movie.movie_id,
+                }))}
+                defaultOption="Any Movie"
+                allowClear
+                error={
+                  touched.movie_id && typeof errors.movie_id === "string"
+                    ? errors.movie_id
+                    : undefined
+                }
               />
 
               <ReusableSelect
-                label="Days of Week"
-                name="day_of_week"
-                mode="multiple"
-                value={values.day_of_week}
-                onChange={(value) => setFieldValue("day_of_week", value)}
-                options={DAYS_OF_WEEK?.map((screen: any) => ({
-                    label: screen.label,
-                    value: screen.value,
-                  })) || []}
-                defaultOption="Select days"
+                label="Screen Experience (Optional)"
+                name="screen_type_id"
+                value={values.screen_type_id}
+                onChange={(value) =>
+                  setFieldValue("screen_type_id", value || "")
+                }
+                options={screenTypes.map((type: any) => ({
+                  label: type.name,
+                  value: type.screen_type_id,
+                }))}
+                defaultOption="Any Screen Type"
+                allowClear
                 error={
-                  touched.day_of_week && typeof errors.day_of_week === "string"
-                    ? errors.day_of_week
+                  touched.screen_type_id &&
+                  typeof errors.screen_type_id === "string"
+                    ? errors.screen_type_id
                     : undefined
                 }
               />
             </div>
-            
-            {/* Products Selection */}
+
             <ReusableSelect
-                label="Products"
-                name="product_ids"
-                mode="multiple"
-                value={values.product_ids}
-                onChange={(value) => setFieldValue("product_ids", value)}
-                options={products?.map((product: any) => ({
-                    label: product.name,
-                    value: product.product_id,
-                })) || []}
-                defaultOption="Select products"
-                error={
-                    touched.product_ids && typeof errors.product_ids === "string"
-                    ? errors.product_ids
-                    : undefined
-                }
+              label="Bundled Concession Products (Optional)"
+              name="product_ids"
+              mode="multiple"
+              value={values.product_ids}
+              onChange={(value) => setFieldValue("product_ids", value)}
+              options={
+                products?.map((product: any) => ({
+                  label: product.name,
+                  value: product.product_id,
+                })) || []
+              }
+              defaultOption="Select bundled products (if any)"
+              error={
+                touched.product_ids && typeof errors.product_ids === "string"
+                  ? errors.product_ids
+                  : undefined
+              }
+            />
+          </div>
+
+          {/* Section 3: Schedule Window */}
+          <div className="rounded-2xl bg-stone-50/80 border border-stone-200/80 p-4 space-y-3.5">
+            <div className="flex items-center gap-2">
+              <Clock size={15} className="text-[#c77e3b]" />
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                3. Days & Time Window (Optional)
+              </span>
+            </div>
+
+            <ReusableSelect
+              label="Applicable Days of Week"
+              name="day_of_week"
+              mode="multiple"
+              value={values.day_of_week}
+              onChange={(value) => setFieldValue("day_of_week", value)}
+              options={
+                DAYS_OF_WEEK?.map((day: any) => ({
+                  label: day.label,
+                  value: day.value,
+                })) || []
+              }
+              defaultOption="All days (or pick specific days)"
+              error={
+                touched.day_of_week && typeof errors.day_of_week === "string"
+                  ? errors.day_of_week
+                  : undefined
+              }
             />
 
-            {/* Time Range */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <Input
                 label="Start Time"
                 name="start_time"
@@ -319,10 +366,17 @@ const PriceRuleForm = ({
             </div>
           </div>
 
-          <div className="flex gap-2 pt-6 border-t mt-6">
+          <div className="flex items-center justify-end gap-2.5 pt-5 border-t border-stone-200/80">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+              title="Cancel"
+            />
             <Button
               type="submit"
-              className="flex-1 rounded-md"
+              className="min-w-[160px]"
               disabled={isSubmitting}
               loading={isSubmitting}
               title={
@@ -331,17 +385,9 @@ const PriceRuleForm = ({
                     ? "Updating..."
                     : "Adding..."
                   : editMode
-                  ? "Update Price Rule"
-                  : "Add Price Rule"
+                  ? "Save Price Rule"
+                  : "Create Price Rule"
               }
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-              title="Cancel"
-              className="rounded-md"
             />
           </div>
         </Form>

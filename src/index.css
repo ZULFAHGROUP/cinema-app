@@ -1,5 +1,34 @@
 @import "tailwindcss";
 
+@layer base {
+  :root {
+    --color-primary-bg: #fff8ea;
+    --color-secondary: #c77e3b;
+    --color-secondary-dark: #754f2c;
+    --color-extra: #5480c7;
+  }
+
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #fff8ea;
+    color: #1c1917;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Harmonize legacy font-serif / font-sans classes into a cohesive modern type system */
+.font-sans {
+  font-family: "Plus Jakarta Sans", "Inter", sans-serif !important;
+}
+
+.font-serif {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
 .text-primary {
   color: #fff8ea;
 }
@@ -9,7 +38,7 @@
 }
 
 .text-extra {
-  background-color: #5480c7;
+  color: #5480c7;
 }
 
 .bg-primary {
@@ -24,6 +53,26 @@
   background-color: #5480c7;
 }
 
+.text-muted-foreground {
+  color: #64748b;
+}
+
+.text-foreground {
+  color: #1c1917;
+}
+
+.bg-card {
+  background-color: #ffffff;
+}
+
+.bg-muted {
+  background-color: #f8f4ec;
+}
+
+.border-border {
+  border-color: #e7dfd3;
+}
+
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -33,21 +82,119 @@
   scrollbar-width: none;
 }
 
+/* Custom subtle scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 248, 234, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(199, 126, 59, 0.3);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(199, 126, 59, 0.55);
+}
+
 .custom-menu .ant-menu-submenu {
   background-color: inherit !important;
 }
-
-/* .custom-menu .ant-menu-item {
-  background-color: inherit !important; 
-} */
 
 .custom-menu .ant-menu-sub {
   background-color: inherit !important;
 }
 
-.cinema-tabs :global(.ant-tabs-nav) {
-  margin-bottom: 0;
+/* Modern Ant Design Overrides matching #fff8ea, #c77e3b, #754f2c, #5480c7 */
+.ant-tabs-nav::before {
+  border-bottom-color: rgba(199, 126, 59, 0.16) !important;
 }
-.cinema-tabs :global(.ant-tabs-content-holder) {
-  display: none;
+
+.ant-tabs-tab {
+  font-weight: 500 !important;
+  color: #64748b !important;
+  padding: 10px 4px !important;
+  transition: all 0.2s ease !important;
+}
+
+.ant-tabs-tab:hover {
+  color: #c77e3b !important;
+}
+
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #c77e3b !important;
+  font-weight: 600 !important;
+}
+
+.ant-tabs-ink-bar {
+  background: linear-gradient(90deg, #c77e3b, #5480c7) !important;
+  height: 3px !important;
+  border-radius: 3px 3px 0 0 !important;
+}
+
+.ant-table-wrapper .ant-table {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th {
+  background-color: #fff8ea !important;
+  color: #754f2c !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  border-bottom: 1px solid rgba(199, 126, 59, 0.2) !important;
+  padding: 14px 16px !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr > td {
+  padding: 14px 16px !important;
+  border-bottom: 1px solid #f1ece1 !important;
+  color: #292524 !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr:hover > td {
+  background-color: #fffaf0 !important;
+}
+
+.ant-modal .ant-modal-content {
+  border-radius: 20px !important;
+  border: 1px solid rgba(199, 126, 59, 0.18) !important;
+  box-shadow: 0 25px 50px -12px rgba(117, 79, 44, 0.18) !important;
+  padding: 24px !important;
+}
+
+.ant-modal .ant-modal-header {
+  border-bottom: 1px solid #f3ede2 !important;
+  padding-bottom: 14px !important;
+  margin-bottom: 18px !important;
+}
+
+.ant-modal .ant-modal-title {
+  font-family: "Plus Jakarta Sans", "Inter", sans-serif !important;
+  font-size: 1.125rem !important;
+  font-weight: 700 !important;
+  color: #1c1917 !important;
+}
+
+.ant-select-selector,
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-picker {
+  border-radius: 10px !important;
+}
+
+.ant-pagination .ant-pagination-item-active {
+  border-color: #c77e3b !important;
+  background-color: #fff8ea !important;
+}
+
+.ant-pagination .ant-pagination-item-active a {
+  color: #c77e3b !important;
+  font-weight: 600 !important;
 }

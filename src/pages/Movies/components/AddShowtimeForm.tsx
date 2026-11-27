@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Formik, Form, FieldArray } from "formik";
+import { Calendar, Clock, Plus, Trash2, Film } from "lucide-react";
 import Button from "../../../components/shared/Button";
 import ReusableSelect from "../../../components/shared/Select";
 import Input from "../../../components/shared/Input";
@@ -54,31 +55,31 @@ export default function AddShowtimeForm({
 
   useEffect(() => {
     if (editMode && showTimeData?.screen?.cinema_id) {
-       dispatch(
-          getAllScreen({
-             screensPage,
-             screensLimit,
-             cinema_id: showTimeData.screen.cinema_id,
-          })
-       );
+      dispatch(
+        getAllScreen({
+          screensPage,
+          screensLimit,
+          cinema_id: showTimeData.screen.cinema_id,
+        })
+      );
     }
   }, [editMode, showTimeData, dispatch, screensPage, screensLimit]);
 
-  const movieOptions = movies?.map((m) => ({
-    label: m.title,
-    value: m.movie_id,
-    duration: m.duration,
-  }));
+  const movieOptions =
+    movies?.map((m) => ({
+      label: m.title,
+      value: m.movie_id,
+      duration: m.duration,
+    })) || [];
 
-  const cinemaOptions = cinemas?.map((c) => ({
-    label: c.name,
-    value: c.cinema_id,
-  }));
+  const cinemaOptions =
+    cinemas?.map((c) => ({
+      label: c.name,
+      value: c.cinema_id,
+    })) || [];
 
   const initialValues = {
-    movie_id: editMode
-      ? showTimeData?.movie_id
-      : preSelectedMovieId || "",
+    movie_id: editMode ? showTimeData?.movie_id : preSelectedMovieId || "",
     cinema_id: editMode ? showTimeData?.screen?.cinema_id : "",
     screen_id: editMode ? showTimeData?.screen_id : "",
     showtime_status_id: editMode ? showTimeData?.showtime_status_id : "",
@@ -88,16 +89,11 @@ export default function AddShowtimeForm({
             date: showTimeData?.show_date
               ? new Date(showTimeData.show_date).toISOString().split("T")[0]
               : "",
-            times: [showTimeData?.show_time?.substring(0, 5)], // "HH:MM:SS" -> "HH:MM"
+            times: [showTimeData?.show_time?.substring(0, 5)],
           },
         ]
-      : [],
+      : [{ date: "", times: [] }],
   };
-
-  // const { user } = useAppSelector((state) => state.accounts.data);
-  // const isAdmin =
-  //   user?.role?.toLowerCase() === "admin" ||
-  //   user?.role?.toLowerCase() === "superadmin";
 
   async function handleSubmit(values: any, { resetForm }: any) {
     try {
@@ -109,17 +105,12 @@ export default function AddShowtimeForm({
 
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message);
-
-        // Refresh showtime list - only pass cinema_id for admin users
-        // const cinemaIdToUse = isAdmin ? values.cinema_id : undefined;
         await dispatch(
           getAllShowtimes({
             page: 1,
             limit: 10,
-            // cinema_id: cinemaIdToUse,
           })
         );
-
         resetForm();
         onCancel();
       }
@@ -154,270 +145,305 @@ export default function AddShowtimeForm({
 
         const allSlots = generateHalfHourSlots();
         const cinemaScreens = getCinemaScreens(values?.cinema_id);
-        console.log("cinema screens are", cinemaScreens);
+
         return (
-          <Form className="space-y-6 h-full">
-            {/* Movie & Cinema */}
-            <div className="grid grid-cols-2 gap-4">
-              <ReusableSelect
-                label="Movie"
-                name="movie_id"
-                value={values.movie_id}
-                onChange={(val) => setFieldValue("movie_id", val)}
-                options={movieOptions}
-                defaultOption="Select movie"
-                required
-                disabled={!!preSelectedMovieId || editMode}
-              />
-
-              <ReusableSelect
-                label="Cinema"
-                name="cinema_id"
-                value={values.cinema_id}
-                onChange={(cinemaId: string | number) => {
-                  setFieldValue("cinema_id", cinemaId);
-
-                  dispatch(
-                    getAllScreen({
-                      screensPage,
-                      screensLimit,
-                      cinema_id: cinemaId,
-                    })
-                  );
-                }}
-                // onChange={(val) => setFieldValue("cinema_id", val)}
-                options={cinemaOptions}
-                defaultOption="Select cinema"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <ReusableSelect
-                label="Screen"
-                name="screen_id"
-                value={values.screen_id}
-                onChange={(val) => setFieldValue("screen_id", val)}
-                options={
-                  cinemaScreens?.map((screen: any) => ({
-                    label: screen.name,
-                    value: screen.screen_id,
-                  })) || []
-                }
-                defaultOption="Select screen"
-                required
-              />
-              <ReusableSelect
-                label="Showtime Status"
-                name="showtime_status_id"
-                value={values.showtime_status_id}
-                onChange={(val) => setFieldValue("showtime_status_id", val)}
-                options={
-                  statuses?.map((screen: any) => ({
-                    label: screen.name,
-                    value: screen.showtime_status_id,
-                  })) || []
-                }
-                defaultOption="Select showtime status"
-                required
-              />
-            </div>
-
-            {/* Movie Duration Display */}
-            {duration > 0 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-                <p className="text-sm font-serif text-blue-800">
-                  <span className="font-semibold">Movie Duration:</span>{" "}
-                  {duration} minutes
-                  {duration >= 60 &&
-                    ` (${Math.floor(duration / 60)}h ${duration % 60}m)`}
-                </p>
+          <Form className="space-y-5">
+            {/* Section 1: Movie, Cinema, Screen & Status */}
+            <div className="rounded-2xl bg-stone-50/80 border border-stone-200/80 p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Film size={16} className="text-[#c77e3b]" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                    1. Movie & Auditorium Selection
+                  </span>
+                </div>
+                {duration > 0 && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#fff8ea] border border-[#c77e3b]/30 text-xs font-semibold text-[#754f2c]">
+                    <Clock size={12} />
+                    {duration} mins
+                    {duration >= 60 &&
+                      ` (${Math.floor(duration / 60)}h ${duration % 60}m)`}
+                  </span>
+                )}
               </div>
-            )}
 
-            {/* SHOWTIMES */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <ReusableSelect
+                  label="Movie"
+                  name="movie_id"
+                  value={values.movie_id}
+                  onChange={(val) => setFieldValue("movie_id", val)}
+                  options={movieOptions}
+                  defaultOption="Select movie"
+                  required
+                  disabled={!!preSelectedMovieId || editMode}
+                />
+
+                <ReusableSelect
+                  label="Cinema Branch"
+                  name="cinema_id"
+                  value={values.cinema_id}
+                  onChange={(cinemaId: string | number) => {
+                    setFieldValue("cinema_id", cinemaId);
+                    setFieldValue("screen_id", "");
+                    dispatch(
+                      getAllScreen({
+                        screensPage,
+                        screensLimit,
+                        cinema_id: cinemaId,
+                      })
+                    );
+                  }}
+                  options={cinemaOptions}
+                  defaultOption="Select cinema branch"
+                  required
+                />
+
+                <ReusableSelect
+                  label="Auditorium Screen"
+                  name="screen_id"
+                  value={values.screen_id}
+                  onChange={(val) => setFieldValue("screen_id", val)}
+                  options={
+                    cinemaScreens?.map((screen: any) => ({
+                      label: screen.name,
+                      value: screen.screen_id,
+                    })) || []
+                  }
+                  defaultOption={
+                    values.cinema_id
+                      ? "Select screen"
+                      : "Choose a cinema first"
+                  }
+                  disabled={!values.cinema_id}
+                  required
+                />
+
+                <ReusableSelect
+                  label="Showtime Status"
+                  name="showtime_status_id"
+                  value={values.showtime_status_id}
+                  onChange={(val) => setFieldValue("showtime_status_id", val)}
+                  options={
+                    statuses?.map((status: any) => ({
+                      label: status.name,
+                      value: status.showtime_status_id,
+                    })) || []
+                  }
+                  defaultOption="Select status (e.g. Scheduled)"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Section 2: Date & Showtime Slots */}
             <FieldArray name="schedules">
               {({ push, remove }) => (
-                <div className="h-60 overflow-y-scroll space-y-4">
-                  <div className="flex justify-between items-center">
-                    <p className="font-medium font-sans">Schedules</p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Calendar size={16} className="text-[#c77e3b]" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                        2. Screening Dates & Time Slots
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 text-[11px] font-semibold">
+                        {values.schedules.length}
+                      </span>
+                    </div>
                     <Button
                       type="button"
+                      size="xs"
                       title="Add Date"
-                      variant="secondary"
+                      variant="outline"
+                      icon={<Plus size={14} />}
                       onClick={() => push({ date: "", times: [] })}
-                      className="rounded-md"
                     />
                   </div>
 
-                  {values.schedules.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground font-serif">
-                      No showtimes added yet. Click "Add Date" to get started.
+                  {values.schedules.length === 0 ? (
+                    <div className="rounded-2xl border-2 border-dashed border-stone-200 bg-stone-50/50 text-center py-7 px-4">
+                      <Calendar className="w-6 h-6 text-[#c77e3b] mx-auto mb-1.5" />
+                      <p className="text-sm font-semibold text-stone-700">
+                        No screening dates added yet
+                      </p>
+                      <p className="text-xs text-stone-500 mt-0.5">
+                        Click <strong>Add Date</strong> to pick screening dates
+                        and time slots.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="max-h-72 overflow-y-auto space-y-3 pr-1">
+                      {values.schedules.map((item: any, index: number) => {
+                        const disabledTimes = duration
+                          ? getDisabledTimeSlots(item.times || [], duration)
+                          : [];
+
+                        return (
+                          <div
+                            key={index}
+                            className="border border-stone-200/90 p-4 rounded-2xl space-y-3.5 bg-white shadow-xs"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold uppercase tracking-wider text-[#754f2c] bg-[#fff8ea] border border-[#c77e3b]/25 px-2.5 py-0.5 rounded-full">
+                                Schedule #{index + 1}
+                              </span>
+                              {values.schedules.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => remove(index)}
+                                  className="inline-flex items-center gap-1 text-xs font-medium text-red-500 hover:text-red-700 cursor-pointer"
+                                >
+                                  <Trash2 size={13} /> Remove
+                                </button>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
+                              <div className="sm:col-span-5">
+                                <Input
+                                  label="Show Date"
+                                  name={`schedules[${index}].date`}
+                                  type="date"
+                                  value={item.date}
+                                  onChange={handleChange}
+                                  onBlur={handleBlur}
+                                  error={
+                                    touched.schedules?.[index] &&
+                                    errors.schedules?.[index] &&
+                                    typeof errors.schedules[index] ===
+                                      "object" &&
+                                    "date" in errors.schedules[index]
+                                      ? (errors.schedules[index] as any).date
+                                      : undefined
+                                  }
+                                  required
+                                  restrictPastDate
+                                />
+                              </div>
+
+                              <div className="sm:col-span-7">
+                                <ReusableSelect
+                                  mode="multiple"
+                                  label="Start Times"
+                                  name={`schedules[${index}].times`}
+                                  options={allSlots.map((t) => {
+                                    const isSelected = (
+                                      item.times || []
+                                    ).includes(t);
+                                    const slotMinutes = timeToMinutes(t);
+                                    const nowMinutes = getNowMinutes();
+                                    const pastTimeToday =
+                                      isToday(item.date) &&
+                                      slotMinutes <= nowMinutes;
+                                    const isOverlapDisabled =
+                                      disabledTimes.includes(t);
+                                    const isDisabled =
+                                      (pastTimeToday || isOverlapDisabled) &&
+                                      !isSelected;
+
+                                    return {
+                                      label: isSelected
+                                        ? t
+                                        : pastTimeToday
+                                        ? `${t} (Past time)`
+                                        : isOverlapDisabled
+                                        ? `${t} (Overlaps active show)`
+                                        : t,
+                                      value: t,
+                                      disabled: isDisabled,
+                                    };
+                                  })}
+                                  value={item.times || []}
+                                  onChange={(vals: any) => {
+                                    const currentTimes = item.times || [];
+                                    if (vals.length > currentTimes.length) {
+                                      const newTime = vals.find(
+                                        (t: string) =>
+                                          !currentTimes.includes(t)
+                                      );
+                                      if (newTime) {
+                                        const slotMinutes =
+                                          timeToMinutes(newTime);
+                                        const nowMinutes = getNowMinutes();
+                                        if (
+                                          isToday(item.date) &&
+                                          slotMinutes <= nowMinutes
+                                        ) {
+                                          return;
+                                        }
+                                        const wouldOverlap =
+                                          !isTimeSlotAvailable(
+                                            newTime,
+                                            currentTimes,
+                                            duration
+                                          );
+                                        if (wouldOverlap) return;
+                                      }
+                                    }
+                                    setFieldValue(
+                                      `schedules[${index}].times`,
+                                      vals
+                                    );
+                                  }}
+                                  defaultOption="Select one or more start times"
+                                  required
+                                />
+                              </div>
+                            </div>
+
+                            {item.times?.length > 0 && duration > 0 && (
+                              <div className="pt-2 border-t border-stone-100 flex flex-wrap items-center gap-1.5">
+                                <span className="text-[11px] font-semibold text-stone-400 mr-1">
+                                  Screenings:
+                                </span>
+                                {item.times.map((time: string) => {
+                                  const startMinutes = timeToMinutes(time);
+                                  const endMinutes = startMinutes + duration;
+                                  const endTime = minutesToTime(endMinutes);
+                                  return (
+                                    <span
+                                      key={time}
+                                      className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-[#fff8ea] border border-[#c77e3b]/30 text-xs font-semibold text-[#754f2c]"
+                                    >
+                                      <Clock size={11} />
+                                      {time} → {endTime}
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
-
-                  {values.schedules.map((item: any, index: number) => {
-                    const disabledTimes = duration
-                      ? getDisabledTimeSlots(item.times || [], duration)
-                      : [];
-
-                    return (
-                      <div
-                        key={index}
-                        className="border p-4 rounded-md space-y-4 bg-gray-50"
-                      >
-                        {/* Date */}
-                        <Input
-                          label="Date"
-                          name={`schedules[${index}].date`}
-                          type="date"
-                          value={item.date}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          error={
-                            touched.schedules?.[index] &&
-                            errors.schedules?.[index] &&
-                            typeof errors.schedules[index] === "object" &&
-                            "date" in errors.schedules[index]
-                              ? (errors.schedules[index] as any).date
-                              : undefined
-                          }
-                          required
-                          className="w-full"
-                          restrictPastDate
-                        />
-
-                        {/* TIMES */}
-                        <div>
-                          <ReusableSelect
-                            mode="multiple"
-                            label="Times"
-                            name={`schedules[${index}].times`}
-                            options={allSlots.map((t) => {
-                              const isSelected = (item.times || []).includes(t);
-
-                              const slotMinutes = timeToMinutes(t);
-                              const nowMinutes = getNowMinutes();
-
-                              const pastTimeToday =
-                                isToday(item.date) && slotMinutes <= nowMinutes;
-
-                              const isOverlapDisabled =
-                                disabledTimes.includes(t);
-                              const isDisabled =
-                                (pastTimeToday || isOverlapDisabled) &&
-                                !isSelected;
-
-                              return {
-                                label: isSelected
-                                  ? t
-                                  : pastTimeToday
-                                  ? `${t} (Unavailable - Past time)`
-                                  : isOverlapDisabled
-                                  ? `${t} (Unavailable - Overlaps)`
-                                  : t,
-                                value: t,
-                                disabled: isDisabled,
-                              };
-                            })}
-                            value={item.times || []}
-                            onChange={(vals: any) => {
-                              const currentTimes = item.times || [];
-
-                              if (vals.length > currentTimes.length) {
-                                const newTime = vals.find(
-                                  (t: string) => !currentTimes.includes(t)
-                                );
-
-                                if (newTime) {
-                                  const slotMinutes = timeToMinutes(newTime);
-                                  const nowMinutes = getNowMinutes();
-
-                                  if (
-                                    isToday(item.date) &&
-                                    slotMinutes <= nowMinutes
-                                  ) {
-                                    return; // ❌ block past/current time
-                                  }
-
-                                  const wouldOverlap = !isTimeSlotAvailable(
-                                    newTime,
-                                    currentTimes,
-                                    duration
-                                  );
-
-                                  if (wouldOverlap) return;
-                                }
-                              }
-
-                              setFieldValue(`schedules[${index}].times`, vals);
-                            }}
-                            defaultOption="Select times"
-                            required
-                          />
-
-                          {item.times?.length > 0 && duration > 0 && (
-                            <div className="mt-2 p-2 bg-white rounded border text-xs font-serif">
-                              <p className="font-semibold mb-1">
-                                Selected Showtimes:
-                              </p>
-                              {item.times.map((time: string) => {
-                                const startMinutes = timeToMinutes(time);
-                                const endMinutes = startMinutes + duration;
-                                const endTime = minutesToTime(endMinutes);
-                                return (
-                                  <div
-                                    key={time}
-                                    className="text-muted-foreground"
-                                  >
-                                    • {time} - {endTime} ({duration} mins)
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Remove */}
-                        <div className="flex justify-end">
-                          <Button
-                            variant="outline"
-                            type="button"
-                            title="Remove Date"
-                            onClick={() => remove(index)}
-                            className="rounded-md"
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
                 </div>
               )}
             </FieldArray>
 
             {/* FOOTER */}
-            <div className="flex gap-2 pt-6 border-t">
+            <div className="flex items-center justify-end gap-2.5 pt-5 border-t border-stone-200/80">
+              <Button
+                type="button"
+                title="Cancel"
+                variant="outline"
+                onClick={onCancel}
+                disabled={isSubmitting}
+              />
               <Button
                 type="submit"
+                className="min-w-[160px]"
+                loading={isSubmitting}
+                disabled={isSubmitting}
                 title={
                   isSubmitting
                     ? editMode
                       ? "Updating..."
                       : "Creating..."
                     : editMode
-                    ? "Update Showtime"
+                    ? "Save Showtime"
                     : "Create Showtime"
                 }
-                className="flex-1 rounded-md"
-                disabled={isSubmitting}
-              />
-
-              <Button
-                type="button"
-                title="Cancel"
-                variant="outline"
-                onClick={onCancel}
-                className="rounded-md"
               />
             </div>
           </Form>

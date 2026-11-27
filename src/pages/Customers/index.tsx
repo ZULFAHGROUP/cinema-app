@@ -50,25 +50,29 @@ function CustomersPage() {
   ];
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <div className="mb-4">
-          <h1 className="text-2xl font-sans font-bold text-foreground">Customers</h1>
-          <p className="text-sm text-muted-foreground font-serif">
+    <div className="space-y-6 pb-8">
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-6 shadow-2xs flex items-center gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0">
+          <Users className="w-6 h-6" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-extrabold text-stone-900">Customers</h1>
+          <p className="text-sm text-stone-500 mt-0.5">
             Customer accounts and their orders. Customers sign up from the booking app.
           </p>
         </div>
+      </div>
 
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 px-6 pt-2 shadow-2xs">
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}
           items={tabItems.map((item) => ({ key: item.key, label: item.label }))}
-          className="mb-6"
         />
+      </div>
 
-        <div className="tab-content">
-          {tabItems.find((item) => item.key === activeTab)?.children}
-        </div>
+      <div className="tab-content">
+        {tabItems.find((item) => item.key === activeTab)?.children}
       </div>
     </div>
   );

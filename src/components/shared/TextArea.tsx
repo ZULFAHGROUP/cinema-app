@@ -21,6 +21,7 @@ interface TextAreaProps {
   required?: boolean;
   readOnly?: boolean;
   error?: string;
+  hint?: string;
   conClassName?: string;
 }
 
@@ -36,21 +37,23 @@ const TextArea: React.FC<TextAreaProps> = ({
   name,
   id,
   value,
-  rows = 2,
+  rows = 3,
   disabled = false,
   required = false,
   readOnly = false,
   error,
+  hint,
   conClassName = "",
 }) => {
   return (
     <div className={`flex flex-col ${conClassName}`}>
       {label && (
         <label
-          htmlFor={id}
-          className={`font-medium md:text-lg block ${labelClassName}`}
+          htmlFor={id || name}
+          className={`text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5 block ${labelClassName}`}
         >
           {label}
+          {required && <span className="text-[#c77e3b] ml-1">*</span>}
         </label>
       )}
       <AntdTextArea
@@ -62,13 +65,20 @@ const TextArea: React.FC<TextAreaProps> = ({
         id={id}
         value={value}
         rows={rows}
-        className={className}
+        className={`rounded-xl text-sm border-stone-200/90 hover:border-[#c77e3b] focus:border-[#c77e3b] ${
+          error ? "border-red-500" : ""
+        } ${className}`}
         maxLength={maxLength}
         disabled={disabled}
         readOnly={readOnly}
         required={required}
       />
-      {error && <p className="text-sm text-red-500 italic mt-1">{error}</p>}
+      {hint && !error && (
+        <p className="text-[11px] text-stone-400 mt-1 leading-snug">{hint}</p>
+      )}
+      {error && (
+        <p className="text-xs text-red-500 font-medium mt-1">{error}</p>
+      )}
     </div>
   );
 };

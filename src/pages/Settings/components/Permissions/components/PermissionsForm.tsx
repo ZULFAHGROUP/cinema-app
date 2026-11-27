@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Formik, Form } from "formik";
+import { KeyRound } from "lucide-react";
 import Input from "../../../../../components/shared/Input";
+import TextArea from "../../../../../components/shared/TextArea";
 import Button from "../../../../../components/shared/Button";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../../../../store/hook";
@@ -45,7 +47,7 @@ const PermissionsForm = ({
       } else {
         response = await dispatch(createPermission(values)).unwrap();
       }
-      
+
       if (response.code === 200 || response.code === 201) {
         toast.success(response.message);
         await dispatch(getAllPermissions({ page, limit }));
@@ -74,24 +76,41 @@ const PermissionsForm = ({
         isSubmitting,
         handleSubmit,
       }) => (
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit} className="space-y-5">
+          <div className="rounded-xl bg-[#fff8ea]/70 border border-[#c77e3b]/20 p-3.5 flex items-start gap-3">
+            <div className="w-9 h-9 rounded-lg bg-[#c77e3b]/15 text-[#754f2c] flex items-center justify-center shrink-0">
+              <KeyRound size={18} />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#754f2c]">
+                System Permission Key
+              </p>
+              <p className="text-xs text-stone-500 mt-0.5">
+                Define a fine-grained capability identifier that can be granted
+                to staff roles.
+              </p>
+            </div>
+          </div>
+
           <div className="space-y-4">
             <Input
-              label="Permission Name"
+              label="Permission Key / Name"
               name="permission_name"
               value={values.permission_name}
               onChange={handleChange}
               onBlur={handleBlur}
               error={
-                touched.permission_name && typeof errors.permission_name === "string"
+                touched.permission_name &&
+                typeof errors.permission_name === "string"
                   ? errors.permission_name
                   : undefined
               }
-              placeholder="can_view_dashboard"
+              placeholder="e.g., can_view_dashboard"
+              hint="Use snake_case format for system permission identifiers"
               required
             />
 
-            <Input
+            <TextArea
               label="Description"
               name="description"
               value={values.description}
@@ -102,15 +121,23 @@ const PermissionsForm = ({
                   ? errors.description
                   : undefined
               }
-              placeholder="Allows user to view dashboard"
+              placeholder="Explain what action this permission authorizes..."
+              rows={3}
               required
             />
           </div>
 
-          <div className="flex gap-2 pt-6 border-t mt-6">
+          <div className="flex items-center justify-end gap-2.5 pt-5 border-t border-stone-200/80">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+              title="Cancel"
+            />
             <Button
               type="submit"
-              className="flex-1 rounded-md"
+              className="min-w-[160px]"
               disabled={isSubmitting}
               loading={isSubmitting}
               title={
@@ -119,17 +146,9 @@ const PermissionsForm = ({
                     ? "Updating..."
                     : "Adding..."
                   : editMode
-                  ? "Update Permission"
+                  ? "Save Permission"
                   : "Add Permission"
               }
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-              title="Cancel"
-              className="rounded-md"
             />
           </div>
         </Form>

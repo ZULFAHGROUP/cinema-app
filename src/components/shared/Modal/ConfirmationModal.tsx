@@ -1,10 +1,7 @@
 import React, { ReactNode } from "react";
-import { Modal, Button } from "antd";
-import {
-  ExclamationCircleOutlined,
-  LikeOutlined,
-  DislikeOutlined,
-} from "@ant-design/icons";
+import { Modal } from "antd";
+import { AlertTriangle } from "lucide-react";
+import Button from "../Button";
 
 interface ConfirmationModalProps {
   open: boolean;
@@ -20,48 +17,43 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onConfirm,
   onCancel,
   item,
-  title = "Confirm this ?",
+  title = "Confirm Action",
   content = `Are you sure that you want to delete ${item}?`,
 }) => {
   return (
     <Modal
       open={open}
-      className="p-6 space-y-8"
       onCancel={onCancel}
       centered
-      title={
-        <div className="flex flex-col gap-4 items-center">
-          <ExclamationCircleOutlined
-            className="animate-pulse"
-            style={{ fontSize: 40, color: "#faad14" }}
-          />
-          {title}
-        </div>
-      }
-      footer={[
-        <div className="flex justify-center gap-4 mt-6">
-          <Button
-            key="cancel"
-            onClick={onCancel}
-            className="bg-gray-400"
-            icon={<DislikeOutlined />}
-          >
-            No
-          </Button>
-          <Button
-            key="confirm"
-            type="primary"
-            onClick={onConfirm}
-            icon={<LikeOutlined />}
-            className="bg-secondary"
-          >
-            Yes!
-          </Button>
-          ,
-        </div>,
-      ]}
+      width={440}
+      title={null}
+      footer={null}
     >
-      <p className="text-center">{content}</p>
+      <div className="flex flex-col items-center text-center pt-2 pb-1">
+        <div className="w-14 h-14 rounded-2xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center mb-4 shadow-2xs">
+          <AlertTriangle className="w-7 h-7 text-[#c77e3b]" />
+        </div>
+        <h3 className="text-lg font-bold text-stone-900 mb-2">{title}</h3>
+        <p className="text-sm text-stone-600 max-w-sm leading-relaxed mb-6">
+          {content}
+        </p>
+        <div className="flex items-center justify-center gap-3 w-full pt-4 border-t border-stone-100">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            title="Cancel"
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="primary"
+            onClick={onConfirm}
+            title="Yes, Confirm"
+            className="flex-1"
+          />
+        </div>
+      </div>
     </Modal>
   );
 };

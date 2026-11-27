@@ -50,7 +50,7 @@ export default function PaymentSummary({
         <h2 className="text-xl font-sans font-semibold text-foreground">Payment Summary</h2>
       </div>
 
-      <div className="bg-card border-t-4 border-t-primary rounded-xl overflow-hidden shadow-lg">
+      <div className="bg-white border border-[#c77e3b]/20 border-t-4 border-t-[#c77e3b] rounded-2xl overflow-hidden shadow-lg">
         <div className="p-6 space-y-4">
           <div className="flex justify-between items-center text-sm text-muted-foreground uppercase tracking-widest font-sans font-bold">
             <span>Description</span>
@@ -105,7 +105,7 @@ export default function PaymentSummary({
             onClick={onPay}
             loading={loading}
             disabled={holdExpired || !initiateData.authorization_url}
-            className="w-full rounded-xl py-6 h-auto text-lg font-bold flex gap-2 items-center justify-center bg-black hover:bg-black/90"
+            className="w-full py-3.5 text-base font-bold"
             icon={<ExternalLink className="w-5 h-5" />}
             title={loading ? "Initiating..." : `Pay with ${gateway}`}
           />

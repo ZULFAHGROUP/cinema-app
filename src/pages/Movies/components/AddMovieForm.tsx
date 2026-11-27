@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Formik, Form } from "formik";
+import { Film, ImagePlus, Clock, Star } from "lucide-react";
 import Input from "../../../components/shared/Input";
 import Button from "../../../components/shared/Button";
 import ReusableSelect from "../../../components/shared/Select";
@@ -21,10 +22,26 @@ interface AddMovieProps {
   movieData?: any;
 }
 
+const GENRE_SUGGESTIONS = [
+  "Action",
+  "Adventure",
+  "Comedy",
+  "Drama",
+  "Sci-Fi",
+  "Thriller",
+  "Horror",
+  "Animation",
+  "Romance",
+];
+
 const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
   const dispatch = useAppDispatch();
   const { classifications } = useAppSelector((state) => state.classification);
-  const { limit, page, filters: movieFilters } = useAppSelector((state) => state.movie);
+  const {
+    limit,
+    page,
+    filters: movieFilters,
+  } = useAppSelector((state) => state.movie);
 
   const allClassification = [...(classifications || [])]
     .sort((a: any, b: any) => a.name.localeCompare(b.name))
@@ -62,8 +79,7 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
         ? movieData.cast
         : movieData.cast.split(",").map((c: string) => c.trim())
       : [],
-    poster: null,
-    // trailer_url: movieData?.trailer_url || "",
+    poster: null as File | null,
     language: movieData?.language || "",
     movie_classification_id: movieData?.movie_classification_id || "",
   };
@@ -116,7 +132,7 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
         onCancel();
       }
     } catch (error: any) {
-      console.error("Error submitting screen form", error);
+      console.error("Error submitting movie form", error);
       toast.error(error?.response?.message || "Something went wrong");
     }
   }
@@ -136,244 +152,268 @@ const AddMovieForm = ({ editMode, movieData, onCancel }: AddMovieProps) => {
         setFieldValue,
         isSubmitting,
         handleSubmit,
-      }) => (
-        <Form onSubmit={handleSubmit}>
-          <div className="flex flex-col-reverse md:grid md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <Input
-                label="Movie Title"
-                name="title"
-                value={values.title}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.title ? (errors.title as string) : ""}
-                placeholder="Enter movie title"
-                required
-              />
+      }) => {
+        const durationNum = Number(values.duration) || 0;
+        const durationFormatted =
+          durationNum >= 60
+            ? `${Math.floor(durationNum / 60)}h ${durationNum % 60}m`
+            : durationNum > 0
+            ? `${durationNum}m`
+            : null;
 
-              <Input
-                label="Director"
-                name="director"
-                value={values.director}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.director ? (errors.director as string) : ""}
-                placeholder="e.g., Christopher Nolan"
-                required
-              />
+        const posterPreviewUrl =
+          values.poster instanceof File
+            ? URL.createObjectURL(values.poster)
+            : movieData?.poster_url || movieData?.poster || null;
 
-              <TagInput
-                label="Genres"
-                name="genres"
-                values={values.genres}
-                setFieldValue={setFieldValue}
-                error={errors.genres as string}
-                // touched={touched.genres}
-                placeholder="Type a genre and press Enter"
-                required
-              />
+        return (
+          <Form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              {/* LEFT COLUMN: Movie Metadata */}
+              <div className="md:col-span-7 space-y-4">
+                <div className="rounded-xl bg-[#fff8ea]/70 border border-[#c77e3b]/20 px-3.5 py-2.5 flex items-center gap-2.5">
+                  <Film size={16} className="text-[#c77e3b] shrink-0" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#754f2c]">
+                    Movie Details & Credits
+                  </span>
+                </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  label="Duration (minutes)"
-                  name="duration"
-                  type="number"
-                  value={values.duration}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.duration ? (errors.duration as string) : ""}
-                  placeholder="148"
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <Input
+                    label="Movie Title"
+                    name="title"
+                    value={values.title}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.title ? (errors.title as string) : ""}
+                    placeholder="e.g., Inception"
+                    required
+                  />
+
+                  <Input
+                    label="Director"
+                    name="director"
+                    value={values.director}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.director ? (errors.director as string) : ""}
+                    placeholder="e.g., Christopher Nolan"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                  <Input
+                    label="Duration (Mins)"
+                    name="duration"
+                    type="number"
+                    value={values.duration}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.duration ? (errors.duration as string) : ""}
+                    placeholder="148"
+                    hint={
+                      durationFormatted
+                        ? `Runtime: ${durationFormatted}`
+                        : "In minutes"
+                    }
+                    prefix={<Clock size={14} className="text-stone-400 mr-1" />}
+                    required
+                  />
+
+                  <Input
+                    label="Rating (0 - 10)"
+                    name="rating"
+                    value={values.rating}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.rating ? (errors.rating as string) : ""}
+                    placeholder="8.8"
+                    prefix={<Star size={14} className="text-amber-500 mr-1" />}
+                    required
+                  />
+
+                  <Input
+                    label="Release Date"
+                    name="release_date"
+                    type="date"
+                    value={values.release_date}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={
+                      touched.release_date
+                        ? (errors.release_date as string)
+                        : ""
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <ReusableSelect
+                    label="Audio Language"
+                    name="language"
+                    value={values.language}
+                    onChange={(value) => setFieldValue("language", value)}
+                    options={languageOptions}
+                    defaultOption="Select language"
+                    error={touched.language ? (errors.language as string) : ""}
+                    required
+                  />
+
+                  <ReusableSelect
+                    label="Age Classification"
+                    name="movie_classification_id"
+                    value={values.movie_classification_id}
+                    onChange={(value) =>
+                      setFieldValue("movie_classification_id", value)
+                    }
+                    options={allClassification}
+                    defaultOption="Select rating (PG, 18+...)"
+                    error={
+                      touched.movie_classification_id
+                        ? (errors.movie_classification_id as string)
+                        : ""
+                    }
+                    required
+                    disabled={editMode}
+                  />
+                </div>
+
+                <TagInput
+                  label="Genres"
+                  name="genres"
+                  values={values.genres}
+                  setFieldValue={setFieldValue}
+                  error={errors.genres as string}
+                  touched={Boolean(touched.genres)}
+                  placeholder="Type a genre and press Enter..."
+                  suggestions={GENRE_SUGGESTIONS}
                   required
                 />
 
-                <Input
-                  label="Rating"
-                  name="rating"
-                  value={values.rating}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.rating ? (errors.rating as string) : ""}
-                  placeholder="8.8"
+                <TagInput
+                  label="Main Cast"
+                  name="cast"
+                  values={values.cast}
+                  setFieldValue={setFieldValue}
+                  error={errors.cast as string}
+                  touched={Boolean(touched.cast)}
+                  placeholder="Type actor name and press Enter..."
+                  hint="Press Enter or comma after each actor name"
                   required
                 />
               </div>
 
-              <Input
-                label="Release Date"
-                name="release_date"
-                type="date"
-                value={values.release_date}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={
-                  touched.release_date ? (errors.release_date as string) : ""
-                }
-                required
-              />
+              {/* RIGHT COLUMN: Poster Upload & Synopsis */}
+              <div className="md:col-span-5 space-y-4 flex flex-col">
+                <div className="rounded-xl bg-[#fff8ea]/70 border border-[#c77e3b]/20 px-3.5 py-2.5 flex items-center gap-2.5">
+                  <ImagePlus size={16} className="text-[#c77e3b] shrink-0" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#754f2c]">
+                    Poster & Synopsis
+                  </span>
+                </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <ReusableSelect
-                  label="Language"
-                  name="language"
-                  value={values.language}
-                  onChange={(value) => setFieldValue("language", value)}
-                  options={languageOptions}
-                  defaultOption="Select language"
-                  error={touched.language ? (errors.language as string) : ""}
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5">
+                    Movie Poster Artwork{" "}
+                    {!editMode && <span className="text-[#c77e3b]">*</span>}
+                  </label>
+                  <label className="group relative flex flex-col items-center justify-center w-full h-52 rounded-2xl border-2 border-dashed border-stone-300 hover:border-[#c77e3b] bg-stone-50/70 hover:bg-[#fff8ea]/40 transition-all cursor-pointer overflow-hidden">
+                    {posterPreviewUrl ? (
+                      <div className="relative w-full h-full flex items-center justify-center bg-stone-900">
+                        <img
+                          src={posterPreviewUrl}
+                          alt="Poster preview"
+                          className="h-full w-full object-contain"
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white p-3 text-center">
+                          <ImagePlus className="w-6 h-6 mb-1 text-[#c77e3b]" />
+                          <span className="text-xs font-semibold">
+                            Click to replace poster
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center p-4 text-center">
+                        <div className="w-11 h-11 rounded-xl bg-[#c77e3b]/15 text-[#754f2c] flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+                          <ImagePlus size={22} />
+                        </div>
+                        <p className="text-xs font-semibold text-stone-700">
+                          Click to upload movie poster
+                        </p>
+                        <p className="text-[11px] text-stone-400 mt-0.5">
+                          PNG, JPG or WEBP (Portrait 2:3 recommended)
+                        </p>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      name="poster"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        setFieldValue("poster", file || null);
+                      }}
+                    />
+                  </label>
+                  {values.poster instanceof File && (
+                    <p className="mt-1.5 text-xs text-emerald-700 font-medium truncate">
+                      Selected: {values.poster.name} (
+                      {(values.poster.size / 1024).toFixed(0)} KB)
+                    </p>
+                  )}
+                  {touched.poster && errors.poster && (
+                    <p className="mt-1 text-xs text-red-500 font-medium">
+                      {errors.poster as string}
+                    </p>
+                  )}
+                </div>
+
+                <TextArea
+                  label="Movie Synopsis / Description"
+                  name="description"
+                  value={values.description}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="Write a brief plot summary shown on the POS and movie details..."
+                  rows={5}
                   required
-                />
-
-                <ReusableSelect
-                  label="Classification"
-                  name="movie_classification_id"
-                  value={values.movie_classification_id}
-                  onChange={(value) =>
-                    setFieldValue("movie_classification_id", value)
-                  }
-                  options={allClassification}
-                  defaultOption="Select classification"
                   error={
-                    touched.movie_classification_id
-                      ? (errors.movie_classification_id as string)
-                      : ""
+                    touched.description ? (errors.description as string) : ""
                   }
-                  required
-                  disabled={editMode}
                 />
               </div>
+            </div>
 
-              <TagInput
-                label="Cast"
-                name="cast"
-                values={values.cast}
-                setFieldValue={setFieldValue}
-                error={errors.cast as string}
-                // touched={touched.cast}
-                placeholder="Type an actor name and press Enter"
-                required
+            <div className="flex items-center justify-end gap-2.5 pt-5 border-t border-stone-200/80">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                disabled={isSubmitting}
+                title="Cancel"
               />
-
-              <TextArea
-                label="Description"
-                name="description"
-                value={values.description}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                placeholder="Enter movie description"
-                rows={3}
-                required
-                error={
-                  touched.description ? (errors.description as string) : ""
+              <Button
+                type="submit"
+                className="min-w-[160px]"
+                disabled={isSubmitting}
+                loading={isSubmitting}
+                title={
+                  isSubmitting
+                    ? editMode
+                      ? "Updating Movie..."
+                      : "Adding Movie..."
+                    : editMode
+                    ? "Save Movie Changes"
+                    : "Create Movie"
                 }
               />
             </div>
-
-<div className="space-y-4">
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">
-      Poster {!editMode && <span className="text-red-500">*</span>}
-    </label>
-    <input
-      type="file"
-      name="poster"
-      accept="image/*"
-      onChange={(event) => {
-        const file = event.target.files?.[0];
-        if (file) {
-          console.log("File selected:", file.name, file.size, file.type);
-          setFieldValue("poster", file);
-        } else {
-          setFieldValue("poster", null);
-        }
+          </Form>
+        );
       }}
-      className="block w-full text-sm text-gray-500
-        file:mr-4 file:py-2 file:px-4
-        file:rounded-full file:border-0
-        file:text-sm file:font-semibold
-        file:bg-primary/10 file:text-primary
-        hover:file:bg-primary/20"
-    />
-    {touched.poster && errors.poster && (
-      <p className="mt-1 text-sm text-red-600">{errors.poster as string}</p>
-    )}
-    {values.poster && (
-      <p className="mt-2 text-sm text-gray-600">
-        Selected: {(values.poster as File).name}
-      </p>
-    )}
-    {editMode && movieData?.poster && !values.poster && (
-      <p className="mt-2 text-sm text-gray-600">
-        Current poster: {movieData.poster}
-      </p>
-    )}
-  </div>
-</div>
-
-            <div className="space-y-4">
-              
-              {/* <Input 
-              label="Poster"
-               type="file"
-      name="poster"
-      accept="image/*"
-      onChange={(event) => {
-        const file = event.target.files?.[0];
-        if (file) {
-          console.log("File selected:", file.name, file.size, file.type);
-          setFieldValue("poster", file);
-        } else {
-          setFieldValue("poster", null);
-        }
-      }}
-                  className="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:
-                    file:text-sm file:font-semibold
-                    file:bg-primary/10 file:text-primary
-                    hover:file:bg-primary/20"
-                    error={touched.poster ? (errors.poster as string) : ''}
-                /> */}
-
-              {/* <Input
-                label="Trailer URL"
-                name="trailer_url"
-                value={values.trailer_url}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={
-                  touched.trailer_url ? (errors.trailer_url as string) : ""
-                }
-                placeholder="https://youtube.com/watch?v=example"
-              /> */}
-            </div>
-          </div>
-
-          <div className="flex gap-2 pt-6 border-t mt-6">
-            <Button
-              type="submit"
-              className="flex-1 rounded-md"
-              disabled={isSubmitting}
-              title={
-                isSubmitting
-                  ? editMode
-                    ? "Updating Movie..."
-                    : "Adding Movie..."
-                  : editMode
-                  ? "Update Movie"
-                  : "Add Movie"
-              }
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-              title="Cancel"
-              className="rounded-md"
-            />
-          </div>
-        </Form>
-      )}
     </Formik>
   );
 };

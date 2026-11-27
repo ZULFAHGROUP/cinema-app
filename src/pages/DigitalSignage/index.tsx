@@ -226,13 +226,18 @@ function SignagePage() {
   ];
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-        <div>
-          <h1 className="text-2xl font-sans font-bold text-foreground">Digital Signage</h1>
-          <p className="text-sm text-muted-foreground font-serif">
-            Lobby screens, what they show, and when
-          </p>
+    <div className="space-y-6 pb-8">
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0">
+            <Monitor className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-stone-900">Digital Signage</h1>
+            <p className="text-sm text-stone-500 mt-0.5">
+              Lobby screens, what they show, and when
+            </p>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {isAdmin && (
@@ -295,11 +300,13 @@ function SignagePage() {
         </div>
       ) : (
         <>
-          <Tabs
-            activeKey={activeTab}
-            onChange={setActiveTab}
-            items={tabItems.map((item) => ({ key: item.key, label: item.label }))}
-          />
+          <div className="bg-white rounded-2xl border border-[#c77e3b]/15 px-6 pt-2 shadow-2xs">
+            <Tabs
+              activeKey={activeTab}
+              onChange={setActiveTab}
+              items={tabItems.map((item) => ({ key: item.key, label: item.label }))}
+            />
+          </div>
           {tabItems.find((item) => item.key === activeTab)?.children}
         </>
       )}

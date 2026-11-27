@@ -317,25 +317,46 @@ export default function CinemaStaffAssignment() {
 
       <DisplayModal
         open={Boolean(toMove)}
-        title={`Move ${toMove?.admin?.surname ?? ""} ${toMove?.admin?.other_names ?? ""}`}
+        title={`Reassign ${toMove?.admin?.surname ?? ""} ${toMove?.admin?.other_names ?? ""}`}
+        subtitle="Transfer this staff member to a different cinema branch"
         onClose={closeMove}
       >
-        <div className="space-y-4">
-          <p className="text-sm">
-            Currently at <strong>{cinemaName(toMove?.cinema_id)}</strong>. Choose where they'll work instead:
-          </p>
-          <Select
-            showSearch
-            optionFilterProp="label"
-            placeholder="New cinema"
-            value={moveTo}
-            onChange={setMoveTo}
-            options={cinemaOptions.filter((c: any) => c.value !== toMove?.cinema_id)}
-            className="w-full"
-          />
-          <div className="flex gap-2 pt-4 border-t">
-            <Button className="flex-1 rounded-md" title="Move" disabled={!moveTo} onClick={move} />
-            <Button variant="outline" className="rounded-md" title="Cancel" onClick={closeMove} />
+        <div className="space-y-5">
+          <div className="rounded-xl bg-[#fff8ea]/70 border border-[#c77e3b]/20 p-3.5 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#754f2c]">
+                Current Branch
+              </p>
+              <p className="text-sm font-bold text-stone-900">
+                {cinemaName(toMove?.cinema_id)}
+              </p>
+            </div>
+            <ArrowRightLeft className="text-[#c77e3b]" size={18} />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5">
+              New Cinema Branch <span className="text-[#c77e3b]">*</span>
+            </label>
+            <Select
+              showSearch
+              optionFilterProp="label"
+              placeholder="Select destination cinema branch"
+              value={moveTo}
+              onChange={setMoveTo}
+              options={cinemaOptions.filter((c: any) => c.value !== toMove?.cinema_id)}
+              className="w-full min-h-[40px]"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-stone-200/80">
+            <Button variant="outline" title="Cancel" onClick={closeMove} />
+            <Button
+              className="min-w-[140px]"
+              title="Confirm Transfer"
+              disabled={!moveTo}
+              onClick={move}
+            />
           </div>
         </div>
       </DisplayModal>

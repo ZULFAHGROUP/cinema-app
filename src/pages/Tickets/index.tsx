@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Button from "../../components/shared/Button";
 import ReusableSelect from "../../components/shared/Select";
 import Input from "../../components/shared/Input";
-import { Users, Plus, Loader2 } from "lucide-react";
+import { Users, Plus, Loader2, Ticket } from "lucide-react";
 import MovieSelection from "./components/MovieSelection";
 import ShowtimeSelection from "./components/ShowtimeSelection";
 import PurchaseSelection from "./components/PurchaseSelection";
@@ -139,29 +139,32 @@ function TicketSalesPage() {
   );
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="space-y-6 pb-8">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl font-sans font-bold text-foreground">
-              Ticket Sales
-            </h1>
-            <p className="text-muted-foreground font-serif">
-              Box office and online bookings
-            </p>
+      <div>
+        <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0">
+              <Ticket className="w-6 h-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-extrabold text-stone-900">
+                Ticket Sales & Box Office
+              </h1>
+              <p className="text-sm text-stone-500 mt-0.5">
+                Interactive seat reservations, counter quick-sales, and concession add-ons
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <Button
               onClick={() => setIsBoxOfficeMode(!isBoxOfficeMode)}
-              className="gap-2 rounded-full px-6"
               variant={isBoxOfficeMode ? "primary" : "outline"}
               icon={<Users className="w-4 h-4" />}
               title={isBoxOfficeMode ? "Exit Box Office" : "Box Office Mode"}
             />
             <Button
               onClick={resetBooking}
-              className="gap-2 rounded-full px-6"
               variant="outline"
               icon={<Plus className="w-4 h-4" />}
               title="New Sale"

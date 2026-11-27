@@ -6,6 +6,7 @@ interface InputProps extends Omit<AntInputProps, "size"> {
   labelClassName?: string;
   conClassName?: string;
   error?: string;
+  hint?: string;
   restrictFutureDate?: boolean;
   restrictPastDate?: boolean;
 }
@@ -21,6 +22,7 @@ const Input = ({
   required = false,
   readOnly = false,
   error,
+  hint,
   conClassName = "",
   restrictFutureDate = false,
   restrictPastDate = false,
@@ -33,10 +35,11 @@ const Input = ({
     <div className={`flex flex-col ${conClassName}`}>
       {label && (
         <label
-          htmlFor={props.id}
-          className={`block font-medium md:text-lg ${labelClassName}`}
+          htmlFor={props.id || props.name}
+          className={`block text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5 ${labelClassName}`}
         >
           {label}
+          {required && <span className="text-[#c77e3b] ml-1">*</span>}
         </label>
       )}
 
@@ -48,15 +51,17 @@ const Input = ({
             disabled={disabled}
             readOnly={readOnly}
             required={required}
-            className={`py-2 pr-10 ${className} ${
-              error ? "border-red-500" : "border-gray-300"
+            className={`py-2 pr-10 rounded-xl text-sm ${className} ${
+              error
+                ? "border-red-500"
+                : "border-stone-200/90 hover:border-[#c77e3b] focus:border-[#c77e3b]"
             }`}
             onChange={onChange}
             iconRender={(visible) =>
               visible ? (
-                <FiEyeOff className="cursor-pointer" />
+                <FiEyeOff className="cursor-pointer text-stone-400" />
               ) : (
-                <FiEye className="cursor-pointer" />
+                <FiEye className="cursor-pointer text-stone-400" />
               )
             }
             {...props}
@@ -69,8 +74,10 @@ const Input = ({
             disabled={disabled}
             readOnly={readOnly}
             required={required}
-            className={`py-2 ${className} ${
-              error ? "border-red-500" : "border-gray-300"
+            className={`py-2 rounded-xl text-sm ${className} ${
+              error
+                ? "border-red-500"
+                : "border-stone-200/90 hover:border-[#c77e3b] focus:border-[#c77e3b]"
             }`}
             onChange={onChange}
             {...(type === "date" &&
@@ -82,7 +89,12 @@ const Input = ({
         )}
       </div>
 
-      {error && <p className="text-sm text-red-500 italic mt-1">{error}</p>}
+      {hint && !error && (
+        <p className="text-[11px] text-stone-400 mt-1 leading-snug">{hint}</p>
+      )}
+      {error && (
+        <p className="text-xs text-red-500 font-medium mt-1">{error}</p>
+      )}
     </div>
   );
 };

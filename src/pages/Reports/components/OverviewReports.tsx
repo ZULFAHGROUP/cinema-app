@@ -36,9 +36,9 @@ export default function OverviewReports({ report, days }: OverviewReportsProps) 
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="border rounded-lg p-6 lg:col-span-2">
-        <h3 className="font-sans font-semibold text-lg mb-1">Revenue Trend</h3>
-        <p className="text-sm text-muted-foreground font-serif mb-4">
+      <div className="bg-white border border-[#c77e3b]/15 rounded-2xl p-6 shadow-2xs lg:col-span-2">
+        <h3 className="font-bold text-lg text-stone-900 mb-0.5">Revenue Trend</h3>
+        <p className="text-xs text-stone-500 mb-4">
           Tickets and concessions, before VAT
         </p>
         <ReactApexChart
@@ -56,9 +56,9 @@ export default function OverviewReports({ report, days }: OverviewReportsProps) 
         />
       </div>
 
-      <div className="border rounded-lg p-6">
-        <h3 className="font-sans font-semibold text-lg mb-1">Revenue Split</h3>
-        <p className="text-sm text-muted-foreground font-serif mb-4">
+      <div className="bg-white border border-[#c77e3b]/15 rounded-2xl p-6 shadow-2xs">
+        <h3 className="font-bold text-lg text-stone-900 mb-0.5">Revenue Split</h3>
+        <p className="text-xs text-stone-500 mb-4">
           Share of sales by type
         </p>
         <ReactApexChart

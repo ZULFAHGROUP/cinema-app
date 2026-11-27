@@ -3,13 +3,16 @@ import { useState } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { Radio, Upload } from "antd";
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, Sparkles } from "lucide-react";
 import { toast } from "react-toastify";
 import Input from "../../../components/shared/Input";
 import TextArea from "../../../components/shared/TextArea";
 import Button from "../../../components/shared/Button";
 import ReusableSelect from "../../../components/shared/Select";
-import Signage, { ContentInput, SignageContentType } from "../../../services/network/signage";
+import Signage, {
+  ContentInput,
+  SignageContentType,
+} from "../../../services/network/signage";
 import { CONTENT_TYPES, CONTENT_TYPE_OPTIONS } from "../constants";
 
 type MediaSource = "none" | "upload" | "link";
@@ -32,10 +35,17 @@ interface AddContentFormProps {
   onCancel: () => void;
 }
 
-/** Create or edit signage content. Live types need no media; the others take an image or video. */
-const AddContentForm = ({ content, onSubmit, onCancel }: AddContentFormProps) => {
+const DURATION_PRESETS = [10, 15, 30, 60];
+
+const AddContentForm = ({
+  content,
+  onSubmit,
+  onCancel,
+}: AddContentFormProps) => {
   const [uploading, setUploading] = useState(false);
-  const [upload, setUpload] = useState<{ id: string; url: string } | null>(null);
+  const [upload, setUpload] = useState<{ id: string; url: string } | null>(
+    null
+  );
   const [mediaSource, setMediaSource] = useState<MediaSource>(
     content?.media_url ? "link" : "upload"
   );
@@ -48,7 +58,10 @@ const AddContentForm = ({ content, onSubmit, onCancel }: AddContentFormProps) =>
     setUploading(true);
     try {
       const response = await Signage.uploadImage(file);
-      setUpload({ id: response.data.data.temp_upload_id, url: response.data.data.url });
+      setUpload({
+        id: response.data.data.temp_upload_id,
+        url: response.data.data.url,
+      });
     } catch (error: any) {
       toast.error(error?.message || "Upload failed");
     } finally {
@@ -84,88 +97,148 @@ const AddContentForm = ({ content, onSubmit, onCancel }: AddContentFormProps) =>
           duration_seconds: Number(values.duration_seconds),
         };
         if (!live) {
-          if (mediaSource === "upload" && upload) payload.media_temp_upload_id = upload.id;
+          if (mediaSource === "upload" && upload)
+            payload.media_temp_upload_id = upload.id;
           if (mediaSource === "link" && values.media_url) {
             payload.media_url = values.media_url.trim();
             payload.media_kind = values.media_kind as "image" | "video";
           }
-          // Editing to "no media" clears what was there.
-          if (mediaSource === "none" && content?.media_url) payload.media_url = null;
+          if (mediaSource === "none" && content?.media_url)
+            payload.media_url = null;
         }
         try {
           await onSubmit(payload);
         } catch {
-          // The error toast comes from the API call.
+          // Handled upstream
         } finally {
           setSubmitting(false);
         }
       }}
     >
-      {({ values, errors, touched, handleChange, handleBlur, setFieldValue, isSubmitting }) => {
+      {({
+        values,
+        errors,
+        touched,
+        handleChange,
+        handleBlur,
+        setFieldValue,
+        isSubmitting,
+      }) => {
         const type = values.type ? CONTENT_TYPES[values.type] : null;
-        const previewUrl = mediaSource === "upload" ? upload?.url || (!upload && content?.media_url) : null;
+        const previewUrl =
+          mediaSource === "upload"
+            ? upload?.url || (!upload && content?.media_url)
+            : null;
         return (
-          <Form className="space-y-4">
-            <Input
-              label="Content name"
-              name="name"
-              value={values.name}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.name && typeof errors.name === "string" ? errors.name : ""}
-              placeholder="Weekend combo offer"
-              required
-            />
-            <ReusableSelect
-              label="Content type"
-              name="type"
-              value={values.type}
-              onChange={(value) => setFieldValue("type", value)}
-              options={CONTENT_TYPE_OPTIONS}
-              defaultOption="Select type"
-              showSearch={false}
-              error={touched.type && typeof errors.type === "string" ? errors.type : ""}
-              required
-            />
-            {type && <p className="text-xs text-muted-foreground -mt-2">{type.hint}</p>}
+          <Form className="space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Content Title"
+                name="name"
+                value={values.name}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={
+                  touched.name && typeof errors.name === "string"
+                    ? errors.name
+                    : ""
+                }
+                placeholder="e.g., Weekend Combo Offer"
+                required
+              />
+              <ReusableSelect
+                label="Content Type"
+                name="type"
+                value={values.type}
+                onChange={(value) => setFieldValue("type", value)}
+                options={CONTENT_TYPE_OPTIONS}
+                defaultOption="Select content type"
+                showSearch={false}
+                error={
+                  touched.type && typeof errors.type === "string"
+                    ? errors.type
+                    : ""
+                }
+                required
+              />
+            </div>
+
+            {type && (
+              <div className="rounded-xl bg-[#fff8ea]/70 border border-[#c77e3b]/20 px-3.5 py-2.5 flex items-center gap-2 text-xs text-[#754f2c]">
+                <Sparkles size={14} className="text-[#c77e3b] shrink-0" />
+                <span>{type.hint}</span>
+              </div>
+            )}
+
+            <div>
+              <Input
+                label="Slide Duration (Seconds)"
+                name="duration_seconds"
+                type="number"
+                min={3}
+                max={3600}
+                value={values.duration_seconds}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={
+                  touched.duration_seconds &&
+                  typeof errors.duration_seconds === "string"
+                    ? errors.duration_seconds
+                    : ""
+                }
+              />
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <span className="text-[11px] text-stone-400">Quick presets:</span>
+                {DURATION_PRESETS.map((sec) => (
+                  <button
+                    key={sec}
+                    type="button"
+                    onClick={() => setFieldValue("duration_seconds", sec)}
+                    className={`text-[11px] px-2 py-0.5 rounded-md border transition-colors cursor-pointer ${
+                      Number(values.duration_seconds) === sec
+                        ? "bg-[#fff8ea] border-[#c77e3b] text-[#754f2c] font-semibold"
+                        : "bg-stone-50 border-stone-200 text-stone-500 hover:border-[#c77e3b]/40"
+                    }`}
+                  >
+                    {sec}s
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <TextArea
-              label={values.type === "information" ? "Message" : "Description (optional)"}
+              label={
+                values.type === "information"
+                  ? "On-Screen Announcement Message"
+                  : "Description / Notes (Optional)"
+              }
               name="description"
               value={values.description}
               onChange={handleChange}
               rows={3}
               maxLength={2000}
-            />
-
-            <Input
-              label="Seconds on screen"
-              name="duration_seconds"
-              type="number"
-              min={3}
-              max={3600}
-              value={values.duration_seconds}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={
-                touched.duration_seconds && typeof errors.duration_seconds === "string"
-                  ? errors.duration_seconds
-                  : ""
-              }
+              placeholder="Enter text or notes for this content item..."
             />
 
             {type && !type.live && (
-              <div className="space-y-3 border rounded-lg p-3">
-                <p className="text-sm font-medium">Media</p>
-                <Radio.Group
-                  value={mediaSource}
-                  onChange={(e) => setMediaSource(e.target.value)}
-                  options={[
-                    { value: "upload", label: "Upload image" },
-                    { value: "link", label: "Image or video link" },
-                    ...(values.type === "information" ? [{ value: "none", label: "Text only" }] : []),
-                  ]}
-                />
+              <div className="space-y-3 border border-stone-200/90 rounded-2xl p-4 bg-stone-50/60">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-stone-600">
+                    Media Attachment
+                  </span>
+                  <Radio.Group
+                    value={mediaSource}
+                    onChange={(e) => setMediaSource(e.target.value)}
+                    options={[
+                      { value: "upload", label: "Upload Image" },
+                      { value: "link", label: "Image / Video URL" },
+                      ...(values.type === "information"
+                        ? [{ value: "none", label: "Text Only" }]
+                        : []),
+                    ]}
+                  />
+                </div>
+
                 {mediaSource === "upload" && (
                   <Upload.Dragger
                     accept="image/*"
@@ -175,30 +248,46 @@ const AddContentForm = ({ content, onSubmit, onCancel }: AddContentFormProps) =>
                       return false;
                     }}
                     disabled={uploading}
+                    className="bg-white! rounded-xl!"
                   >
                     {previewUrl ? (
-                      <img src={previewUrl} alt="Preview" className="max-h-40 mx-auto rounded" />
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="max-h-40 mx-auto rounded-lg"
+                      />
                     ) : (
                       <div className="py-4">
-                        <ImagePlus className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                        <p className="text-sm">{uploading ? "Uploading..." : "Click or drop an image"}</p>
+                        <ImagePlus className="w-8 h-8 mx-auto mb-2 text-[#c77e3b]" />
+                        <p className="text-xs font-semibold text-stone-700">
+                          {uploading
+                            ? "Uploading image..."
+                            : "Click or drag an image file here"}
+                        </p>
                       </div>
                     )}
                   </Upload.Dragger>
                 )}
                 {mediaSource === "link" && (
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     <Input
                       name="media_url"
                       value={values.media_url}
                       onChange={handleChange}
                       onBlur={handleBlur}
                       placeholder="https://example.com/trailer.mp4"
-                      error={touched.media_url && typeof errors.media_url === "string" ? errors.media_url : ""}
+                      error={
+                        touched.media_url &&
+                        typeof errors.media_url === "string"
+                          ? errors.media_url
+                          : ""
+                      }
                     />
                     <Radio.Group
                       value={values.media_kind}
-                      onChange={(e) => setFieldValue("media_kind", e.target.value)}
+                      onChange={(e) =>
+                        setFieldValue("media_kind", e.target.value)
+                      }
                       options={[
                         { value: "image", label: "Image" },
                         { value: "video", label: "Video" },
@@ -209,15 +298,21 @@ const AddContentForm = ({ content, onSubmit, onCancel }: AddContentFormProps) =>
               </div>
             )}
 
-            <div className="flex gap-2 pt-4 border-t">
+            <div className="flex items-center justify-end gap-2.5 pt-5 border-t border-stone-200/80">
+              <Button
+                type="button"
+                variant="outline"
+                title="Cancel"
+                onClick={onCancel}
+                disabled={isSubmitting}
+              />
               <Button
                 type="submit"
-                className="flex-1 rounded-md"
+                className="min-w-[150px]"
                 loading={isSubmitting}
                 disabled={isSubmitting || uploading}
-                title={content ? "Save content" : "Create content"}
+                title={content ? "Save Content" : "Create Content"}
               />
-              <Button type="button" variant="outline" className="rounded-md" title="Cancel" onClick={onCancel} />
             </div>
           </Form>
         );

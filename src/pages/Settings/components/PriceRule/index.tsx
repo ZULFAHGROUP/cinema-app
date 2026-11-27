@@ -209,15 +209,15 @@ const PriceRule = () => {
             label="Filter by Cinema"
             name="cinema_filter"
             value={selectedCinemaId}
-            onChange={(value) => setSelectedCinemaId(value as string)}
-            options={[
-              { label: "All Cinemas", value: "" },
-              ...(allCinemas?.map((cinema: any) => ({
+            onChange={(value) => setSelectedCinemaId((value as string) || "")}
+            options={
+              allCinemas?.map((cinema: any) => ({
                 label: cinema.name,
                 value: cinema.cinema_id,
-              })) || []),
-            ]}
-            defaultOption="Select cinema"
+              })) || []
+            }
+            defaultOption="All Cinemas"
+            allowClear
           />
         </div>
       )}
@@ -246,11 +246,10 @@ const PriceRule = () => {
       <DisplayModal
         open={showFormModal}
         title={editMode ? "Edit Price Rule" : "Add Price Rule"}
+        subtitle="If no cinema branch is selected, the rule applies globally across all cinemas."
         onClose={() => setShowFormModal(false)}
-        width={800}
+        width={760}
       >
-        <p className="text-sm text-gray-600">Note: If no cinema is selected, the price rule will be applied to all cinemas.</p>
-        <p className="text-sm text-gray-600 mb-4">Price rule can be set based on movie, screen type,and  day of week.</p>
         <PriceRuleForm
           onCancel={() => setShowFormModal(false)}
           editMode={editMode}

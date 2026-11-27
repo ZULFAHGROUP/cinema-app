@@ -123,13 +123,18 @@ function ReportsPage() {
     : [];
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-sans font-bold text-foreground">Reports & Analytics</h1>
-          <p className="text-sm text-muted-foreground font-serif">
-            Completed orders only. Refunded, expired and unpaid orders are excluded.
-          </p>
+    <div className="space-y-6 pb-8">
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0">
+            <BarChart3 className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-stone-900">Reports & Analytics</h1>
+            <p className="text-sm text-stone-500 mt-0.5">
+              Completed orders only. Refunded, expired and unpaid orders are excluded.
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <ReusableSelect
@@ -138,12 +143,11 @@ function ReportsPage() {
             onChange={(value) => setPeriod(value as string)}
             options={PERIODS}
             showSearch={false}
-            conClassName="w-40"
+            conClassName="w-44"
           />
           <Button
             onClick={() => report && exportCsv(report, periodLabel)}
             disabled={!report}
-            className="gap-2 rounded-md"
             icon={<Download className="w-4 h-4" />}
             title="Export CSV"
           />
@@ -156,28 +160,38 @@ function ReportsPage() {
         <p className="text-red-600">{error}</p>
       ) : report ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {kpis.map((kpi) => (
-              <div key={kpi.title} className="border rounded-lg p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-serif text-sm text-muted-foreground">{kpi.title}</p>
-                    <p className="font-sans text-2xl font-bold">{kpi.value}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{kpi.note}</p>
+              <div
+                key={kpi.title}
+                className="relative overflow-hidden bg-white border border-[#c77e3b]/15 rounded-2xl p-5 shadow-[0_4px_16px_-4px_rgba(117,79,44,0.06)]"
+              >
+                <span className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#c77e3b] to-[#5480c7]" />
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-stone-500 truncate">
+                      {kpi.title}
+                    </p>
+                    <p className="text-2xl font-extrabold text-stone-900 mt-1.5 truncate">
+                      {kpi.value}
+                    </p>
+                    <p className="text-xs text-stone-500 mt-1 truncate">{kpi.note}</p>
                   </div>
-                  <div className="p-3 rounded-lg bg-muted">
-                    <kpi.icon className={`w-6 h-6 ${kpi.color}`} />
+                  <div className="p-2.5 rounded-xl bg-[#fff8ea] border border-[#c77e3b]/20 shrink-0">
+                    <kpi.icon className={`w-5 h-5 ${kpi.color}`} />
                   </div>
                 </div>
               </div>
             ))}
           </div>
 
-          <Tabs
-            activeKey={activeTab}
-            onChange={setActiveTab}
-            items={tabItems.map((item) => ({ key: item.key, label: item.label }))}
-          />
+          <div className="bg-white rounded-2xl border border-[#c77e3b]/15 px-6 pt-2 shadow-2xs">
+            <Tabs
+              activeKey={activeTab}
+              onChange={setActiveTab}
+              items={tabItems.map((item) => ({ key: item.key, label: item.label }))}
+            />
+          </div>
           <div className={loading ? "opacity-50" : ""}>
             {tabItems.find((item) => item.key === activeTab)?.children}
           </div>
