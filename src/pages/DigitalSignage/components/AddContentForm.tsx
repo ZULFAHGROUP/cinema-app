@@ -131,7 +131,7 @@ const AddContentForm = ({
             : null;
         return (
           <Form className="space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Content Title"
                 name="name"

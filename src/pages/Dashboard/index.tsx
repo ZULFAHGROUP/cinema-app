@@ -9,7 +9,6 @@ import {
   Monitor,
   Banknote,
   ArrowUpRight,
-  Sparkles,
   Activity,
 } from "lucide-react";
 import {
@@ -69,8 +68,8 @@ function Dashboard() {
             value: formatCurrencyToNGN(orderStats?.totalRevenue),
             note: "Completed orders, incl. VAT",
             icon: Banknote,
-            badge: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
-            bar: "bg-emerald-500",
+            badge: "bg-emerald-50 text-emerald-700 border border-emerald-200/80",
+            dot: "bg-emerald-500",
           },
           {
             title: "Tickets Sold",
@@ -79,8 +78,8 @@ function Dashboard() {
               report?.summary.average_ticket_price
             )} per ticket`,
             icon: Ticket,
-            badge: "bg-[#fff8ea] text-[#c77e3b] ring-1 ring-[#c77e3b]/25",
-            bar: "bg-[#c77e3b]",
+            badge: "bg-[#fff8ea] text-[#c77e3b] border border-[#c77e3b]/25",
+            dot: "bg-[#c77e3b]",
           },
           {
             title: "Completed Orders",
@@ -89,8 +88,8 @@ function Dashboard() {
               orderStats?.totalOrders || 0
             ).toLocaleString()} orders placed`,
             icon: ShoppingCart,
-            badge: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
-            bar: "bg-amber-500",
+            badge: "bg-amber-50 text-amber-700 border border-amber-200/80",
+            dot: "bg-amber-500",
           },
         ]
       : []),
@@ -99,8 +98,8 @@ function Dashboard() {
       value: Number(totalMovies || 0).toLocaleString(),
       note: "Movies in catalogue",
       icon: Film,
-      badge: "bg-[#5480c7]/10 text-[#5480c7] ring-1 ring-[#5480c7]/25",
-      bar: "bg-[#5480c7]",
+      badge: "bg-[#5480c7]/10 text-[#5480c7] border border-[#5480c7]/25",
+      dot: "bg-[#5480c7]",
     },
   ];
 
@@ -173,33 +172,32 @@ function Dashboard() {
 
   return (
     <div className="space-y-6 pb-8">
-      {/* Hero Welcome Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#754f2c] via-[#c77e3b] to-[#5480c7] p-6 sm:p-8 text-white shadow-lg shadow-[#c77e3b]/15">
-        <div className="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm text-xs font-semibold text-[#fff8ea]">
-              <Sparkles className="w-3.5 h-3.5" />
+      {/* Habyta-Inspired Solid Architectural Hero Band */}
+      <div className="rounded-2xl bg-[#161310] border border-[#2a231c] p-6 md:p-8 text-[#fff8ea]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#fff8ea]/80">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#c77e3b]" />
               <span>{todayFormatted}</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#fff8ea] tracking-tight">
+            <h1 className="font-display text-2xl md:text-3xl font-bold text-[#fff8ea] tracking-[-0.025em]">
               Welcome back, {user?.surname || "Operations"} {user?.other_names || ""}
             </h1>
-            <p className="text-sm text-[#fff8ea]/85 max-w-xl">
-              Monitor live box office performance, manage screenings, and keep every theater running smoothly.
+            <p className="text-[13px] text-[#fff8ea]/65 max-w-xl leading-relaxed">
+              Monitor live box office performance, manage screenings, and keep every auditorium running on schedule.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
             <Link
               to={allRoutes.tickets}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#fff8ea] text-[#754f2c] hover:bg-white font-bold text-sm shadow-md transition-all hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#c77e3b] hover:bg-[#b06d2f] text-white font-semibold text-[13px] transition-colors"
             >
-              <Ticket className="w-4 h-4 text-[#c77e3b]" />
+              <Ticket className="w-4 h-4" />
               New Ticket Sale
             </Link>
             <Link
               to={allRoutes.movies}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-[#fff8ea] border border-white/25 font-semibold text-sm backdrop-blur-sm transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-[#fff8ea] border border-white/15 font-semibold text-[13px] transition-colors"
             >
               <Film className="w-4 h-4" />
               View Movies
@@ -210,66 +208,72 @@ function Dashboard() {
 
       {/* KPI Stat Cards */}
       <div
-        className={`grid grid-cols-1 sm:grid-cols-2 ${
-          dashboardStats.length > 1 ? "lg:grid-cols-4" : "lg:grid-cols-2"
-        } gap-5`}
+        className={`grid grid-cols-1 ${
+          dashboardStats.length > 1 ? "md:grid-cols-4" : "md:grid-cols-2"
+        } gap-4`}
       >
         {dashboardStats.map((stat) => (
           <div
             key={stat.title}
-            className="relative overflow-hidden bg-white rounded-2xl border border-[#c77e3b]/15 p-5 shadow-[0_4px_20px_-4px_rgba(117,79,44,0.07)] hover:shadow-[0_10px_28px_-6px_rgba(117,79,44,0.14)] hover:-translate-y-0.5 transition-all duration-300"
+            className="bg-white rounded-2xl border border-[#e6dfd3] p-5 shadow-[0_1px_2px_rgba(18,22,28,0.05)] hover:border-[#c77e3b]/50 transition-colors"
           >
-            <span className={`absolute top-0 left-0 right-0 h-1 ${stat.bar}`} />
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-                  {stat.title}
-                </p>
-                <p className="text-2xl font-extrabold text-stone-900 mt-1.5 truncate">
+                <div className="flex items-center gap-2">
+                  <span className={`w-1.5 h-1.5 rounded-full ${stat.dot}`} />
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#686259]">
+                    {stat.title}
+                  </p>
+                </div>
+                <p className="font-display text-[28px] font-bold text-[#12161c] tracking-[-0.03em] leading-none mt-2.5 truncate">
                   {stat.value}
                 </p>
-                <p className="text-xs text-stone-500 mt-1">{stat.note}</p>
+                <p className="text-xs text-[#686259] mt-2 font-medium">{stat.note}</p>
               </div>
-              <div className={`p-3 rounded-xl shrink-0 ${stat.badge}`}>
-                <stat.icon className="w-5 h-5" />
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${stat.badge}`}>
+                <stat.icon className="w-4 h-4" />
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Quick Actions */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="border-b border-stone-100">
+        <Card className="md:col-span-2">
+          <CardHeader className="border-b border-[#e6dfd3]">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg">Quick Actions</CardTitle>
+                <CardTitle className="text-lg">Operational Modules</CardTitle>
                 <CardDescription>
                   Jump directly into core cinema workflows
                 </CardDescription>
               </div>
+              <span className="eyebrow-chip">Quick Access</span>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {quickActions.map((action) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {quickActions.map((action, idx) => (
                 <Link
                   key={action.title}
                   to={action.href}
-                  className="group relative p-4 rounded-2xl bg-[#fff8ea]/45 hover:bg-white border border-[#c77e3b]/15 hover:border-[#c77e3b]/45 flex items-start gap-3.5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+                  className="group relative p-4 rounded-xl bg-[#faf6ed] hover:bg-white border border-[#e6dfd3] hover:border-[#c77e3b] flex items-start gap-3.5 transition-colors"
                 >
-                  <div className="p-2.5 rounded-xl bg-white text-[#c77e3b] border border-[#c77e3b]/20 group-hover:bg-[#c77e3b] group-hover:text-white transition-colors shrink-0 shadow-2xs">
-                    <action.icon className="w-5 h-5" />
+                  <div className="w-10 h-10 rounded-xl bg-white text-[#754f2c] border border-[#e6dfd3] group-hover:bg-[#c77e3b] group-hover:text-white group-hover:border-[#c77e3b] transition-colors flex items-center justify-center shrink-0">
+                    <action.icon className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0 text-left">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-bold text-sm text-stone-900 group-hover:text-[#c77e3b] transition-colors">
+                      <p className="font-display font-bold text-sm text-[#12161c] group-hover:text-[#c77e3b] transition-colors">
                         {action.title}
                       </p>
-                      <ArrowUpRight className="w-4 h-4 text-stone-400 group-hover:text-[#c77e3b] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shrink-0" />
+                      <span className="text-[11px] font-mono font-semibold text-[#8a8275] group-hover:hidden">
+                        {String(idx + 1).padStart(2, "0")}
+                      </span>
+                      <ArrowUpRight className="w-4 h-4 text-[#c77e3b] hidden group-hover:block shrink-0" />
                     </div>
-                    <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">
+                    <p className="text-xs text-[#686259] mt-0.5 line-clamp-1">
                       {action.description}
                     </p>
                   </div>
@@ -281,7 +285,7 @@ function Dashboard() {
 
         {/* Recent Activity */}
         <Card>
-          <CardHeader className="border-b border-stone-100">
+          <CardHeader className="border-b border-[#e6dfd3]">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -294,33 +298,33 @@ function Dashboard() {
               </div>
               <Link
                 to={allRoutes.audit}
-                className="text-xs font-bold text-[#c77e3b] hover:text-[#754f2c]"
+                className="text-xs font-semibold text-[#c77e3b] hover:text-[#754f2c]"
               >
                 View all →
               </Link>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {recentActivity.length === 0 && (
-                <p className="text-sm text-stone-500 text-center py-8">
+                <p className="text-sm text-[#686259] text-center py-8">
                   No activity recorded yet.
                 </p>
               )}
               {recentActivity.map((activity, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-3 p-3 rounded-xl bg-[#fff8ea]/50 border border-[#c77e3b]/10 hover:border-[#c77e3b]/30 transition-colors"
+                  className="flex items-start gap-3 p-3 rounded-xl bg-[#faf6ed] border border-[#e6dfd3] hover:border-[#c77e3b]/40 transition-colors"
                 >
-                  <div className="w-2.5 h-2.5 mt-1.5 bg-[#c77e3b] rounded-full shrink-0 ring-4 ring-[#c77e3b]/15" />
+                  <div className="w-2 h-2 mt-1.5 bg-[#c77e3b] rounded-full shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-stone-800 leading-snug">
+                    <p className="text-xs font-semibold text-[#12161c] leading-snug">
                       {activity.action}
                     </p>
-                    <p className="text-xs text-stone-500 truncate mt-0.5">
+                    <p className="text-xs text-[#686259] truncate mt-0.5">
                       {activity.details}
                     </p>
-                    <p className="text-[11px] text-stone-400 mt-1">
+                    <p className="text-[11px] text-[#8a8275] mt-1">
                       {activity.time}
                     </p>
                   </div>

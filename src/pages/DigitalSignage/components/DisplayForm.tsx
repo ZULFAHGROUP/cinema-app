@@ -97,7 +97,7 @@ const DisplayForm = ({ display, onSubmit, onCancel }: DisplayFormProps) => (
             onBlur={handleBlur}
             placeholder="e.g., Main lobby, above the box office"
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Input
                 label="Resolution (WxH)"

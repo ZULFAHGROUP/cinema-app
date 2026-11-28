@@ -75,7 +75,7 @@ const AddScheduleForm = ({
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ReusableSelect
           label="Signage Content"
           value={contentId}
@@ -173,7 +173,7 @@ const AddScheduleForm = ({
       </div>
 
       {/* Priority & Active Toggle */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5">
             Priority (1 - 10)

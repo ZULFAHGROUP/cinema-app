@@ -11,11 +11,15 @@ import {
   PackageX,
   TrendingDown,
   TrendingUp,
+  Building2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Dropdown, Input, Select } from "antd";
 import { useAppDispatch, useAppSelector } from "../../../../store/hook";
-import { getAllInventories, deleteInventory } from "../../../../store/slices/inventory";
+import {
+  getAllInventories,
+  deleteInventory,
+} from "../../../../store/slices/inventory";
 import { getAllProductCategories } from "../../../../store/slices/productCat";
 import { getAllCinemas } from "../../../../store/slices/cinema";
 import ConfirmationModal from "../../../../components/shared/Modal/ConfirmationModal";
@@ -35,9 +39,23 @@ import RecordHistory from "../../../../components/shared/RecordHistory";
 import { hasPermission, isAdminRole } from "../../../../utils/permissions";
 
 const getStockStatus = (quantity: number, reorderLevel: number) => {
-  if (quantity <= 0) return { label: "Out of Stock", color: "bg-red-100 text-red-800" };
-  if (quantity <= reorderLevel) return { label: "Low Stock", color: "bg-yellow-100 text-yellow-800" };
-  return { label: "In Stock", color: "bg-green-100 text-green-800" };
+  if (quantity <= 0)
+    return {
+      label: "Out of Stock",
+      color: "bg-rose-50 text-rose-700 border-rose-200",
+      dot: "bg-rose-500",
+    };
+  if (quantity <= reorderLevel)
+    return {
+      label: "Low Stock",
+      color: "bg-amber-50 text-amber-700 border-amber-200",
+      dot: "bg-amber-500",
+    };
+  return {
+    label: "In Stock",
+    color: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    dot: "bg-emerald-500",
+  };
 };
 
 const InventoryManagement = () => {
@@ -55,39 +73,55 @@ const InventoryManagement = () => {
   const search = useDebouncedValue(searchText.trim());
 
   const dispatch = useAppDispatch();
-  const { inventories, loading, page, limit, total, stats } = useAppSelector((state) => state.inventory);
+  const { inventories, loading, page, limit, total, stats } = useAppSelector(
+    (state) => state.inventory
+  );
   const { productCats } = useAppSelector((state) => state.productCat);
   const { allCinemas } = useAppSelector((state) => state.cinema);
   const { user } = useAppSelector((state) => state.accounts.data);
 
   const isAdmin = isAdminRole(user);
   const canStockIn = hasPermission(user, "stockin_inventory");
-  const canManageInv = hasPermission(user, "manage_inventories") || hasPermission(user, "manage_inventory");
+  const canManageInv =
+    hasPermission(user, "manage_inventories") ||
+    hasPermission(user, "manage_inventory");
   const canTransfer = hasPermission(user, "transfer_inventory");
   const canViewAudit = hasPermission(user, "view_audit_logs");
 
-  // Admins can narrow to one cinema (blank = all); everyone else sees their own cinema.
   const activeCinemaId = isAdmin ? selectedCinemaId || undefined : undefined;
-  const activeFilters: InventoryFilters = { ...filters, search: search || undefined };
+  const activeFilters: InventoryFilters = {
+    ...filters,
+    search: search || undefined,
+  };
 
   useEffect(() => {
     if (isAdmin) dispatch(getAllCinemas({ page: 1, limit: 50 }));
     dispatch(getAllProductCategories({ page: 1, limit: 50 }));
   }, [dispatch, isAdmin]);
 
-  // Back to page 1 whenever the cinema, a filter or the search changes.
   useEffect(() => {
-    dispatch(getAllInventories({ page: 1, limit, cinema_id: activeCinemaId, filters: activeFilters }));
+    dispatch(
+      getAllInventories({
+        page: 1,
+        limit,
+        cinema_id: activeCinemaId,
+        filters: activeFilters,
+      })
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, activeCinemaId, filters, search]);
 
   const handleDelete = async () => {
     if (!selectedItem) return;
     try {
-      const response = await dispatch(deleteInventory(selectedItem.inventory_id)).unwrap();
+      const response = await dispatch(
+        deleteInventory(selectedItem.inventory_id)
+      ).unwrap();
       if (response.code === 200) {
         toast.success(response.message);
-        await dispatch(getAllInventories({ page, limit, cinema_id: activeCinemaId }));
+        await dispatch(
+          getAllInventories({ page, limit, cinema_id: activeCinemaId })
+        );
         setShowDeleteModal(false);
       }
     } catch (error: any) {
@@ -97,7 +131,9 @@ const InventoryManagement = () => {
   };
 
   const categoryName = (categoryId?: string) =>
-    (productCats as any[])?.find((c: any) => c.product_category_id === categoryId)?.name;
+    (productCats as any[])?.find(
+      (c: any) => c.product_category_id === categoryId
+    )?.name;
   const cinemaName = (cinemaId: string) =>
     allCinemas?.find((c: any) => c.cinema_id === cinemaId)?.name;
 
@@ -111,43 +147,74 @@ const InventoryManagement = () => {
       title: "Product",
       key: "product",
       render: (_: unknown, record: any) => (
-        <div>
-          <p className="font-medium">{record.product?.name || "Unknown Product"}</p>
-          <p className="text-sm text-gray-500">{categoryName(record.product?.product_category_id)}</p>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0">
+            <Package className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="font-bold text-stone-900">
+              {record.product?.name || "Unknown Product"}
+            </p>
+            <p className="text-xs text-stone-500">
+              {categoryName(record.product?.product_category_id) || "General"}
+            </p>
+          </div>
         </div>
       ),
     },
     ...(isAdmin && !activeCinemaId
       ? [
           {
-            title: "Cinema",
+            title: "Cinema Branch",
             key: "cinema",
-            render: (_: unknown, record: any) => cinemaName(record.cinema_id) || "-",
+            render: (_: unknown, record: any) => (
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#754f2c]">
+                <Building2 className="w-3.5 h-3.5 text-[#c77e3b]" />
+                {cinemaName(record.cinema_id) || "—"}
+              </span>
+            ),
           },
         ]
       : []),
     {
-      title: "Current Stock",
+      title: "Stock on Hand",
       dataIndex: "quantity",
       key: "quantity",
-      render: (quantity: number) => <span className="font-semibold">{quantity}</span>,
+      render: (quantity: number) => (
+        <span className="font-extrabold text-stone-900 tabular-nums">
+          {Number(quantity || 0).toLocaleString()} units
+        </span>
+      ),
     },
     {
-      title: "Reorder Level",
+      title: "Reorder Threshold",
       dataIndex: "reorder_level",
       key: "reorder_level",
+      render: (level: number) => (
+        <span className="text-xs font-medium text-stone-500 tabular-nums">
+          {level ?? 0} units
+        </span>
+      ),
     },
     {
-      title: "Status",
+      title: "Stock Status",
       key: "status",
       render: (_: any, record: any) => {
         const status = getStockStatus(record.quantity, record.reorder_level);
-        return <span className={`text-xs px-2 py-1 rounded ${status.color}`}>{status.label}</span>;
+        return (
+          <span
+            className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border ${status.color}`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
+            {status.label}
+          </span>
+        );
       },
     },
     {
-      title: "Actions",
+      title: "",
       key: "actions",
+      width: 60,
       render: (_: any, record: any) => (
         <Dropdown
           menu={{
@@ -190,16 +257,15 @@ const InventoryManagement = () => {
                 : []),
               {
                 key: "5",
-                label: "Stock movements",
+                label: "Stock Movements",
                 icon: <History className="w-4 h-4" />,
                 onClick: () => openModal(record, setShowHistoryModal),
               },
-              // Who changed this record and when (audit trail; Admins only).
               ...(canViewAudit
                 ? [
                     {
                       key: "6",
-                      label: "Change history",
+                      label: "Audit History",
                       icon: <History className="w-4 h-4" />,
                       onClick: () => setAuditFor(record),
                     },
@@ -209,11 +275,12 @@ const InventoryManagement = () => {
           }}
           trigger={["click"]}
         >
-          <Button
-            size="sm"
-            className="p-0 bg-transparent w-fit shadow-none text-black!"
-            icon={<MoreVertical className="" size={18} />}
-          />
+          <button
+            type="button"
+            className="w-8 h-8 rounded-lg hover:bg-stone-100 flex items-center justify-center text-stone-500 hover:text-stone-900 cursor-pointer"
+          >
+            <MoreVertical size={16} />
+          </button>
         </Dropdown>
       ),
     },
@@ -229,62 +296,79 @@ const InventoryManagement = () => {
     );
   };
 
-  const needsAttention = (stats?.low_stock_items || 0) + (stats?.out_of_stock_items || 0);
+  const needsAttention =
+    (stats?.low_stock_items || 0) + (stats?.out_of_stock_items || 0);
   const statItems = [
     {
-      label: "Products stocked",
+      label: "Products Stocked",
       value: stats?.total_items ?? 0,
       icon: Package,
       onClick: () => setFilters((f) => ({ ...f, low_stock: undefined })),
     },
     {
-      label: "Units on hand",
+      label: "Units on Hand",
       value: stats?.total_quantity ?? 0,
       icon: Boxes,
       tone: "info" as const,
     },
     {
-      // The low_stock filter returns both low and empty items, so the count matches it.
-      label: "Needs restock",
+      label: "Needs Restock",
       value: needsAttention,
-      hint: `${stats?.low_stock_items ?? 0} low · ${stats?.out_of_stock_items ?? 0} out · click to filter`,
+      hint: `${stats?.low_stock_items ?? 0} low · ${
+        stats?.out_of_stock_items ?? 0
+      } out · click to filter`,
       icon: AlertTriangle,
       tone: needsAttention ? ("warning" as const) : ("neutral" as const),
-      onClick: () => setFilters((f) => ({ ...f, low_stock: f.low_stock ? undefined : true })),
+      onClick: () =>
+        setFilters((f) => ({
+          ...f,
+          low_stock: f.low_stock ? undefined : true,
+        })),
       active: Boolean(filters.low_stock),
     },
     {
-      label: "Out of stock",
+      label: "Out of Stock",
       value: stats?.out_of_stock_items ?? 0,
       icon: PackageX,
-      tone: stats?.out_of_stock_items ? ("danger" as const) : ("neutral" as const),
+      tone: stats?.out_of_stock_items
+        ? ("danger" as const)
+        : ("neutral" as const),
     },
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <StatCards items={statItems} loading={loading} />
 
       {needsAttention > 0 && !filters.low_stock && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex flex-wrap items-center gap-3">
-          <AlertTriangle className="w-5 h-5 text-yellow-600" />
-          <p className="text-sm text-yellow-800 flex-1">
-            {needsAttention} product{needsAttention === 1 ? "" : "s"} need restocking.
-          </p>
+        <div className="bg-amber-50/90 border border-amber-200 rounded-2xl p-4 flex flex-wrap items-center gap-3 shadow-2xs">
+          <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+            <AlertTriangle className="w-5 h-5" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-bold text-amber-900">
+              {needsAttention} product{needsAttention === 1 ? "" : "s"} below
+              reorder threshold
+            </p>
+            <p className="text-xs text-amber-700">
+              Restock or transfer units from another branch to prevent POS
+              stockouts.
+            </p>
+          </div>
           <Button
             size="xs"
             variant="outline"
-            className="rounded-md"
-            title="Show them"
+            title="Filter Low Stock"
             onClick={() => setFilters((f) => ({ ...f, low_stock: true }))}
           />
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3 items-center">
+      {/* White Card Filter Bar */}
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-4 shadow-2xs flex flex-wrap gap-3 items-center">
         <Input.Search
           allowClear
-          placeholder="Search product"
+          placeholder="Search product name..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           className="w-full md:w-64!"
@@ -293,14 +377,24 @@ const InventoryManagement = () => {
           allowClear
           placeholder="All categories"
           value={filters.product_category_id}
-          onChange={(value) => setFilters((f) => ({ ...f, product_category_id: value }))}
-          options={(productCats as any[])?.map((c: any) => ({ value: c.product_category_id, label: c.name }))}
+          onChange={(value) =>
+            setFilters((f) => ({ ...f, product_category_id: value }))
+          }
+          options={(productCats as any[])?.map((c: any) => ({
+            value: c.product_category_id,
+            label: c.name,
+          }))}
           className="w-48"
         />
         <Select
           placeholder="Stock level"
           value={filters.low_stock ? "low" : "all"}
-          onChange={(value) => setFilters((f) => ({ ...f, low_stock: value === "low" || undefined }))}
+          onChange={(value) =>
+            setFilters((f) => ({
+              ...f,
+              low_stock: value === "low" || undefined,
+            }))
+          }
           options={[
             { value: "all", label: "All stock levels" },
             { value: "low", label: "Low or out of stock" },
@@ -312,11 +406,14 @@ const InventoryManagement = () => {
             allowClear
             showSearch
             optionFilterProp="label"
-            placeholder="All cinemas"
+            placeholder="All cinema branches"
             value={selectedCinemaId || undefined}
             onChange={(value) => setSelectedCinemaId(value || "")}
-            options={allCinemas?.map((cinema: any) => ({ value: cinema.cinema_id, label: cinema.name }))}
-            className="w-48"
+            options={allCinemas?.map((cinema: any) => ({
+              value: cinema.cinema_id,
+              label: cinema.name,
+            }))}
+            className="w-52"
           />
         )}
       </div>
@@ -327,7 +424,7 @@ const InventoryManagement = () => {
         <ReusableTable
           data={inventories || []}
           columns={columns}
-          title={`Inventory (${total})`}
+          title={`Concession Inventory (${total})`}
           showSearch={false}
           showPagination={true}
           paginationMode="backend"
@@ -340,14 +437,12 @@ const InventoryManagement = () => {
         />
       )}
 
-      {/* Stock In Modal */}
       <DisplayModal
         open={showStockInModal}
-        title="Stock In"
+        title="Receive Stock (Stock-In)"
         onClose={() => setShowStockInModal(false)}
-        width={600}
+        width={580}
       >
-        {/* Mounted only while open: each opening gets a fresh Idempotency-Key. */}
         {showStockInModal && (
           <StockInForm
             onCancel={() => setShowStockInModal(false)}
@@ -358,14 +453,12 @@ const InventoryManagement = () => {
         )}
       </DisplayModal>
 
-      {/* Spoilage Modal */}
       <DisplayModal
         open={showSpoilageModal}
         title="Record Spoilage"
         onClose={() => setShowSpoilageModal(false)}
-        width={600}
+        width={580}
       >
-        {/* Mounted only while open: each opening gets a fresh Idempotency-Key. */}
         {showSpoilageModal && (
           <SpoilageForm
             onCancel={() => setShowSpoilageModal(false)}
@@ -377,33 +470,29 @@ const InventoryManagement = () => {
         )}
       </DisplayModal>
 
-      {/* Correction Modal */}
       <DisplayModal
         open={showCorrectionModal}
-        title="Correct Inventory"
+        title="Correct Inventory Count"
         onClose={() => setShowCorrectionModal(false)}
-        width={600}
+        width={580}
       >
-        {/* Mounted only while open: each opening gets a fresh Idempotency-Key. */}
         {showCorrectionModal && (
           <CorrectionForm
             onCancel={() => setShowCorrectionModal(false)}
             inventoryId={selectedItem?.inventory_id}
             productName={selectedItem?.productName}
-            currentStock={selectedItem?.quantity}         
-             cinema_id={selectedCinemaId || selectedItem?.cinema_id}
+            currentStock={selectedItem?.quantity}
+            cinema_id={selectedCinemaId || selectedItem?.cinema_id}
           />
         )}
       </DisplayModal>
 
-      {/* Transfer Modal */}
       <DisplayModal
         open={showTransferModal}
-        title="Transfer Inventory"
+        title="Transfer Inventory Between Branches"
         onClose={() => setShowTransferModal(false)}
-        width={600}
+        width={580}
       >
-        {/* Mounted only while open: each opening gets a fresh Idempotency-Key. */}
         {showTransferModal && (
           <TransferForm
             onCancel={() => setShowTransferModal(false)}
@@ -412,12 +501,11 @@ const InventoryManagement = () => {
         )}
       </DisplayModal>
 
-      {/* History Modal */}
       <DisplayModal
         open={showHistoryModal}
-        title="Inventory History"
+        title="Stock Movement History"
         onClose={() => setShowHistoryModal(false)}
-        width={700}
+        width={680}
       >
         <InventoryHistoryModal
           inventoryId={selectedItem?.inventory_id}
@@ -426,18 +514,18 @@ const InventoryManagement = () => {
         />
       </DisplayModal>
 
-      {/* Delete Confirmation */}
       <ConfirmationModal
         open={showDeleteModal}
         onCancel={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
         item={selectedItem?.productName}
       />
+
       <DisplayModal
         open={Boolean(auditFor)}
-        title={`Change history: ${auditFor?.product?.name ?? ""}`}
+        title={`Change History — ${auditFor?.product?.name ?? ""}`}
         onClose={() => setAuditFor(null)}
-        width={700}
+        width={680}
       >
         {auditFor && <RecordHistory resourceId={auditFor.inventory_id} />}
       </DisplayModal>

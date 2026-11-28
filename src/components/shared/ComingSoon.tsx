@@ -5,18 +5,15 @@ interface ComingSoonProps {
   description?: string;
 }
 
-/** Placeholder for features the API doesn't support yet, instead of sample data. */
 const ComingSoon = ({ title, description }: ComingSoonProps) => (
-  <div className="flex flex-col items-center justify-center text-center py-16 px-6 border border-dashed border-[#c77e3b]/30 rounded-2xl bg-gradient-to-b from-white to-[#fff8ea]/50">
-    <div className="p-4 rounded-2xl bg-[#fff8ea] border border-[#c77e3b]/20 mb-4 shadow-2xs">
-      <Sparkles className="w-7 h-7 text-[#c77e3b]" />
+  <div className="bg-white rounded-2xl border border-[#e6dfd3] p-12 text-center shadow-[0_1px_2px_rgba(18,22,28,0.05)]">
+    <span className="eyebrow-chip mx-auto mb-3">In Roadmap</span>
+    <div className="w-11 h-11 rounded-xl bg-[#fff8ea] border border-[#e6dfd3] flex items-center justify-center text-[#c77e3b] mx-auto mb-3">
+      <Sparkles className="w-5 h-5" />
     </div>
-    <span className="px-3 py-1 rounded-full bg-[#c77e3b]/10 text-[#c77e3b] text-xs font-bold uppercase tracking-wider mb-2">
-      In Roadmap
-    </span>
-    <h3 className="text-xl font-bold text-stone-900">{title} is coming soon</h3>
+    <h3 className="font-display text-lg font-bold text-[#12161c]">{title}</h3>
     {description && (
-      <p className="text-sm text-stone-500 mt-2 max-w-md leading-relaxed">
+      <p className="text-xs text-stone-500 max-w-md mx-auto mt-1.5 leading-relaxed">
         {description}
       </p>
     )}

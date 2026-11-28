@@ -157,18 +157,18 @@ export const priceRuleSchema = Yup.object({
       is: (val: any[]) => val && val.length > 0,
       then: (schema) => schema.required("Start time is required when days are selected"),
     })
-    .test("format", "Invalid time format (HH:MM:SS)", (value) => {
+    .test("format", "Invalid time format (HH:MM or HH:MM:SS)", (value) => {
       if (!value) return true;
-      return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(value);
+      return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/.test(value);
     }),
   end_time: Yup.string()
     .when("day_of_week", {
       is: (val: any[]) => val && val.length > 0,
       then: (schema) => schema.required("End time is required when days are selected"),
     })
-    .test("format", "Invalid time format (HH:MM:SS)", (value) => {
+    .test("format", "Invalid time format (HH:MM or HH:MM:SS)", (value) => {
       if (!value) return true;
-      return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(value);
+      return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/.test(value);
     }),
   cinema_id: Yup.string(), // Optional - admins can leave empty for general rules
   product_ids: Yup.array()

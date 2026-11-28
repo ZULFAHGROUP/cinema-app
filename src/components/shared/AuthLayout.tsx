@@ -1,104 +1,115 @@
-import { Carousel } from "antd";
-import { Clapperboard, Film, Monitor, Ticket } from "lucide-react";
-import { ReactNode } from "react";
+import React from "react";
+import { Film, Ticket, BarChart3, Monitor } from "lucide-react";
 
 interface AuthLayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
-const AuthLayout = ({ children }: AuthLayoutProps) => {
+const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
+  const features = [
+    {
+      num: "01",
+      icon: Ticket,
+      title: "Box Office & Seat Maps",
+      desc: "Real-time auditorium seat selection, counter quick-sales, and instant ticket printing.",
+    },
+    {
+      num: "02",
+      icon: Film,
+      title: "Showtime & Screen Control",
+      desc: "Manage multi-branch screening schedules, formats, and dynamic pricing rules.",
+    },
+    {
+      num: "03",
+      icon: Monitor,
+      title: "Live Digital Signage",
+      desc: "Broadcast automated now-showing carousels and concession menus to lobby displays.",
+    },
+    {
+      num: "04",
+      icon: BarChart3,
+      title: "Audit-Ready Revenue Reports",
+      desc: "Track ticket and concession revenue, VAT, and inventory movements in real time.",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#fff8ea] flex flex-col lg:flex-row">
-      {/* Left Cinema Showcase Panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-[#2b1d12] via-[#4a301a] to-[#1b283d] p-12 flex-col justify-between text-white">
-        {/* Ambient Spotlights */}
-        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-[#c77e3b]/30 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-10 right-10 w-80 h-80 rounded-full bg-[#5480c7]/25 blur-3xl pointer-events-none" />
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-12 bg-[#fff8ea]">
+      {/* Left Habyta-inspired Editorial Panel */}
+      <div className="hidden md:flex md:col-span-6 bg-[#161310] text-[#fff8ea] p-12 flex-col justify-between border-r border-[#2a231c]">
+        <div className="flex items-center gap-3">
+          <svg
+            width="36"
+            height="36"
+            viewBox="0 0 36 36"
+            fill="none"
+            aria-hidden="true"
+          >
+            <rect
+              x="3"
+              y="9"
+              width="12"
+              height="22"
+              rx="3"
+              fill="#fff8ea"
+              opacity="0.45"
+            />
+            <rect x="18" y="5" width="13" height="26" rx="3" fill="#fff8ea" />
+            <circle cx="24.5" cy="17" r="3" fill="#c77e3b" />
+          </svg>
+          <span className="font-display text-2xl font-bold tracking-tight text-[#fff8ea]">
+            Cinema<span className="text-[#c77e3b]">OS</span>
+          </span>
+        </div>
 
-        {/* Top Brand Emblem */}
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#c77e3b] to-[#754f2c] flex items-center justify-center shadow-lg shadow-[#c77e3b]/30">
-            <Clapperboard className="w-6 h-6 text-[#fff8ea]" />
-          </div>
-          <div>
-            <span className="text-xl font-extrabold tracking-tight text-[#fff8ea]">
-              Cinema<span className="text-[#c77e3b]">OS</span>
+        <div className="max-w-xl space-y-8 my-auto py-8">
+          <div className="space-y-4">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.06] border border-white/15 text-xs font-semibold uppercase tracking-[0.14em] text-[#fff8ea]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#c77e3b]" />
+              Theater Operations Platform
             </span>
-            <p className="text-xs text-[#fff8ea]/70">Enterprise Theater Operations</p>
+            <h1 className="font-display text-3xl md:text-[44px] font-bold text-[#fff8ea] leading-[1.08] tracking-tight">
+              Run every screen, counter, and lobby display from one place.
+            </h1>
+            <p className="text-base text-[#fff8ea]/70 leading-relaxed">
+              Built for multi-branch cinema operators — pairing box office speed
+              with room-by-room auditorium control and real-time financial
+              reporting.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {features.map((item) => (
+              <div
+                key={item.num}
+                className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-display text-lg font-bold text-[#c77e3b]">
+                    {item.num}
+                  </span>
+                  <item.icon className="w-4 h-4 text-[#fff8ea]/60" />
+                </div>
+                <h3 className="font-display text-sm font-bold text-[#fff8ea]">
+                  {item.title}
+                </h3>
+                <p className="text-xs text-[#fff8ea]/60 leading-relaxed">
+                  {item.desc}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Middle Feature Cards */}
-        <div className="relative z-10 my-auto py-8 space-y-6 max-w-lg">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fff8ea]/10 border border-[#fff8ea]/15 text-[#fff8ea] text-xs font-semibold backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-[#c77e3b] animate-pulse" />
-            All-in-One Cinema Management Suite
-          </div>
-
-          <Carousel autoplay className="max-w-lg">
-            <div className="pr-4">
-              <h2 className="text-3xl xl:text-4xl font-extrabold text-[#fff8ea] leading-tight">
-                Run every screen, seat, and showtime with precision.
-              </h2>
-              <p className="text-sm text-[#fff8ea]/75 mt-3 leading-relaxed">
-                Manage multi-location theaters, dynamic seat layouts, pricing rules, and box office sales from one unified command center.
-              </p>
-            </div>
-            <div className="pr-4">
-              <h2 className="text-3xl xl:text-4xl font-extrabold text-[#fff8ea] leading-tight">
-                Real-time concessions, stock & digital signage.
-              </h2>
-              <p className="text-sm text-[#fff8ea]/75 mt-3 leading-relaxed">
-                Track inventory movements across branches and control lobby screens live with automated showtime carousels.
-              </p>
-            </div>
-            <div className="pr-4">
-              <h2 className="text-3xl xl:text-4xl font-extrabold text-[#fff8ea] leading-tight">
-                Actionable analytics & full audit transparency.
-              </h2>
-              <p className="text-sm text-[#fff8ea]/75 mt-3 leading-relaxed">
-                Monitor ticket revenue, concession margins, VAT collections, and every staff action in real time.
-              </p>
-            </div>
-          </Carousel>
-
-          <div className="grid grid-cols-3 gap-3 pt-4">
-            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
-              <Film className="w-5 h-5 text-[#c77e3b] mb-2" />
-              <p className="text-xs font-bold text-[#fff8ea]">Smart Showtimes</p>
-              <p className="text-[11px] text-[#fff8ea]/60 mt-0.5">Conflict-free slots</p>
-            </div>
-            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
-              <Ticket className="w-5 h-5 text-[#c77e3b] mb-2" />
-              <p className="text-xs font-bold text-[#fff8ea]">Box Office POS</p>
-              <p className="text-[11px] text-[#fff8ea]/60 mt-0.5">Live seat holds</p>
-            </div>
-            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
-              <Monitor className="w-5 h-5 text-[#5480c7] mb-2" />
-              <p className="text-xs font-bold text-[#fff8ea]">Lobby Signage</p>
-              <p className="text-[11px] text-[#fff8ea]/60 mt-0.5">Remote screen sync</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="relative z-10 text-xs text-[#fff8ea]/50 flex items-center justify-between">
-          <span>CinemaOS Platform</span>
-          <span>Secure Staff Portal</span>
+        <div className="flex items-center justify-between text-xs text-[#fff8ea]/50 pt-6 border-t border-white/10">
+          <span>© {new Date().getFullYear()} CinemaOS Operations Suite</span>
+          <span>Multi-Branch Theater Management</span>
         </div>
       </div>
 
       {/* Right Form Container */}
-      <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 relative">
-        <div className="lg:hidden flex items-center gap-2.5 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#c77e3b] to-[#754f2c] flex items-center justify-center text-white shadow-md">
-            <Clapperboard className="w-5 h-5" />
-          </div>
-          <span className="text-xl font-extrabold text-stone-900">
-            Cinema<span className="text-[#c77e3b]">OS</span>
-          </span>
-        </div>
-        {children}
+      <div className="md:col-span-6 flex items-center justify-center p-6 md:p-12">
+        <div className="w-full max-w-md">{children}</div>
       </div>
     </div>
   );

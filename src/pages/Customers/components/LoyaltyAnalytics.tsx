@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Progress } from "antd";
 import { Users, Star, Gift, TrendingUp } from "lucide-react";
+import { formatCurrency } from "../../../utils";
 
 interface LoyaltyAnalyticsProps {
   customers: any[];
@@ -13,145 +14,144 @@ export default function LoyaltyAnalytics({
 }: LoyaltyAnalyticsProps) {
   const totalPoints = customers.reduce((total, c) => total + c.points, 0);
   const avgSpend =
-    customers.reduce((total, c) => total + c.totalSpent, 0) / customers.length;
+    customers.length > 0
+      ? customers.reduce((total, c) => total + c.totalSpent, 0) /
+        customers.length
+      : 0;
 
   const recentActivity = [
     {
       id: 1,
       message: "Alice Johnson earned 25 points",
       detail: "Movie ticket purchase • 2 hours ago",
-      color: "bg-green-500",
+      color: "bg-emerald-500",
     },
     {
       id: 2,
       message: "Bob Smith redeemed Free Popcorn",
       detail: "500 points redeemed • 4 hours ago",
-      color: "bg-blue-500",
+      color: "bg-[#5480c7]",
     },
     {
       id: 3,
       message: "Carol Davis upgraded to Silver",
       detail: "Tier promotion • 1 day ago",
-      color: "bg-purple-500",
+      color: "bg-[#c77e3b]",
     },
   ];
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="border rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-primary/10">
-              <Users className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <p className="font-serif text-sm text-muted-foreground">
-                Total Members
-              </p>
-              <p className="font-sans text-2xl font-bold">
-                {customers.length.toLocaleString()}
-              </p>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white border border-[#c77e3b]/15 rounded-2xl p-5 shadow-2xs flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-[#fff8ea] text-[#c77e3b]">
+            <Users className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-stone-500">
+              Total Members
+            </p>
+            <p className="text-2xl font-extrabold text-stone-900">
+              {customers.length.toLocaleString()}
+            </p>
           </div>
         </div>
 
-        <div className="border rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-accent/10">
-              <Star className="w-6 h-6 text-accent" />
-            </div>
-            <div>
-              <p className="font-serif text-sm text-muted-foreground">
-                Points Issued
-              </p>
-              <p className="font-sans text-2xl font-bold">
-                {totalPoints.toLocaleString()}
-              </p>
-            </div>
+        <div className="bg-white border border-[#c77e3b]/15 rounded-2xl p-5 shadow-2xs flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-amber-50 text-amber-600">
+            <Star className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-stone-500">
+              Points Issued
+            </p>
+            <p className="text-2xl font-extrabold text-stone-900">
+              {totalPoints.toLocaleString()}
+            </p>
           </div>
         </div>
 
-        <div className="border rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-secondary/10">
-              <Gift className="w-6 h-6 text-secondary" />
-            </div>
-            <div>
-              <p className="font-serif text-sm text-muted-foreground">
-                Rewards Redeemed
-              </p>
-              <p className="font-sans text-2xl font-bold">147</p>
-            </div>
+        <div className="bg-white border border-[#c77e3b]/15 rounded-2xl p-5 shadow-2xs flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-[#5480c7]/10 text-[#5480c7]">
+            <Gift className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-stone-500">
+              Rewards Redeemed
+            </p>
+            <p className="text-2xl font-extrabold text-stone-900">147</p>
           </div>
         </div>
 
-        <div className="border rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-muted">
-              <TrendingUp className="w-6 h-6 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="font-serif text-sm text-muted-foreground">
-                Avg Spend
-              </p>
-              <p className="font-sans text-2xl font-bold">
-                ${avgSpend.toFixed(0)}
-              </p>
-            </div>
+        <div className="bg-white border border-[#c77e3b]/15 rounded-2xl p-5 shadow-2xs flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-emerald-50 text-emerald-700">
+            <TrendingUp className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-stone-500">
+              Avg Spend
+            </p>
+            <p className="text-2xl font-extrabold text-stone-900">
+              {formatCurrency(avgSpend)}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Tier Distribution and Recent Activity */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="border rounded-lg p-6">
-          <h3 className="font-sans font-semibold text-lg mb-2">
+        <div className="bg-white border border-[#c77e3b]/15 rounded-2xl p-6 shadow-2xs">
+          <h3 className="font-bold text-lg text-stone-900 mb-0.5">
             Tier Distribution
           </h3>
-          <p className="text-sm text-muted-foreground font-serif mb-4">
-            Members by loyalty tier
-          </p>
+          <p className="text-xs text-stone-500 mb-4">Members by loyalty tier</p>
           <div className="space-y-4">
             {tiers.map((tier) => {
               const count = customers.filter(
                 (c) => c.tier === tier.name
               ).length;
-              const percentage = (count / customers.length) * 100;
+              const percentage =
+                customers.length > 0 ? (count / customers.length) * 100 : 0;
               return (
-                <div key={tier.name} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-serif">{tier.name}</span>
-                    <span className="font-sans text-sm">
+                <div key={tier.name} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-semibold text-stone-700">
+                      {tier.name}
+                    </span>
+                    <span className="font-bold text-stone-900">
                       {count} members ({percentage.toFixed(0)}%)
                     </span>
                   </div>
-                  <Progress percent={percentage} />
+                  <Progress
+                    percent={Number(percentage.toFixed(0))}
+                    strokeColor="#c77e3b"
+                  />
                 </div>
               );
             })}
           </div>
         </div>
 
-        <div className="border rounded-lg p-6">
-          <h3 className="font-sans font-semibold text-lg mb-2">
+        <div className="bg-white border border-[#c77e3b]/15 rounded-2xl p-6 shadow-2xs">
+          <h3 className="font-bold text-lg text-stone-900 mb-0.5">
             Recent Activity
           </h3>
-          <p className="text-sm text-muted-foreground font-serif mb-4">
+          <p className="text-xs text-stone-500 mb-4">
             Latest loyalty program activity
           </p>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {recentActivity.map((activity) => (
               <div
                 key={activity.id}
-                className="flex items-center gap-3 p-3 bg-muted rounded-lg"
+                className="flex items-center gap-3 p-3 bg-[#fff8ea]/60 border border-[#c77e3b]/15 rounded-xl"
               >
-                <div className={`w-2 h-2 ${activity.color} rounded-full`} />
+                <div
+                  className={`w-2.5 h-2.5 ${activity.color} rounded-full shrink-0`}
+                />
                 <div className="flex-1">
-                  <p className="font-serif font-medium">{activity.message}</p>
-                  <p className="text-sm font-serif text-muted-foreground">
-                    {activity.detail}
+                  <p className="text-sm font-bold text-stone-800">
+                    {activity.message}
                   </p>
+                  <p className="text-xs text-stone-500">{activity.detail}</p>
                 </div>
               </div>
             ))}

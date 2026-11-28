@@ -27,7 +27,7 @@ const ForgotPassword = () => {
 
   return (
     <AuthLayout>
-      <div className="w-full max-w-md bg-white p-8 sm:p-10 rounded-3xl shadow-[0_20px_50px_-12px_rgba(117,79,44,0.14)] border border-[#c77e3b]/20">
+      <div className="w-full max-w-md bg-white p-8 md:p-10 rounded-3xl shadow-[0_20px_50px_-12px_rgba(117,79,44,0.14)] border border-[#c77e3b]/20">
         <div className="flex flex-col items-center text-center mb-6">
           <div className="w-12 h-12 rounded-2xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] mb-3 shadow-2xs">
             <KeyRound className="w-6 h-6" />

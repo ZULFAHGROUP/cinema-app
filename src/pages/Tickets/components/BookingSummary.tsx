@@ -24,10 +24,12 @@ export default function BookingSummary({
         selectedProducts.reduce((acc, p) => acc + p.quantity * p.price, 0);
 
   return (
-    <div className="bg-white border border-[#c77e3b]/20 rounded-2xl overflow-hidden shadow-[0_8px_30px_-6px_rgba(117,79,44,0.12)] sticky top-6">
-      <div className="bg-gradient-to-r from-[#c77e3b] to-[#754f2c] px-6 py-4 text-white flex items-center gap-2.5">
-        <Ticket className="w-5 h-5 text-[#fff8ea]" />
-        <h3 className="font-bold text-base text-[#fff8ea]">Booking Summary</h3>
+    <div className="bg-white border border-[#e6dfd3] rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(18,22,28,0.05)] sticky top-6">
+      <div className="bg-[#161310] border-b border-[#2a231c] px-6 py-4 text-white flex items-center gap-2.5">
+        <Ticket className="w-4 h-4 text-[#c77e3b]" />
+        <h3 className="font-display font-bold text-sm text-[#fff8ea] tracking-[-0.01em]">
+          Booking Summary
+        </h3>
       </div>
 
       <div className="p-6 space-y-5">

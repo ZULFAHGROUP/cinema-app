@@ -103,8 +103,14 @@ const PaymentSuccess = () => {
         </div>
 
         {/* Modern Ticket Stub Card */}
-        <div className="relative bg-white border-2 border-[#c77e3b]/30 rounded-3xl overflow-hidden shadow-xl mb-8">
-          <div className="h-2 bg-gradient-to-r from-[#c77e3b] via-[#754f2c] to-[#5480c7]" />
+        <div className="relative bg-white border border-[#e6dfd3] rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(18,22,28,0.05)] mb-8">
+          <div className="bg-[#161310] px-6 py-3 text-xs font-semibold uppercase tracking-[0.06em] text-[#fff8ea] flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#c77e3b]" />
+              Official E-Ticket Stub
+            </span>
+            <span className="text-[#fff8ea]/60">CinemaOS</span>
+          </div>
           <div className="p-6 md:p-8">
             <div className="flex flex-col md:flex-row gap-6 items-center mb-6">
               {/* QR Code Placeholder */}

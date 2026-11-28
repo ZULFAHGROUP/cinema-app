@@ -13,7 +13,10 @@ import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { getAllCinemas } from "../../../store/slices/cinema";
 import Order, { OrderFilters } from "../../../services/network/order";
 import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
-import { ORDER_STATUSES, ORDER_STATUS_OPTIONS } from "../../../constants/orders";
+import {
+  ORDER_STATUSES,
+  ORDER_STATUS_OPTIONS,
+} from "../../../constants/orders";
 import { formatCurrency, humanDateAndTime } from "../../../utils";
 
 const EMPTY_STATS = {
@@ -37,7 +40,11 @@ export default function Sales() {
   const [orders, setOrders] = useState<any[]>([]);
   const [stats, setStats] = useState(EMPTY_STATS);
   const [loading, setLoading] = useState(false);
-  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+  });
   const [filters, setFilters] = useState<OrderFilters>({});
   const [searchText, setSearchText] = useState("");
   const [dateRange, setDateRange] = useState<any>(null);
@@ -48,30 +55,33 @@ export default function Sales() {
     if (isAdmin) dispatch(getAllCinemas({ page: 1, limit: 50 }));
   }, [dispatch, isAdmin]);
 
-  const load = useCallback(async (page: number, limit: number, active: OrderFilters) => {
-    setLoading(true);
-    try {
-      const response = await Order.allOrders(page, limit, active);
-      const data = response.data.data;
-      setOrders(data.orders || []);
-      setStats({ ...EMPTY_STATS, ...data.stats });
-      setPagination({ page, limit, total: data.pagination.total });
-    } catch (error: any) {
-      toast.error(error?.message || "Could not load orders");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const load = useCallback(
+    async (page: number, limit: number, active: OrderFilters) => {
+      setLoading(true);
+      try {
+        const response = await Order.allOrders(page, limit, active);
+        const data = response.data.data;
+        setOrders(data.orders || []);
+        setStats({ ...EMPTY_STATS, ...data.stats });
+        setPagination({ page, limit, total: data.pagination.total });
+      } catch (error: any) {
+        toast.error(error?.message || "Could not load orders");
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   const activeFilters = { ...filters, search: search || undefined };
 
-  // Back to page 1 whenever a filter or the search changes.
   useEffect(() => {
     load(1, pagination.limit, activeFilters);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, search, load]);
 
-  const updateFilter = (changes: OrderFilters) => setFilters((current) => ({ ...current, ...changes }));
+  const updateFilter = (changes: OrderFilters) =>
+    setFilters((current) => ({ ...current, ...changes }));
   const toggleStatus = (status: string) =>
     updateFilter({ status: filters.status === status ? undefined : status });
   const hasFilters = Boolean(search) || Object.values(filters).some(Boolean);
@@ -85,22 +95,22 @@ export default function Sales() {
       tone: "good" as const,
     },
     {
-      label: "Orders",
+      label: "Total Orders",
       value: stats.total_orders,
       hint: `${stats.online_orders.toLocaleString()} online · ${stats.counter_orders.toLocaleString()} counter`,
       icon: Receipt,
     },
     {
-      label: "Pending payment",
+      label: "Pending Payment",
       value: stats.pending_orders,
-      hint: "Click to show only these",
+      hint: "Click to filter pending orders",
       icon: Clock,
       tone: "warning" as const,
       onClick: () => toggleStatus("PENDING"),
       active: filters.status === "PENDING",
     },
     {
-      label: "Awaiting refund",
+      label: "Awaiting Refund",
       value: stats.awaiting_refund,
       hint: `${stats.refunded_orders.toLocaleString()} already refunded`,
       icon: RotateCcw,
@@ -112,47 +122,68 @@ export default function Sales() {
 
   const columns = [
     {
-      title: "Date",
+      title: "Date & Time",
       dataIndex: "created_at",
       key: "created_at",
-      render: (date: string) => humanDateAndTime(date),
+      render: (date: string) => (
+        <span className="text-xs font-medium text-stone-700">
+          {humanDateAndTime(date)}
+        </span>
+      ),
     },
     {
-      title: "Customer",
+      title: "Customer / Cashier",
       key: "customer",
       render: (_: unknown, record: any) =>
         record.user ? (
           <div>
-            <p>
+            <p className="font-bold text-stone-900">
               {record.user.surname} {record.user.other_names}
             </p>
-            <p className="text-xs text-muted-foreground">{record.user.email}</p>
+            <p className="text-xs text-stone-500">{record.user.email}</p>
           </div>
         ) : (
           <div>
-            <p>Counter sale</p>
+            <p className="font-bold text-stone-800">Box Office Counter Sale</p>
             {record.cashier && (
-              <p className="text-xs text-muted-foreground">
-                by {record.cashier.surname} {record.cashier.other_names}
+              <p className="text-xs text-stone-500">
+                Cashier: {record.cashier.surname} {record.cashier.other_names}
               </p>
             )}
           </div>
         ),
     },
-    { title: "Type", dataIndex: "order_type", key: "order_type" },
+    {
+      title: "Type",
+      dataIndex: "order_type",
+      key: "order_type",
+      render: (type: string) => (
+        <span className="px-2.5 py-0.5 rounded-full bg-[#fff8ea] border border-[#c77e3b]/25 text-[#754f2c] text-xs font-semibold">
+          {type || "Order"}
+        </span>
+      ),
+    },
     {
       title: "Cinema",
       key: "cinema",
-      render: (_: unknown, record: any) => record.cinema?.name,
+      render: (_: unknown, record: any) => (
+        <span className="text-xs font-semibold text-stone-700">
+          {record.cinema?.name || "—"}
+        </span>
+      ),
     },
     {
-      title: "Total",
+      title: "Grand Total",
       dataIndex: "grand_total",
       key: "grand_total",
       render: (total: number, record: any) => (
         <div>
-          <p className="font-semibold">{formatCurrency(total)}</p>
-          <p className="text-xs text-muted-foreground">VAT {formatCurrency(record.vat_amount)}</p>
+          <p className="font-extrabold text-stone-900 tabular-nums">
+            {formatCurrency(total)}
+          </p>
+          <p className="text-[11px] text-stone-400 tabular-nums">
+            VAT {formatCurrency(record.vat_amount)}
+          </p>
         </div>
       ),
     },
@@ -166,7 +197,6 @@ export default function Sales() {
         </Tag>
       ),
     },
-    // Payment, refund and seat changes over time (audit trail; Admins only).
     ...(isAdmin
       ? [
           {
@@ -176,8 +206,7 @@ export default function Sales() {
               <Button
                 size="xs"
                 variant="outline"
-                className="rounded-md"
-                icon={<History className="w-4 h-4" />}
+                icon={<History className="w-3.5 h-3.5" />}
                 title="History"
                 onClick={() => setHistoryFor(record)}
               />
@@ -188,20 +217,20 @@ export default function Sales() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <StatCards items={statItems} loading={loading} />
 
-      <div className="flex flex-wrap gap-3 items-center">
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-4 shadow-2xs flex flex-wrap gap-3 items-center">
         <Input.Search
           allowClear
-          placeholder="Search customer or cashier"
+          placeholder="Search customer or cashier..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           className="w-full md:w-72!"
         />
         <Select
           allowClear
-          placeholder="Status"
+          placeholder="Payment Status"
           value={filters.status}
           onChange={(value) => updateFilter({ status: value })}
           options={ORDER_STATUS_OPTIONS}
@@ -216,15 +245,18 @@ export default function Sales() {
             { value: "online", label: "Online" },
             { value: "counter", label: "Counter" },
           ]}
-          className="w-32"
+          className="w-36"
         />
         <Select
           allowClear
-          placeholder="Type"
+          placeholder="Order Type"
           value={filters.order_type}
           onChange={(value) => updateFilter({ order_type: value })}
-          options={["Ticket", "Concession", "Mixed"].map((type) => ({ value: type, label: type }))}
-          className="w-32"
+          options={["Ticket", "Concession", "Mixed"].map((type) => ({
+            value: type,
+            label: type,
+          }))}
+          className="w-36"
         />
         {isAdmin && (
           <Select
@@ -234,7 +266,10 @@ export default function Sales() {
             placeholder="All cinemas"
             value={filters.cinema_id}
             onChange={(value) => updateFilter({ cinema_id: value })}
-            options={allCinemas.map((cinema: any) => ({ value: cinema.cinema_id, label: cinema.name }))}
+            options={allCinemas.map((cinema: any) => ({
+              value: cinema.cinema_id,
+              label: cinema.name,
+            }))}
             className="w-48"
           />
         )}
@@ -242,7 +277,6 @@ export default function Sales() {
           value={dateRange}
           onChange={(dates) => {
             setDateRange(dates);
-            // The API includes the whole `to` day.
             updateFilter({
               from: dates?.[0]?.format("YYYY-MM-DD"),
               to: dates?.[1]?.format("YYYY-MM-DD"),
@@ -253,8 +287,7 @@ export default function Sales() {
           <Button
             variant="outline"
             size="xs"
-            className="rounded-md"
-            title="Clear filters"
+            title="Clear Filters"
             onClick={() => {
               setSearchText("");
               setDateRange(null);
@@ -270,7 +303,7 @@ export default function Sales() {
         <ReusableTable
           data={orders}
           columns={columns}
-          title={`Orders (${pagination.total.toLocaleString()})`}
+          title={`Orders Ledger (${pagination.total.toLocaleString()})`}
           showSearch={false}
           showPagination
           paginationMode="backend"
@@ -279,14 +312,17 @@ export default function Sales() {
             current: pagination.page,
             pageSize: pagination.limit,
           }}
-          onTableChange={(p: any) => load(p.current, p.pageSize, activeFilters)}
+          onTableChange={(p: any) =>
+            load(p.current, p.pageSize, activeFilters)
+          }
         />
       )}
+
       <DisplayModal
         open={Boolean(historyFor)}
-        title="Order history"
+        title="Order Audit History"
         onClose={() => setHistoryFor(null)}
-        width={700}
+        width={680}
       >
         {historyFor && <RecordHistory resourceId={historyFor.order_id} />}
       </DisplayModal>

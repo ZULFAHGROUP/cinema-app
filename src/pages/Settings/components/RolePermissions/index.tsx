@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, ShieldCheck } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../../../store/hook";
 import Button from "../../../../components/shared/Button";
 import DisplayModal from "../../../../components/shared/Modal/DisplayModal";
@@ -18,9 +19,8 @@ const RolePermissions = () => {
   const [showFormModal, setShowFormModal] = useState(false);
 
   const dispatch = useAppDispatch();
-  const { rolePermissions, rolePermissionLoading, page, limit } = useAppSelector(
-    (state) => state.rolePermission
-  );
+  const { rolePermissions, rolePermissionLoading, page, limit } =
+    useAppSelector((state) => state.rolePermission);
   const { roles } = useAppSelector((state) => state.role);
 
   useEffect(() => {
@@ -48,22 +48,31 @@ const RolePermissions = () => {
 
   const columns = [
     {
-      title: "Role Name",
+      title: "Role",
       dataIndex: "role_name",
       key: "role_name",
+      width: 180,
+      render: (roleName: string) => (
+        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#fff8ea] border border-[#c77e3b]/30 text-[#754f2c] font-extrabold text-xs">
+          {roleName}
+        </span>
+      ),
     },
     {
-      title: "Permissions",
+      title: "Assigned Capabilities",
       dataIndex: "permissions",
       key: "permissions",
       render: (permissions: string[], record: any) => {
         const isBuiltInAdmin = record.role_name === "Admin";
         return (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5 py-1">
             {permissions?.map((permission) => (
               <Tag
                 key={permission}
-                closable={!isBuiltInAdmin && !BUILT_IN_ROLES.includes(record.role_name)}
+                className="m-0! px-2.5! py-0.5! rounded-lg! bg-stone-50! border-stone-200! text-stone-700! text-xs!"
+                closable={
+                  !isBuiltInAdmin && !BUILT_IN_ROLES.includes(record.role_name)
+                }
                 onClose={(e) => {
                   e.preventDefault();
                   handleUnassign(record.role_name, permission);
@@ -79,16 +88,26 @@ const RolePermissions = () => {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-semibold">Role-Permissions Settings</h2>
+    <div className="space-y-5">
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-extrabold text-stone-900">
+              Role-Permission Matrix
+            </h2>
+            <p className="text-xs text-stone-500 mt-0.5">
+              View and manage which system permissions are granted to each staff
+              role
+            </p>
+          </div>
+        </div>
         <Button
-          className="rounded-md"
           icon={<Plus className="w-4 h-4" />}
           title="Assign Permission"
-          onClick={() => {
-            setShowFormModal(true);
-          }}
+          onClick={() => setShowFormModal(true)}
         />
       </div>
 
@@ -104,15 +123,12 @@ const RolePermissions = () => {
         />
       )}
 
-      {/* Add Modal */}
       <DisplayModal
         open={showFormModal}
         title="Assign Permission to Role"
         onClose={() => setShowFormModal(false)}
       >
-        <RolePermissionsForm
-          onCancel={() => setShowFormModal(false)}
-        />
+        <RolePermissionsForm onCancel={() => setShowFormModal(false)} />
       </DisplayModal>
     </div>
   );

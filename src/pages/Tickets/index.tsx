@@ -142,21 +142,22 @@ function TicketSalesPage() {
     <div className="space-y-6 pb-8">
       {/* Header */}
       <div>
-        <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0">
-              <Ticket className="w-6 h-6" />
+        <div className="bg-white rounded-2xl border border-[#e6dfd3] p-6 shadow-[0_1px_2px_rgba(18,22,28,0.05)] flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div className="flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl bg-[#fff8ea] border border-[#e6dfd3] flex items-center justify-center text-[#c77e3b] shrink-0 mt-0.5">
+              <Ticket className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-extrabold text-stone-900">
+              <span className="eyebrow-chip mb-1.5">Point of Sale</span>
+              <h1 className="font-display text-2xl font-bold text-[#12161c] tracking-[-0.02em]">
                 Ticket Sales & Box Office
               </h1>
-              <p className="text-sm text-stone-500 mt-0.5">
+              <p className="text-[13px] text-[#686259] mt-0.5">
                 Interactive seat reservations, counter quick-sales, and concession add-ons
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <Button
               onClick={() => setIsBoxOfficeMode(!isBoxOfficeMode)}
               variant={isBoxOfficeMode ? "primary" : "outline"}
@@ -176,19 +177,22 @@ function TicketSalesPage() {
         {!isBoxOfficeMode && <StepIndicator currentStep={currentStep} />}
 
         {/* Main Content Area */}
-        <div className="flex flex-col lg:flex-row gap-8 mt-8">
+        <div className="flex flex-col md:flex-row gap-8 mt-8">
           <div className="flex-1 min-h-[500px]">
             {moviesLoading ? (
-               <div className="flex items-center justify-center h-full">
-                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
+               <div className="flex items-center justify-center h-64">
+                 <Loader2 className="w-8 h-8 animate-spin text-[#c77e3b]" />
                </div>
             ) : (
               <>
                 {/* Box Office Mode - Form-Based Interface */}
                 {isBoxOfficeMode ? (
                   <div className="max-w-4xl">
-                    <div className="bg-card border rounded-2xl p-8 shadow-sm space-y-6">
-                      <h2 className="text-2xl font-sans font-bold mb-6">Quick Sale</h2>
+                    <div className="bg-white border border-[#c77e3b]/15 rounded-2xl p-6 md:p-8 shadow-[0_6px_24px_-6px_rgba(117,79,44,0.08)] space-y-6">
+                      <div className="pb-4 border-b border-stone-100">
+                        <h2 className="text-xl font-extrabold text-stone-900">Box Office Counter Quick-Sale</h2>
+                        <p className="text-xs text-stone-500 mt-0.5">Fast-track counter ticketing: pick a movie, showtime, seats, and concession add-ons on a single screen.</p>
+                      </div>
                       
                       {/* Movie Selection */}
                       <ReusableSelect
@@ -338,7 +342,7 @@ function TicketSalesPage() {
 
           {/* Booking Summary Sidebar - Always visible in Box Office Mode */}
           {(isBoxOfficeMode && selectedMovie) || (currentStep !== "movie-selection" && currentStep !== "payment-summary") ? (
-            <div className="lg:w-80">
+            <div className="md:w-80">
                 <BookingSummary
                 selectedMovie={selectedMovie}
                 selectedShowtime={{ ...selectedShowtime, price: selectedShowtimePrice?.price || 0 }}

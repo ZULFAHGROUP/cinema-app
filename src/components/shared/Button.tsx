@@ -34,20 +34,21 @@ const Button: React.FC<ButtonProps> = ({
 }) => (
   <button
     className={classNames(
-      "inline-flex cursor-pointer items-center justify-center w-auto font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#c77e3b]/30 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none",
+      "inline-flex cursor-pointer items-center justify-center w-auto font-semibold rounded-xl transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[#c77e3b]/30 disabled:opacity-50 disabled:pointer-events-none",
       {
         "py-1.5 px-3 text-xs": size === "xs",
-        "py-2.5 px-5 text-sm": size === "sm",
-        "bg-gradient-to-r from-[#c77e3b] to-[#b56e2d] hover:from-[#b56e2d] hover:to-[#9e5d22] text-white shadow-sm shadow-[#c77e3b]/25 hover:shadow-md hover:shadow-[#c77e3b]/30":
+        "py-2.5 px-4 text-sm": size === "sm",
+        "bg-[#c77e3b] hover:bg-[#b06d2f] text-white border border-[#c77e3b]":
           variant === "primary",
-        "bg-gradient-to-r from-[#754f2c] to-[#5e3e21] hover:from-[#5e3e21] hover:to-[#4a3019] text-white shadow-sm shadow-[#754f2c]/25 hover:shadow-md":
+        "bg-[#754f2c] hover:bg-[#5e3e21] text-white border border-[#754f2c]":
           variant === "secondary",
-        "bg-gradient-to-r from-[#5480c7] to-[#436db2] hover:from-[#436db2] hover:to-[#365a96] text-white shadow-sm shadow-[#5480c7]/25 hover:shadow-md":
+        "bg-[#5480c7] hover:bg-[#436db2] text-white border border-[#5480c7]":
           variant === "extra",
-        "bg-[#cadbb7]/80 text-white": variant === "disabled",
-        "bg-white/80 text-[#c77e3b] border border-[#c77e3b]/40 hover:bg-[#c77e3b] hover:text-white hover:border-[#c77e3b] shadow-2xs":
+        "bg-stone-200 text-stone-500 border border-stone-200":
+          variant === "disabled",
+        "bg-white text-[#12161c] border border-[#e2dbd0] hover:bg-[#fff8ea] hover:border-[#c77e3b]/50":
           variant === "outline",
-        "bg-white/80 text-[#5480c7] border border-[#5480c7]/40 hover:bg-[#5480c7] hover:text-white hover:border-[#5480c7] shadow-2xs":
+        "bg-white text-[#5480c7] border border-[#5480c7]/40 hover:bg-[#5480c7] hover:text-white":
           variant === "extra-outline",
         "cursor-not-allowed": loading,
       },
@@ -57,7 +58,9 @@ const Button: React.FC<ButtonProps> = ({
     {...props}
   >
     {icon && (
-      <span className={`inline-flex items-center shrink-0 ${title ? "mr-2" : ""}`}>
+      <span
+        className={`inline-flex items-center shrink-0 ${title ? "mr-2" : ""}`}
+      >
         {icon}
       </span>
     )}
@@ -69,7 +72,9 @@ const Button: React.FC<ButtonProps> = ({
       </span>
     )}
     {icontwo && (
-      <span className={`inline-flex items-center shrink-0 ${title ? "ml-2" : ""}`}>
+      <span
+        className={`inline-flex items-center shrink-0 ${title ? "ml-2" : ""}`}
+      >
         {icontwo}
       </span>
     )}

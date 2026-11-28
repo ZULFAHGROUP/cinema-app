@@ -47,10 +47,10 @@ export default function SeatPicker({
 
   return (
     <div className="space-y-3">
-      <div className="overflow-x-auto border border-[#c77e3b]/20 rounded-2xl p-4 bg-[#fff8ea]/40">
+      <div className="overflow-x-auto border border-[#e6dfd3] rounded-2xl p-4 bg-[#faf6ed]">
         {/* Realistic Cinema Screen Arc */}
         <div className="mb-5 text-center">
-          <div className="h-1.5 w-3/4 mx-auto rounded-full bg-gradient-to-r from-transparent via-[#c77e3b] to-transparent shadow-[0_4px_12px_rgba(199,126,59,0.45)]" />
+          <div className="h-1.5 w-3/4 mx-auto rounded-full bg-[#c77e3b]" />
           <p className="text-[10px] font-bold tracking-[0.25em] text-[#754f2c] mt-1.5">
             SCREEN
           </p>

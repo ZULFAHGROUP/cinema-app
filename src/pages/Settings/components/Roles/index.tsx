@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import { MoreVertical, Edit, Trash2, Plus } from "lucide-react";
+import { MoreVertical, Edit, Trash2, Plus, UserCog } from "lucide-react";
 import { Dropdown } from "antd";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../../../store/hook";
@@ -45,28 +45,44 @@ const Roles = () => {
     }
   };
 
-
   const columns = [
     {
-      title: "Name",
+      title: "Role Name",
       dataIndex: "role_name",
       key: "role_name",
+      render: (roleName: string) => {
+        const isBuiltIn = BUILT_IN_ROLES.includes(roleName);
+        return (
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-stone-900">{roleName}</span>
+            {isBuiltIn && (
+              <span className="px-2 py-0.5 rounded-full bg-[#fff8ea] border border-[#c77e3b]/30 text-[#754f2c] text-[10px] font-bold uppercase">
+                System Role
+              </span>
+            )}
+          </div>
+        );
+      },
     },
     {
       title: "Description",
       dataIndex: "description",
       key: "description",
+      render: (desc: string) => (
+        <span className="text-xs text-stone-600">{desc || "—"}</span>
+      ),
     },
     {
-      title: "Actions",
+      title: "",
       key: "actions",
+      width: 60,
       render: (_: any, record: any) => (
         <Dropdown
           menu={{
             items: [
               {
                 key: "edit",
-                label: "Edit",
+                label: "Edit Role",
                 icon: <Edit className="w-4 h-4" />,
                 onClick: () => {
                   setSelectedItem(record);
@@ -76,9 +92,8 @@ const Roles = () => {
               },
               {
                 key: "delete",
-                label: "Delete",
+                label: "Delete Role",
                 danger: true,
-                // The API ships with these and refuses to delete them.
                 disabled: BUILT_IN_ROLES.includes(record.role_name),
                 icon: <Trash2 className="w-4 h-4" />,
                 onClick: () => {
@@ -90,11 +105,12 @@ const Roles = () => {
           }}
           trigger={["click"]}
         >
-          <Button
-            size="sm"
-            className="p-0 bg-transparent w-fit shadow-none text-black!"
-            icon={<MoreVertical size={18} />}
-          />
+          <button
+            type="button"
+            className="w-8 h-8 rounded-lg hover:bg-stone-100 flex items-center justify-center text-stone-500 hover:text-stone-900 cursor-pointer"
+          >
+            <MoreVertical size={16} />
+          </button>
         </Dropdown>
       ),
     },
@@ -110,13 +126,25 @@ const Roles = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-semibold">Roles Settings</h2>
+    <div className="space-y-5">
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0">
+            <UserCog className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-extrabold text-stone-900">
+              Staff Roles
+            </h2>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Define organizational roles and access tiers for your staff
+              accounts
+            </p>
+          </div>
+        </div>
         <Button
-          className="rounded-md"
           icon={<Plus className="w-4 h-4" />}
-          title="Add New"
+          title="Add Role"
           onClick={() => {
             setEditMode(false);
             setSelectedItem(null);
@@ -131,8 +159,8 @@ const Roles = () => {
         <ReusableTable
           data={roles || []}
           columns={columns}
-          title="Roles"
-          searchField={["name"]}
+          title={`Configured Roles (${total || roles?.length || 0})`}
+          searchField={["role_name"]}
           paginationMode="backend"
           paginationProps={{
             total,
@@ -143,10 +171,9 @@ const Roles = () => {
         />
       )}
 
-      {/* Add / Edit Modal */}
       <DisplayModal
         open={showFormModal}
-        title={editMode ? "Edit Role" : "Add Role"}
+        title={editMode ? "Edit Role" : "Create Role"}
         onClose={() => setShowFormModal(false)}
       >
         <RolesForm
@@ -156,12 +183,11 @@ const Roles = () => {
         />
       </DisplayModal>
 
-      {/* Delete Confirmation */}
       <ConfirmationModal
         open={showDeleteModal}
         onCancel={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
-        content={`Are you sure that you want to delete this role, ${selectedItem?.name}`}
+        content={`Are you sure that you want to delete this role: ${selectedItem?.role_name}?`}
       />
     </div>
   );

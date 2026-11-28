@@ -86,7 +86,7 @@ export default function PurchaseSelection({
         <h2 className="text-xl font-sans font-semibold text-foreground">Tickets & Concessions</h2>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Ticket Section */}
         <div className="bg-white border border-[#c77e3b]/15 rounded-2xl p-6 shadow-2xs">
           <div className="flex items-center gap-2 mb-4 group">

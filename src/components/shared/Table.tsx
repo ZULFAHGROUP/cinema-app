@@ -79,7 +79,6 @@ const ReusableTable = <T extends Record<string, any>>({
     setFilteredData(filtered);
   };
 
-  // Pagination settings
   const paginationConfig = showPagination
     ? {
         pageSize: 10,
@@ -117,10 +116,10 @@ const ReusableTable = <T extends Record<string, any>>({
     title: "S/N",
     dataIndex: "sn",
     key: "sn",
-    width: 64,
+    width: 60,
     render: (_: any, __: any, index: number) => (
-      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#fff8ea] text-[#754f2c] text-xs font-semibold">
-        {index + 1}
+      <span className="text-xs font-semibold text-stone-400 tabular-nums">
+        {String(index + 1).padStart(2, "0")}
       </span>
     ),
   };
@@ -128,20 +127,21 @@ const ReusableTable = <T extends Record<string, any>>({
   const updatedColumns = [snColumn, ...(columns || [])];
 
   return (
-    <div className="bg-white rounded-2xl border border-[#c77e3b]/15 shadow-[0_4px_20px_-4px_rgba(117,79,44,0.06)] overflow-hidden w-full">
-      {/* Modern Table Header Bar */}
-      <div className="px-6 py-4 border-b border-[#c77e3b]/10 bg-gradient-to-r from-[#fff8ea]/70 via-white to-[#fff8ea]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="w-2.5 h-6 rounded-full bg-gradient-to-b from-[#c77e3b] to-[#5480c7]" />
-          <div>
-            <h3 className="text-base font-bold text-stone-900">{title}</h3>
-            {tableText && <p className="text-xs text-stone-500 mt-0.5">{tableText}</p>}
-          </div>
+    <div className="bg-white rounded-2xl border border-[#e6dfd3] shadow-[0_1px_2px_rgba(18,22,28,0.05)] overflow-hidden w-full">
+      {/* Clean Flat Table Header Bar */}
+      <div className="px-6 py-4 border-b border-[#e6dfd3] bg-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h3 className="font-display text-base font-bold text-[#12161c] tracking-tight">
+            {title}
+          </h3>
+          {tableText && (
+            <p className="text-xs text-stone-500 mt-0.5">{tableText}</p>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           {showSearch && (
-            <div className="w-full sm:w-72">
+            <div className="w-full md:w-64">
               <Input
                 placeholder="Search records..."
                 name="searchText"
@@ -164,19 +164,32 @@ const ReusableTable = <T extends Record<string, any>>({
           )}
           {pathLink && (
             <Link to={pathLink}>
-              <Button
-                title={pathText}
-                size="xs"
-                icon={<FaPlus />}
-              />
+              <Button title={pathText} size="xs" icon={<FaPlus />} />
             </Link>
           )}
         </div>
       </div>
 
       {/* Table Body */}
-      <div id="table-content" className="p-2 sm:p-4">
+      <div id="table-content" className="p-2 md:p-3">
         <Table
+          rowKey={(record: any, index) =>
+            record.id ||
+            record.order_id ||
+            record.audit_id ||
+            record.inventory_id ||
+            record.price_rule_id ||
+            record.movie_classification_id ||
+            record.screen_type_id ||
+            record.showtime_status_id ||
+            record.role_id ||
+            record.permission_id ||
+            record.product_category_id ||
+            record.vat_config_id ||
+            record.admin_id ||
+            record.user_id ||
+            String(index)
+          }
           columns={updatedColumns}
           dataSource={filteredData}
           bordered={false}

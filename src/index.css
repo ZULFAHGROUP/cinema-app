@@ -6,27 +6,67 @@
     --color-secondary: #c77e3b;
     --color-secondary-dark: #754f2c;
     --color-extra: #5480c7;
+    --ink: #12161c;
+    --paper: #ffffff;
+    --line: #e6dfd3;
+    --muted: #64748b;
+    --font-display: "Bricolage Grotesque", "Plus Jakarta Sans", system-ui, sans-serif;
+    --font-body: "Plus Jakarta Sans", "Inter Tight", -apple-system, BlinkMacSystemFont, sans-serif;
   }
 
   body {
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-body);
     background-color: #fff8ea;
-    color: #1c1917;
+    color: #12161c;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-display);
     letter-spacing: -0.02em;
+    color: #12161c;
   }
 }
 
-/* Harmonize legacy font-serif / font-sans classes into a cohesive modern type system */
+/* Harmonize font classes into Bricolage Grotesque (headings) + Plus Jakarta Sans (body) */
 .font-sans {
-  font-family: "Plus Jakarta Sans", "Inter", sans-serif !important;
+  font-family: var(--font-display) !important;
 }
 
 .font-serif {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-family: var(--font-body) !important;
+}
+
+.font-display {
+  font-family: var(--font-display) !important;
+}
+
+/* Habyta-inspired Eyebrow Chip */
+.eyebrow-chip {
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #754f2c;
+  background: #fff8ea;
+  border: 1px solid #e6dfd3;
+  border-radius: 9999px;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.18rem 0.55rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  display: inline-flex;
+}
+
+.eyebrow-chip::before {
+  content: "";
+  background: #c77e3b;
+  border-radius: 9999px;
+  width: 4px;
+  height: 4px;
+  display: inline-block;
 }
 
 .text-primary {
@@ -58,7 +98,7 @@
 }
 
 .text-foreground {
-  color: #1c1917;
+  color: #12161c;
 }
 
 .bg-card {
@@ -66,11 +106,11 @@
 }
 
 .bg-muted {
-  background-color: #f8f4ec;
+  background-color: #f7f2e7;
 }
 
 .border-border {
-  border-color: #e7dfd3;
+  border-color: #e6dfd3;
 }
 
 .hide-scrollbar::-webkit-scrollbar {
@@ -89,16 +129,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 248, 234, 0.6);
+  background: #fff8ea;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(199, 126, 59, 0.3);
+  background: #d8ccb8;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(199, 126, 59, 0.55);
+  background: #c77e3b;
 }
 
 .custom-menu .ant-menu-submenu {
@@ -109,77 +149,94 @@
   background-color: inherit !important;
 }
 
-/* Modern Ant Design Overrides matching #fff8ea, #c77e3b, #754f2c, #5480c7 */
+/* Clean, Flat Ant Design Overrides (Habyta / TransitFlow inspired) */
+.ant-tabs-nav {
+  margin-bottom: 0 !important;
+}
+
 .ant-tabs-nav::before {
-  border-bottom-color: rgba(199, 126, 59, 0.16) !important;
+  border-bottom-color: #e6dfd3 !important;
 }
 
 .ant-tabs-tab {
-  font-weight: 500 !important;
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
   color: #64748b !important;
-  padding: 10px 4px !important;
-  transition: all 0.2s ease !important;
+  padding: 12px 4px !important;
+  transition: color 0.15s ease !important;
 }
 
 .ant-tabs-tab:hover {
-  color: #c77e3b !important;
+  color: #12161c !important;
 }
 
 .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
   color: #c77e3b !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
 }
 
 .ant-tabs-ink-bar {
-  background: linear-gradient(90deg, #c77e3b, #5480c7) !important;
-  height: 3px !important;
-  border-radius: 3px 3px 0 0 !important;
+  background: #c77e3b !important;
+  height: 2px !important;
+  border-radius: 2px !important;
 }
 
 .ant-table-wrapper .ant-table {
   border-radius: 12px !important;
   overflow: hidden;
+  font-size: 13.5px !important;
 }
 
 .ant-table-wrapper .ant-table-thead > tr > th {
-  background-color: #fff8ea !important;
-  color: #754f2c !important;
+  background-color: #faf6ed !important;
+  color: #57534e !important;
+  font-family: var(--font-body) !important;
   font-weight: 600 !important;
-  font-size: 12px !important;
+  font-size: 11px !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.04em !important;
-  border-bottom: 1px solid rgba(199, 126, 59, 0.2) !important;
-  padding: 14px 16px !important;
+  letter-spacing: 0.06em !important;
+  border-bottom: 1px solid #e6dfd3 !important;
+  padding: 12px 16px !important;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th::before {
+  display: none !important;
 }
 
 .ant-table-wrapper .ant-table-tbody > tr > td {
   padding: 14px 16px !important;
-  border-bottom: 1px solid #f1ece1 !important;
-  color: #292524 !important;
+  border-bottom: 1px solid #f0eadc !important;
+  color: #12161c !important;
+  transition: background-color 0.15s ease !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr:last-child > td {
+  border-bottom: none !important;
 }
 
 .ant-table-wrapper .ant-table-tbody > tr:hover > td {
-  background-color: #fffaf0 !important;
+  background-color: #fcf9f2 !important;
 }
 
 .ant-modal .ant-modal-content {
-  border-radius: 20px !important;
-  border: 1px solid rgba(199, 126, 59, 0.18) !important;
-  box-shadow: 0 25px 50px -12px rgba(117, 79, 44, 0.18) !important;
+  border-radius: 18px !important;
+  border: 1px solid #e6dfd3 !important;
+  box-shadow: 0 18px 50px rgba(18, 22, 28, 0.14) !important;
   padding: 24px !important;
 }
 
 .ant-modal .ant-modal-header {
-  border-bottom: 1px solid #f3ede2 !important;
-  padding-bottom: 14px !important;
-  margin-bottom: 18px !important;
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+  margin-bottom: 14px !important;
 }
 
 .ant-modal .ant-modal-title {
-  font-family: "Plus Jakarta Sans", "Inter", sans-serif !important;
-  font-size: 1.125rem !important;
+  font-family: var(--font-display) !important;
+  font-size: 1.15rem !important;
   font-weight: 700 !important;
-  color: #1c1917 !important;
+  color: #12161c !important;
 }
 
 .ant-select-selector,
@@ -187,14 +244,41 @@
 .ant-input-affix-wrapper,
 .ant-picker {
   border-radius: 10px !important;
+  border-color: #e2dbd0 !important;
+}
+
+.ant-select-selector:hover,
+.ant-input:hover,
+.ant-input-affix-wrapper:hover,
+.ant-picker:hover {
+  border-color: #c77e3b !important;
+}
+
+.ant-input-search .ant-input-group .ant-input-affix-wrapper {
+  border-start-start-radius: 10px !important;
+  border-end-start-radius: 10px !important;
+}
+
+.ant-input-search .ant-input-search-button {
+  border-start-end-radius: 10px !important;
+  border-end-end-radius: 10px !important;
+}
+
+.ant-tag {
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+}
+
+.ant-pagination .ant-pagination-item {
+  border-radius: 8px !important;
 }
 
 .ant-pagination .ant-pagination-item-active {
   border-color: #c77e3b !important;
-  background-color: #fff8ea !important;
+  background-color: #c77e3b !important;
 }
 
 .ant-pagination .ant-pagination-item-active a {
-  color: #c77e3b !important;
+  color: #ffffff !important;
   font-weight: 600 !important;
 }

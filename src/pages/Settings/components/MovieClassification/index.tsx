@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import { MoreVertical, Edit, Trash2, Plus } from "lucide-react";
+import { MoreVertical, Edit, Trash2, Plus, ShieldAlert } from "lucide-react";
 import { Dropdown } from "antd";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../../../store/hook";
@@ -8,7 +8,6 @@ import {
   deleteClassification,
   getAllClassifications,
 } from "../../../../store/slices/classification";
-
 import Button from "../../../../components/shared/Button";
 import DisplayModal from "../../../../components/shared/Modal/DisplayModal";
 import ConfirmationModal from "../../../../components/shared/Modal/ConfirmationModal";
@@ -48,24 +47,30 @@ const MovieClassification = () => {
     }
   };
 
-
   const columns = [
     {
-      title: "Name",
+      title: "Classification Rating",
       dataIndex: "name",
       key: "name",
+      render: (name: string) => (
+        <div className="flex items-center gap-2.5">
+          <span className="px-3 py-1 rounded-lg bg-[#fff8ea] border border-[#c77e3b]/30 text-[#754f2c] font-extrabold text-xs">
+            {name}
+          </span>
+        </div>
+      ),
     },
-
     {
-      title: "Actions",
+      title: "",
       key: "actions",
+      width: 60,
       render: (_: any, record: any) => (
         <Dropdown
           menu={{
             items: [
               {
                 key: "edit",
-                label: "Edit",
+                label: "Edit Rating",
                 icon: <Edit className="w-4 h-4" />,
                 onClick: () => {
                   setSelectedItem(record);
@@ -75,7 +80,7 @@ const MovieClassification = () => {
               },
               {
                 key: "delete",
-                label: "Delete",
+                label: "Delete Rating",
                 danger: true,
                 icon: <Trash2 className="w-4 h-4" />,
                 onClick: () => {
@@ -87,11 +92,12 @@ const MovieClassification = () => {
           }}
           trigger={["click"]}
         >
-          <Button
-            size="sm"
-            className="p-0 bg-transparent w-fit shadow-none text-black!"
-            icon={<MoreVertical size={18} />}
-          />
+          <button
+            type="button"
+            className="w-8 h-8 rounded-lg hover:bg-stone-100 flex items-center justify-center text-stone-500 hover:text-stone-900 cursor-pointer"
+          >
+            <MoreVertical size={16} />
+          </button>
         </Dropdown>
       ),
     },
@@ -107,13 +113,25 @@ const MovieClassification = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-semibold">Movie Classifications</h2>
+    <div className="space-y-5">
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0">
+            <ShieldAlert className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-extrabold text-stone-900">
+              Movie Age Classifications
+            </h2>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Age ratings (G, PG, PG-13, 18+) displayed on movie cards and
+              tickets
+            </p>
+          </div>
+        </div>
         <Button
-          className="rounded-md"
           icon={<Plus className="w-4 h-4" />}
-          title="Add New"
+          title="Add Classification"
           onClick={() => {
             setEditMode(false);
             setSelectedItem(null);
@@ -128,7 +146,7 @@ const MovieClassification = () => {
         <ReusableTable
           data={classifications || []}
           columns={columns}
-          title="Movie Classifications"
+          title={`Classifications (${total || classifications?.length || 0})`}
           searchField={["name"]}
           showPagination={true}
           paginationMode="backend"
@@ -141,7 +159,6 @@ const MovieClassification = () => {
         />
       )}
 
-      {/* Add / Edit Modal */}
       <DisplayModal
         open={showFormModal}
         title={editMode ? "Edit Classification" : "Add Classification"}
@@ -154,12 +171,11 @@ const MovieClassification = () => {
         />
       </DisplayModal>
 
-      {/* Delete Confirmation */}
       <ConfirmationModal
         open={showDeleteModal}
         onCancel={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
-        content={`Are you sure that you want to delete this classification, ${selectedItem?.name}`}
+        content={`Are you sure that you want to delete this classification: ${selectedItem?.name}?`}
       />
     </div>
   );

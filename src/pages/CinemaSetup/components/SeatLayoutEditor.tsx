@@ -204,7 +204,7 @@ const SeatLayoutEditor = ({ screen, onCancel }: SeatLayoutEditorProps) => {
           rows.map((row, index) => (
             <div
               key={index}
-              className="flex flex-wrap sm:flex-nowrap items-end gap-2.5 p-2.5 rounded-xl bg-stone-50/80 border border-stone-200/80 hover:border-[#c77e3b]/30 transition-colors"
+              className="flex flex-wrap md:flex-nowrap items-end gap-2.5 p-2.5 rounded-xl bg-stone-50/80 border border-stone-200/80 hover:border-[#c77e3b]/30 transition-colors"
             >
               <Input
                 label={index === 0 ? "Row Label" : undefined}
@@ -298,10 +298,10 @@ const SeatLayoutEditor = ({ screen, onCancel }: SeatLayoutEditorProps) => {
 
       {/* Live Auditorium Preview */}
       {rows.length > 0 && (
-        <div className="border border-stone-200/90 rounded-2xl p-4 bg-gradient-to-b from-stone-900 to-stone-800 text-white overflow-x-auto shadow-inner">
+        <div className="border border-[#2a231c] rounded-2xl p-5 bg-[#161310] text-white overflow-x-auto">
           <div className="max-w-md mx-auto mb-5 text-center">
-            <div className="h-2 rounded-full bg-gradient-to-r from-transparent via-[#c77e3b] to-transparent shadow-[0_4px_20px_rgba(199,126,59,0.7)]" />
-            <p className="text-[10px] font-bold tracking-[0.25em] uppercase text-stone-400 mt-1.5">
+            <div className="h-1.5 w-3/4 mx-auto rounded-full bg-[#c77e3b]" />
+            <p className="text-[10px] font-bold tracking-[0.25em] uppercase text-[#fff8ea]/50 mt-2">
               Auditorium Screen
             </p>
           </div>

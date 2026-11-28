@@ -20,7 +20,7 @@ export default function ShowtimeSelection({
 }: ShowtimeSelectionProps) {
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex gap-4 items-center">
           <div className="w-12 h-16 bg-stone-200 rounded-xl overflow-hidden shrink-0 shadow-2xs">
             <img
@@ -59,7 +59,7 @@ export default function ShowtimeSelection({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {movie.showtimes.map((showtime: any) => (
             <div
               key={showtime.showtime_id || showtime.id}

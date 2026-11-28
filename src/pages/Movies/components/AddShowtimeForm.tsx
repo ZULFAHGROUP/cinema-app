@@ -167,7 +167,7 @@ export default function AddShowtimeForm({
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 <ReusableSelect
                   label="Movie"
                   name="movie_id"
@@ -298,8 +298,8 @@ export default function AddShowtimeForm({
                               )}
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
-                              <div className="sm:col-span-5">
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
+                              <div className="md:col-span-5">
                                 <Input
                                   label="Show Date"
                                   name={`schedules[${index}].date`}
@@ -321,7 +321,7 @@ export default function AddShowtimeForm({
                                 />
                               </div>
 
-                              <div className="sm:col-span-7">
+                              <div className="md:col-span-7">
                                 <ReusableSelect
                                   mode="multiple"
                                   label="Start Times"

@@ -33,7 +33,7 @@ export default function StepIndicator({ currentStep }: StepIndicatorProps) {
                   {isDone ? "✓" : index + 1}
                 </div>
                 <span
-                  className={`whitespace-nowrap text-xs sm:text-sm transition-colors duration-300 ${
+                  className={`whitespace-nowrap text-xs md:text-sm transition-colors duration-300 ${
                     isCurrent
                       ? "text-[#c77e3b] font-extrabold"
                       : isDone

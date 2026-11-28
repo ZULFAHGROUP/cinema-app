@@ -39,10 +39,10 @@ const DisplayModal: React.FC<CustomModalProps> = ({
       destroyOnClose
       title={
         title ? (
-          <div className="pb-3 mb-1 border-b border-stone-200/80">
-            <div className="flex items-center gap-2.5">
-              <span className="w-1.5 h-5 rounded-full bg-gradient-to-b from-[#c77e3b] to-[#754f2c] inline-block shrink-0" />
-              <span className="text-lg font-bold text-stone-900 tracking-tight font-sans">
+          <div className="pb-3.5 mb-1 border-b border-[#e6dfd3]">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#c77e3b] inline-block shrink-0" />
+              <span className="font-display text-lg font-bold text-[#12161c] tracking-tight">
                 {title}
               </span>
             </div>
@@ -56,7 +56,7 @@ const DisplayModal: React.FC<CustomModalProps> = ({
       }
       footer={
         hasFooter ? (
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-stone-100">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#e6dfd3]">
             {isCancelButton && (
               <Button variant="outline" onClick={onClose} title="Cancel" />
             )}

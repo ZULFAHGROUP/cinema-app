@@ -100,7 +100,7 @@ const AddRoleForm = ({ onSubmit, onCancel }: AddRoleFormProps) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Role Name"
                 name="name"
@@ -144,7 +144,7 @@ const AddRoleForm = ({ onSubmit, onCancel }: AddRoleFormProps) => {
               <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2">
                 Module Permissions <span className="text-[#c77e3b]">*</span>
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {permissionOptions.map((permission) => {
                   const selected = values.permissions.includes(
                     permission.value

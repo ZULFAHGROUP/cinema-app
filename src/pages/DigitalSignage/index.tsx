@@ -227,14 +227,15 @@ function SignagePage() {
 
   return (
     <div className="space-y-6 pb-8">
-      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0">
-            <Monitor className="w-6 h-6" />
+      <div className="bg-white rounded-2xl border border-[#e6dfd3] p-6 shadow-[0_1px_2px_rgba(18,22,28,0.05)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <div className="w-11 h-11 rounded-xl bg-[#fff8ea] border border-[#e6dfd3] flex items-center justify-center text-[#c77e3b] shrink-0 mt-0.5">
+            <Monitor className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold text-stone-900">Digital Signage</h1>
-            <p className="text-sm text-stone-500 mt-0.5">
+            <span className="eyebrow-chip mb-1.5">Lobby Media Network</span>
+            <h1 className="font-display text-2xl font-bold text-[#12161c] tracking-[-0.02em]">Digital Signage</h1>
+            <p className="text-[13px] text-[#686259] mt-0.5">
               Lobby screens, what they show, and when
             </p>
           </div>
@@ -300,7 +301,7 @@ function SignagePage() {
         </div>
       ) : (
         <>
-          <div className="bg-white rounded-2xl border border-[#c77e3b]/15 px-6 pt-2 shadow-2xs">
+          <div className="bg-white rounded-2xl border border-[#e6dfd3] px-6 pt-2 shadow-[0_1px_2px_rgba(18,22,28,0.05)]">
             <Tabs
               activeKey={activeTab}
               onChange={setActiveTab}

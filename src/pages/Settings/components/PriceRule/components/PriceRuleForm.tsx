@@ -34,6 +34,14 @@ const DAYS_OF_WEEK = [
   { label: "Saturday", value: 6 },
 ];
 
+const normalizeTimeWithSeconds = (t?: string | null) => {
+  if (!t) return undefined;
+  const trimmed = t.trim();
+  if (!trimmed) return undefined;
+  if (/^\d{2}:\d{2}$/.test(trimmed)) return `${trimmed}:00`;
+  return trimmed;
+};
+
 const PriceRuleForm = ({
   onCancel,
   editMode,
@@ -59,17 +67,29 @@ const PriceRuleForm = ({
     dispatch(getAllProducts({ page: 1, limit: 100 }));
   }, [dispatch, isAdmin]);
 
+  const initialDays = Array.isArray(priceRuleData?.day_of_week)
+    ? priceRuleData.day_of_week
+    : typeof priceRuleData?.day_of_week === "number"
+    ? [priceRuleData.day_of_week]
+    : [];
+
+  const initialProducts = Array.isArray(priceRuleData?.product_ids)
+    ? priceRuleData.product_ids
+    : Array.isArray(priceRuleData?.products)
+    ? priceRuleData.products.map((p: any) => p.product_id).filter(Boolean)
+    : [];
+
   const initialValues = {
     name: priceRuleData?.name || "",
     price: priceRuleData?.price || "",
     screen_type_id: priceRuleData?.screen_type_id || "",
     movie_id: priceRuleData?.movie_id || "",
     priority: priceRuleData?.priority || 1,
-    day_of_week: priceRuleData?.day_of_week || [],
+    day_of_week: initialDays,
     start_time: priceRuleData?.start_time || "",
     end_time: priceRuleData?.end_time || "",
     cinema_id: priceRuleData?.cinema_id || (isAdmin ? "" : userCinemaId || ""),
-    product_ids: priceRuleData?.product_ids || [],
+    product_ids: initialProducts,
   };
 
   const cinemaOptions = [
@@ -85,12 +105,25 @@ const PriceRuleForm = ({
     { resetForm }: { resetForm: () => void }
   ) {
     try {
-      const isGlobal =
-        !values.cinema_id || values.cinema_id === "GLOBAL_ALL";
+      const isGlobal = !values.cinema_id || values.cinema_id === "GLOBAL_ALL";
       const payload = {
         ...values,
+        price: Number(values.price),
+        priority: Number(values.priority),
         cinema_id: isGlobal ? undefined : values.cinema_id,
         is_global: isGlobal,
+        movie_id: values.movie_id || undefined,
+        screen_type_id: values.screen_type_id || undefined,
+        day_of_week:
+          Array.isArray(values.day_of_week) && values.day_of_week.length > 0
+            ? values.day_of_week
+            : undefined,
+        start_time: normalizeTimeWithSeconds(values.start_time),
+        end_time: normalizeTimeWithSeconds(values.end_time),
+        product_ids:
+          Array.isArray(values.product_ids) && values.product_ids.length > 0
+            ? values.product_ids
+            : undefined,
       };
 
       if (editMode) {
@@ -105,7 +138,7 @@ const PriceRuleForm = ({
         }
       } else {
         const response = await dispatch(createPriceRule(payload)).unwrap();
-        if (response.code === 201) {
+        if (response.code === 201 || response.code === 200) {
           toast.success(response.message);
         }
       }
@@ -114,7 +147,9 @@ const PriceRuleForm = ({
       resetForm();
       onCancel();
     } catch (error: any) {
-      toast.error(error?.response?.message || "Something went wrong");
+      toast.error(
+        error?.response?.message || error?.message || "Something went wrong"
+      );
     }
   }
 
@@ -152,7 +187,7 @@ const PriceRuleForm = ({
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
               <Input
                 label="Rule Name"
                 name="name"
@@ -165,7 +200,7 @@ const PriceRuleForm = ({
                     : undefined
                 }
                 placeholder="e.g., Weekend Premium"
-                conClassName="sm:col-span-1"
+                conClassName="md:col-span-1"
                 required
               />
 
@@ -240,16 +275,18 @@ const PriceRuleForm = ({
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               <ReusableSelect
                 label="Specific Movie (Optional)"
                 name="movie_id"
                 value={values.movie_id}
                 onChange={(value) => setFieldValue("movie_id", value || "")}
-                options={movies.map((movie: any) => ({
-                  label: movie.title,
-                  value: movie.movie_id,
-                }))}
+                options={
+                  movies?.map((movie: any) => ({
+                    label: movie.title,
+                    value: movie.movie_id,
+                  })) || []
+                }
                 defaultOption="Any Movie"
                 allowClear
                 error={
@@ -266,10 +303,12 @@ const PriceRuleForm = ({
                 onChange={(value) =>
                   setFieldValue("screen_type_id", value || "")
                 }
-                options={screenTypes.map((type: any) => ({
-                  label: type.name,
-                  value: type.screen_type_id,
-                }))}
+                options={
+                  screenTypes?.map((type: any) => ({
+                    label: type.name,
+                    value: type.screen_type_id,
+                  })) || []
+                }
                 defaultOption="Any Screen Type"
                 allowClear
                 error={
@@ -317,12 +356,10 @@ const PriceRuleForm = ({
               mode="multiple"
               value={values.day_of_week}
               onChange={(value) => setFieldValue("day_of_week", value)}
-              options={
-                DAYS_OF_WEEK?.map((day: any) => ({
-                  label: day.label,
-                  value: day.value,
-                })) || []
-              }
+              options={DAYS_OF_WEEK.map((day) => ({
+                label: day.label,
+                value: day.value,
+              }))}
               defaultOption="All days (or pick specific days)"
               error={
                 touched.day_of_week && typeof errors.day_of_week === "string"
@@ -331,7 +368,7 @@ const PriceRuleForm = ({
               }
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               <Input
                 label="Start Time"
                 name="start_time"
@@ -345,7 +382,10 @@ const PriceRuleForm = ({
                     ? errors.start_time
                     : undefined
                 }
-                required={values.day_of_week && values.day_of_week.length > 0}
+                required={
+                  Array.isArray(values.day_of_week) &&
+                  values.day_of_week.length > 0
+                }
               />
 
               <Input
@@ -361,7 +401,10 @@ const PriceRuleForm = ({
                     ? errors.end_time
                     : undefined
                 }
-                required={values.day_of_week && values.day_of_week.length > 0}
+                required={
+                  Array.isArray(values.day_of_week) &&
+                  values.day_of_week.length > 0
+                }
               />
             </div>
           </div>

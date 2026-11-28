@@ -127,7 +127,7 @@ const Theater = ({ cinemas, loading }: any) => {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {cinemas.map((theater: any) => {
             const cinemaScreens = getCinemaScreens(theater?.cinema_id);
             const isLoadingScreens = loadingCinemas[theater?.cinema_id];
@@ -144,20 +144,19 @@ const Theater = ({ cinemas, loading }: any) => {
             return (
               <Card
                 key={theater?.cinema_id}
-                className="relative overflow-hidden group"
+                className="relative overflow-hidden group hover:border-[#c77e3b]/50 transition-colors"
               >
-                <span className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#c77e3b] via-[#754f2c] to-[#5480c7]" />
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0 mt-0.5">
+                      <div className="w-10 h-10 rounded-xl bg-[#fff8ea] border border-[#e6dfd3] flex items-center justify-center text-[#c77e3b] shrink-0 mt-0.5">
                         <Building2 className="w-5 h-5" />
                       </div>
                       <div className="min-w-0">
                         <CardTitle className="text-lg truncate">
                           {theater?.name}
                         </CardTitle>
-                        <p className="text-xs text-stone-500 flex items-center gap-1 mt-1 truncate">
+                        <p className="text-xs text-[#686259] flex items-center gap-1 mt-1 truncate">
                           <MapPin className="w-3.5 h-3.5 text-[#c77e3b] shrink-0" />
                           <span className="truncate">{theater?.location}</span>
                         </p>
@@ -211,7 +210,7 @@ const Theater = ({ cinemas, loading }: any) => {
                         <Button
                           size="xs"
                           variant="outline"
-                          className="p-1.5! border-stone-200! text-stone-600! hover:text-white!"
+                          className="p-1.5! border-[#e6dfd3]! text-[#686259]! hover:text-[#12161c]!"
                           icon={<MoreVertical size={16} />}
                         />
                       </Dropdown>
@@ -220,7 +219,7 @@ const Theater = ({ cinemas, loading }: any) => {
 
                   {/* Quick Stat Badges */}
                   <div className="flex items-center gap-2 pt-3">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fff8ea] text-[#754f2c] border border-[#c77e3b]/20 text-xs font-semibold">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fff8ea] text-[#754f2c] border border-[#e6dfd3] text-xs font-semibold">
                       <Monitor className="w-3.5 h-3.5 text-[#c77e3b]" />
                       {screenCount} screen{screenCount === 1 ? "" : "s"}
                     </span>
@@ -242,7 +241,7 @@ const Theater = ({ cinemas, loading }: any) => {
                         }`}
                       />
                     )}
-                    className="bg-[#fff8ea]/60 border border-[#c77e3b]/15 rounded-xl overflow-hidden"
+                    className="bg-[#faf6ed] border border-[#e6dfd3] rounded-xl overflow-hidden"
                   >
                     <Panel
                       header={

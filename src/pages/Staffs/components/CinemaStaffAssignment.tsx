@@ -1,11 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useState } from "react";
 import { Input, Select, Tag } from "antd";
-import { ArrowRightLeft, Building2, Trash2, UserCheck, UserX } from "lucide-react";
+import {
+  ArrowRightLeft,
+  Building2,
+  Trash2,
+  UserCheck,
+  UserX,
+  AlertCircle,
+} from "lucide-react";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../../store/hook";
 import { getAllCinemas } from "../../../store/slices/cinema";
-import { getCinemaStaff, assignCinemaStaff, removeCinemaStaff } from "../../../store/slices/cinemaStaff";
+import {
+  getCinemaStaff,
+  assignCinemaStaff,
+  removeCinemaStaff,
+} from "../../../store/slices/cinemaStaff";
 import Staff, { AssignmentFilters } from "../../../services/network/staff";
 import ReusableTable from "../../../components/shared/Table";
 import DisplayModal from "../../../components/shared/Modal/DisplayModal";
@@ -14,22 +25,24 @@ import StatCards from "../../../components/shared/StatCards";
 import Button from "../../../components/shared/Button";
 import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 
-const ROLE_COLORS: Record<string, string> = { Manager: "gold", Staff: "blue", Cashier: "purple" };
+const ROLE_COLORS: Record<string, string> = {
+  Manager: "gold",
+  Staff: "blue",
+  Cashier: "purple",
+};
 
-/**
- * Managers, staff and cashiers each work at one cinema; Admins work across all of them
- * and are never assigned. This tab answers: who has no cinema yet, which cinemas have
- * nobody, and who works where.
- */
 export default function CinemaStaffAssignment() {
   const dispatch = useAppDispatch();
   const { allCinemas } = useAppSelector((state) => state.cinema);
-  const { cinemaStaffList, loading, page, limit, total } = useAppSelector((state) => state.cinemaStaff);
+  const { cinemaStaffList, loading, page, limit, total } = useAppSelector(
+    (state) => state.cinemaStaff
+  );
 
-  // Everyone who can be assigned, with their role and current cinema (if any).
   const [people, setPeople] = useState<any[]>([]);
-  // Every assignment, unfiltered, so the cards don't change with the search box.
-  const [summary, setSummary] = useState<{ stats: any; cinemaIds: Set<string> }>({
+  const [summary, setSummary] = useState<{
+    stats: any;
+    cinemaIds: Set<string>;
+  }>({
     stats: null,
     cinemaIds: new Set(),
   });
@@ -56,12 +69,18 @@ export default function CinemaStaffAssignment() {
   const loadSummary = useCallback(async () => {
     const response = await Staff.getCinemaStaff(1, 50, {});
     const { assignments, stats } = response.data.data;
-    setSummary({ stats, cinemaIds: new Set(assignments.map((a: any) => a.cinema_id)) });
+    setSummary({
+      stats,
+      cinemaIds: new Set(assignments.map((a: any) => a.cinema_id)),
+    });
   }, []);
 
   const loadTable = useCallback(
     (pageNumber = 1) => {
-      const filters: AssignmentFilters = { search: search || undefined, cinema_id: cinemaFilter };
+      const filters: AssignmentFilters = {
+        search: search || undefined,
+        cinema_id: cinemaFilter,
+      };
       return dispatch(getCinemaStaff({ page: pageNumber, limit, filters }));
     },
     [dispatch, search, cinemaFilter, limit]
@@ -81,26 +100,37 @@ export default function CinemaStaffAssignment() {
     loadSummary().catch(() => undefined);
   }, [dispatch, loadPeople, loadSummary]);
 
-  // Back to page 1 whenever the search or cinema filter changes.
   useEffect(() => {
     loadTable(1);
   }, [loadTable]);
 
   const cinemaName = (id?: string) =>
     allCinemas?.find((c: any) => c.cinema_id === id)?.name || "Unknown cinema";
-  const roleOf = (adminId: string) => people.find((p) => p.admin_id === adminId)?.roleLabel;
-  const cinemaOptions = (allCinemas || []).map((c: any) => ({ value: c.cinema_id, label: c.name }));
+  const roleOf = (adminId: string) =>
+    people.find((p) => p.admin_id === adminId)?.roleLabel;
+  const cinemaOptions = (allCinemas || []).map((c: any) => ({
+    value: c.cinema_id,
+    label: c.name,
+  }));
 
   const unassigned = people.filter((p) => p.is_active && !p.cinema);
-  const emptyCinemas = (allCinemas || []).filter((c: any) => !summary.cinemaIds.has(c.cinema_id));
+  const emptyCinemas = (allCinemas || []).filter(
+    (c: any) => !summary.cinemaIds.has(c.cinema_id)
+  );
   const stats = summary.stats;
 
   const assign = async (person: any, cinemaId?: string) => {
     if (!cinemaId) return;
     setBusyId(person.admin_id);
     try {
-      await dispatch(assignCinemaStaff({ admin_id: person.admin_id, cinema_id: cinemaId })).unwrap();
-      toast.success(`${person.surname} ${person.other_names} now works at ${cinemaName(cinemaId)}`);
+      await dispatch(
+        assignCinemaStaff({ admin_id: person.admin_id, cinema_id: cinemaId })
+      ).unwrap();
+      toast.success(
+        `${person.surname} ${person.other_names} now works at ${cinemaName(
+          cinemaId
+        )}`
+      );
       await refreshAll();
     } catch (error: any) {
       toast.error(error?.message || "Could not assign");
@@ -112,7 +142,12 @@ export default function CinemaStaffAssignment() {
   const remove = async () => {
     if (!toRemove) return;
     try {
-      await dispatch(removeCinemaStaff({ admin_id: toRemove.admin_id, cinema_id: toRemove.cinema_id })).unwrap();
+      await dispatch(
+        removeCinemaStaff({
+          admin_id: toRemove.admin_id,
+          cinema_id: toRemove.cinema_id,
+        })
+      ).unwrap();
       toast.success('Removed. They\'re now under "Needs a cinema".');
       await refreshAll();
     } catch (error: any) {
@@ -122,7 +157,6 @@ export default function CinemaStaffAssignment() {
     }
   };
 
-  // A person works at one cinema at a time, so moving is remove then assign.
   const closeMove = () => {
     setToMove(null);
     setMoveTo(undefined);
@@ -130,11 +164,21 @@ export default function CinemaStaffAssignment() {
   const move = async () => {
     if (!toMove || !moveTo) return;
     try {
-      await dispatch(removeCinemaStaff({ admin_id: toMove.admin_id, cinema_id: toMove.cinema_id })).unwrap();
-      await dispatch(assignCinemaStaff({ admin_id: toMove.admin_id, cinema_id: moveTo })).unwrap();
+      await dispatch(
+        removeCinemaStaff({
+          admin_id: toMove.admin_id,
+          cinema_id: toMove.cinema_id,
+        })
+      ).unwrap();
+      await dispatch(
+        assignCinemaStaff({ admin_id: toMove.admin_id, cinema_id: moveTo })
+      ).unwrap();
       toast.success(`Moved to ${cinemaName(moveTo)}`);
     } catch (error: any) {
-      toast.error(error?.message || 'Could not move. Check "Needs a cinema" and assign them again.');
+      toast.error(
+        error?.message ||
+          'Could not move. Check "Needs a cinema" and assign them again.'
+      );
     } finally {
       closeMove();
       await refreshAll();
@@ -143,23 +187,25 @@ export default function CinemaStaffAssignment() {
 
   const statItems = [
     {
-      label: "Have a cinema",
+      label: "Assigned to a Cinema",
       value: stats?.total_assignments ?? 0,
-      hint: `${stats?.managers ?? 0} managers · ${stats?.staff ?? 0} staff · ${stats?.pos_cashiers ?? 0} cashiers`,
+      hint: `${stats?.managers ?? 0} managers · ${stats?.staff ?? 0} staff · ${
+        stats?.pos_cashiers ?? 0
+      } cashiers`,
       icon: UserCheck,
       tone: "good" as const,
     },
     {
-      label: "Needs a cinema",
+      label: "Unassigned Staff",
       value: stats?.unassigned_staff ?? unassigned.length,
-      hint: unassigned.length ? "Assign them below" : undefined,
+      hint: unassigned.length ? "Assign them below" : "All staff assigned",
       icon: UserX,
       tone: unassigned.length ? ("warning" as const) : ("neutral" as const),
     },
     {
-      label: "Cinemas with no staff",
+      label: "Unstaffed Cinemas",
       value: emptyCinemas.length,
-      hint: `of ${allCinemas?.length ?? 0} cinemas`,
+      hint: `of ${allCinemas?.length ?? 0} cinema branches`,
       icon: Building2,
       tone: emptyCinemas.length ? ("danger" as const) : ("neutral" as const),
     },
@@ -167,31 +213,42 @@ export default function CinemaStaffAssignment() {
 
   const columns = [
     {
-      title: "Name",
+      title: "Staff Member",
       key: "name",
       render: (_: any, record: any) =>
-        record.admin ? `${record.admin.surname} ${record.admin.other_names}` : "Unknown staff",
+        record.admin ? (
+          <div>
+            <p className="font-bold text-stone-900">
+              {record.admin.surname} {record.admin.other_names}
+            </p>
+            <p className="text-xs text-stone-500">{record.admin.email}</p>
+          </div>
+        ) : (
+          "Unknown staff"
+        ),
     },
     {
       title: "Role",
       key: "role",
       render: (_: any, record: any) => {
         const role = roleOf(record.admin_id);
-        return role ? <Tag color={ROLE_COLORS[role]}>{role}</Tag> : "-";
+        return role ? <Tag color={ROLE_COLORS[role]}>{role}</Tag> : "—";
       },
     },
     {
-      title: "Email",
-      key: "email",
-      render: (_: any, record: any) => <span className="text-gray-500">{record.admin?.email}</span>,
-    },
-    {
-      title: "Works at",
+      title: "Assigned Cinema",
       key: "cinema",
       render: (_: any, record: any) => (
-        <div>
-          <p className="text-sm">{record.cinema?.name || cinemaName(record.cinema_id)}</p>
-          <p className="text-xs text-gray-500">{record.cinema?.location}</p>
+        <div className="flex items-center gap-2">
+          <Building2 className="w-4 h-4 text-[#c77e3b] shrink-0" />
+          <div>
+            <p className="text-sm font-bold text-stone-800">
+              {record.cinema?.name || cinemaName(record.cinema_id)}
+            </p>
+            {record.cinema?.location && (
+              <p className="text-xs text-stone-500">{record.cinema.location}</p>
+            )}
+          </div>
         </div>
       ),
     },
@@ -203,7 +260,6 @@ export default function CinemaStaffAssignment() {
           <Button
             size="xs"
             variant="outline"
-            className="rounded-md"
             icon={<ArrowRightLeft size={14} />}
             title="Move"
             onClick={() => setToMove(record)}
@@ -211,7 +267,7 @@ export default function CinemaStaffAssignment() {
           <Button
             size="xs"
             variant="outline"
-            className="rounded-md text-red-600!"
+            className="text-red-600! border-red-200! hover:bg-red-50!"
             icon={<Trash2 size={14} />}
             title="Remove"
             onClick={() => setToRemove(record)}
@@ -222,42 +278,53 @@ export default function CinemaStaffAssignment() {
   ];
 
   return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground">
-        Managers, staff and cashiers each work at one cinema. Admins work across all cinemas.
-      </p>
-
+    <div className="space-y-5">
       <StatCards items={statItems} />
 
-      {/* Who still needs a cinema: only shown when someone does. */}
+      {/* Unassigned Staff Workbench */}
       {unassigned.length > 0 && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
-          <h3 className="font-semibold">Needs a cinema ({unassigned.length})</h3>
-          <div className="divide-y divide-amber-200">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5 space-y-3 shadow-2xs">
+          <div className="flex items-center gap-2.5">
+            <AlertCircle className="w-5 h-5 text-amber-600" />
+            <h3 className="font-extrabold text-stone-900">
+              Awaiting Cinema Branch Assignment ({unassigned.length})
+            </h3>
+          </div>
+          <div className="divide-y divide-amber-200/70">
             {unassigned.map((person) => (
-              <div key={person.admin_id} className="flex flex-wrap items-center gap-3 py-3">
+              <div
+                key={person.admin_id}
+                className="flex flex-wrap items-center gap-3 py-3"
+              >
                 <div className="flex-1 min-w-48">
-                  <p className="font-medium">
-                    {person.surname} {person.other_names}{" "}
-                    <Tag color={ROLE_COLORS[person.roleLabel]}>{person.roleLabel}</Tag>
+                  <p className="font-bold text-stone-900 flex items-center gap-2">
+                    <span>
+                      {person.surname} {person.other_names}
+                    </span>
+                    <Tag color={ROLE_COLORS[person.roleLabel]}>
+                      {person.roleLabel}
+                    </Tag>
                   </p>
-                  <p className="text-xs text-muted-foreground">{person.email}</p>
+                  <p className="text-xs text-stone-500">{person.email}</p>
                 </div>
                 <Select
                   showSearch
                   optionFilterProp="label"
-                  placeholder="Choose cinema"
+                  placeholder="Choose cinema branch"
                   value={pickedCinema[person.admin_id]}
-                  onChange={(value) => setPickedCinema((p) => ({ ...p, [person.admin_id]: value }))}
+                  onChange={(value) =>
+                    setPickedCinema((p) => ({ ...p, [person.admin_id]: value }))
+                  }
                   options={cinemaOptions}
                   className="w-56"
                 />
                 <Button
                   size="xs"
-                  className="rounded-md"
-                  title="Assign"
+                  title="Assign Branch"
                   loading={busyId === person.admin_id}
-                  disabled={busyId === person.admin_id || !pickedCinema[person.admin_id]}
+                  disabled={
+                    busyId === person.admin_id || !pickedCinema[person.admin_id]
+                  }
                   onClick={() => assign(person, pickedCinema[person.admin_id])}
                 />
               </div>
@@ -266,58 +333,70 @@ export default function CinemaStaffAssignment() {
         </div>
       )}
 
-      {/* Who works where */}
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h3 className="font-semibold">Who works where</h3>
-            <p className="text-sm text-muted-foreground">Search, or pick a cinema to see its team.</p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Input.Search
-              allowClear
-              placeholder="Search name, email or cinema"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="w-full md:w-64!"
-            />
-            <Select
-              allowClear
-              showSearch
-              optionFilterProp="label"
-              placeholder="All cinemas"
-              value={cinemaFilter}
-              onChange={setCinemaFilter}
-              options={cinemaOptions}
-              className="w-52"
-            />
-          </div>
+      {/* Filter Bar */}
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-4 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="font-extrabold text-stone-900 text-sm">
+            Active Branch Assignments
+          </h3>
+          <p className="text-xs text-stone-500">
+            Managers, staff, and cashiers each work at one assigned cinema
+            branch.
+          </p>
         </div>
-        <ReusableTable
-          data={loading ? [] : cinemaStaffList}
-          columns={columns}
-          title={cinemaFilter ? `${cinemaName(cinemaFilter)} team (${total})` : `All assignments (${total})`}
-          showSearch={false}
-          showPagination
-          paginationMode="backend"
-          paginationProps={{ current: page, total, pageSize: limit }}
-          onTableChange={(p: any) => loadTable(p.current)}
-        />
+        <div className="flex flex-wrap gap-3">
+          <Input.Search
+            allowClear
+            placeholder="Search name, email or cinema..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="w-full md:w-64!"
+          />
+          <Select
+            allowClear
+            showSearch
+            optionFilterProp="label"
+            placeholder="All cinema branches"
+            value={cinemaFilter}
+            onChange={setCinemaFilter}
+            options={cinemaOptions}
+            className="w-52"
+          />
+        </div>
       </div>
+
+      <ReusableTable
+        data={loading ? [] : cinemaStaffList}
+        columns={columns}
+        title={
+          cinemaFilter
+            ? `${cinemaName(cinemaFilter)} Team (${total})`
+            : `All Branch Assignments (${total})`
+        }
+        showSearch={false}
+        showPagination
+        paginationMode="backend"
+        paginationProps={{ current: page, total, pageSize: limit }}
+        onTableChange={(p: any) => loadTable(p.current)}
+      />
 
       <ConfirmationModal
         open={Boolean(toRemove)}
         onCancel={() => setToRemove(null)}
         onConfirm={remove}
-        title="Remove from cinema"
-        content={`Remove ${toRemove?.admin?.surname} ${toRemove?.admin?.other_names} from ${cinemaName(
+        title="Remove from Cinema Branch"
+        content={`Remove ${toRemove?.admin?.surname} ${
+          toRemove?.admin?.other_names
+        } from ${cinemaName(
           toRemove?.cinema_id
-        )}? They keep their account but can't work until you assign them again.`}
+        )}? They keep their account but can't work until assigned again.`}
       />
 
       <DisplayModal
         open={Boolean(toMove)}
-        title={`Reassign ${toMove?.admin?.surname ?? ""} ${toMove?.admin?.other_names ?? ""}`}
+        title={`Reassign ${toMove?.admin?.surname ?? ""} ${
+          toMove?.admin?.other_names ?? ""
+        }`}
         subtitle="Transfer this staff member to a different cinema branch"
         onClose={closeMove}
       >
@@ -344,7 +423,9 @@ export default function CinemaStaffAssignment() {
               placeholder="Select destination cinema branch"
               value={moveTo}
               onChange={setMoveTo}
-              options={cinemaOptions.filter((c: any) => c.value !== toMove?.cinema_id)}
+              options={cinemaOptions.filter(
+                (c: any) => c.value !== toMove?.cinema_id
+              )}
               className="w-full min-h-[40px]"
             />
           </div>

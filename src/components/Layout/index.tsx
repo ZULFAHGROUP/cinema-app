@@ -17,15 +17,12 @@ import {
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
 import { FiLogOut } from "react-icons/fi";
-import { Clapperboard } from "lucide-react";
+import { Calendar } from "lucide-react";
 import ScrollToTop from "../../utils/ScrollToTop";
 import { IoIosArrowBack } from "react-icons/io";
 import sideBarDetails from "../../constants/sidebar";
 import PrivateRoute from "../../routes/privateRoute";
-import {
-  refreshProfile,
-  signOut,
-} from "../../store/slices/accounts";
+import { refreshProfile, signOut } from "../../store/slices/accounts";
 import { useAppDispatch, useAppSelector } from "../../store/hook";
 import { hasAnyPermission } from "../../utils/permissions";
 import DisplayModal from "../shared/Modal/DisplayModal";
@@ -38,19 +35,56 @@ import { formatUserLabel } from "../../utils";
 const { Header, Sider, Content } = Layout;
 
 const COLORS = {
-  primary: "#fff8ea", // light warm cream
-  secondary: "#c77e3b", // brand bronze
-  secondaryDark: "#754f2c", // deep bronze
-  extra: "#5480c7", // royal blue accent
-  header: "#ffffff",
+  primary: "#fff8ea",
+  secondary: "#c77e3b",
+  secondaryDark: "#754f2c",
+  extra: "#5480c7",
+  ink: "#12161c",
+  line: "#e6dfd3",
 };
+
+/** Habyta-inspired architectural logo mark */
+const BrandMark = ({ collapsed }: { collapsed?: boolean }) => (
+  <div className="flex items-center gap-2.5">
+    <svg
+      width="34"
+      height="34"
+      viewBox="0 0 36 36"
+      fill="none"
+      aria-hidden="true"
+      className="shrink-0"
+    >
+      <rect
+        x="3"
+        y="9"
+        width="12"
+        height="22"
+        rx="3"
+        fill="#754f2c"
+        opacity="0.45"
+      />
+      <rect x="18" y="5" width="13" height="26" rx="3" fill="#12161c" />
+      <circle cx="24.5" cy="17" r="3" fill="#c77e3b" />
+    </svg>
+    {!collapsed && (
+      <div className="flex flex-col text-left leading-none">
+        <span className="font-display text-[19px] font-bold tracking-tight text-[#12161c]">
+          Cinema<span className="text-[#c77e3b]">OS</span>
+        </span>
+        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-stone-400 mt-1">
+          Operations
+        </span>
+      </div>
+    )}
+  </div>
+);
 
 const AppLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string>();
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   const navigate = useNavigate();
-  const isMobile = useMediaQuery({ maxWidth: 768 });
+  const isMobile = useMediaQuery({ maxWidth: 767 });
   const location = useLocation();
   const [canGoBack, setCanGoBack] = useState(false);
   const [openKeys, setOpenKeys] = useState<string[]>([]);
@@ -72,7 +106,8 @@ const AppLayout: React.FC = () => {
     const matchingItem = sideBarDetails.find(
       (item) =>
         location.pathname === item.key ||
-        (item.key !== "/dashboard" && location.pathname.startsWith(`${item.key}/`))
+        (item.key !== "/dashboard" &&
+          location.pathname.startsWith(`${item.key}/`))
     );
     setActiveMenu(matchingItem?.key || location.pathname);
   }, [location]);
@@ -127,34 +162,26 @@ const AppLayout: React.FC = () => {
     }
   };
 
-  const profileMenu = (
-    <Menu
-      className="rounded-xl p-1.5 shadow-lg border border-[#c77e3b]/15 min-w-44"
-      items={[
-        {
-          key: "profile",
-          label: <span className="font-medium">My Profile</span>,
-          icon: <UserOutlined />,
-        },
-        {
-          type: "divider",
-        },
-        {
-          key: "logout",
-          label: <span className="text-red-600 font-medium">Logout</span>,
-          icon: <FiLogOut className="text-red-600" />,
-        },
-      ]}
-      onClick={(e) => {
-        if (e.key === "logout") {
-          dispatch(signOut());
-          navigate("/auth/login");
-        } else if (e.key === "profile") {
-          openProfileModal();
-        }
-      }}
-    />
-  );
+  const profileMenuItems = [
+    {
+      key: "profile",
+      label: <span className="font-semibold text-[#12161c]">My Profile</span>,
+      icon: <UserOutlined className="text-[#c77e3b]" />,
+      onClick: () => openProfileModal(),
+    },
+    {
+      type: "divider" as const,
+    },
+    {
+      key: "logout",
+      label: <span className="text-red-600 font-semibold">Sign Out</span>,
+      icon: <FiLogOut className="text-red-600" />,
+      onClick: () => {
+        dispatch(signOut());
+        navigate("/auth/login");
+      },
+    },
+  ];
 
   const handleMenuClick = (key: string) => {
     setActiveMenu(key);
@@ -180,12 +207,19 @@ const AppLayout: React.FC = () => {
   };
 
   const visibleSideBarDetails = sideBarDetails.filter(
-    (item) => !item.permissions?.length || hasAnyPermission(user, item.permissions)
+    (item) =>
+      !item.permissions?.length || hasAnyPermission(user, item.permissions)
   );
 
   const currentNavTitle =
     visibleSideBarDetails.find((item) => item.key === activeMenu)?.title ||
     "Dashboard";
+
+  const todayShort = new Date().toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
 
   const renderMenuItems = () =>
     visibleSideBarDetails.map((item) => {
@@ -193,7 +227,7 @@ const AppLayout: React.FC = () => {
       if (item?.subMenu) {
         return {
           key: item.key,
-          icon: <item.icon size={19} />,
+          icon: <item.icon size={18} />,
           label: item.title,
           children: item.subMenu.map((subItem) => ({
             key: subItem.key,
@@ -202,7 +236,7 @@ const AppLayout: React.FC = () => {
               activeMenu === subItem.key
                 ? {
                     background: COLORS.secondary,
-                    color: "#fff",
+                    color: "#ffffff",
                     borderRadius: "10px",
                   }
                 : { borderRadius: "10px" },
@@ -211,21 +245,21 @@ const AppLayout: React.FC = () => {
       }
       return {
         key: item.key,
-        icon: <item.icon size={19} />,
+        icon: <item.icon size={18} />,
         label: item.title,
         style: isSelected
           ? {
-              background: `linear-gradient(135deg, ${COLORS.secondary}, ${COLORS.secondaryDark})`,
-              color: "#fff",
-              borderRadius: "12px",
-              boxShadow: "0 4px 12px rgba(199, 126, 59, 0.28)",
-              margin: "4px 10px",
-              width: "calc(100% - 20px)",
+              background: COLORS.secondary,
+              color: "#ffffff",
+              borderRadius: "10px",
+              margin: "3px 12px",
+              width: "calc(100% - 24px)",
+              fontWeight: 600,
             }
           : {
-              borderRadius: "12px",
-              margin: "4px 10px",
-              width: "calc(100% - 20px)",
+              borderRadius: "10px",
+              margin: "3px 12px",
+              width: "calc(100% - 24px)",
             },
       };
     });
@@ -236,15 +270,18 @@ const AppLayout: React.FC = () => {
         token: {
           colorPrimary: COLORS.secondary,
           borderRadius: 10,
+          fontFamily:
+            '"Plus Jakarta Sans", "Inter Tight", -apple-system, BlinkMacSystemFont, sans-serif',
         },
         components: {
           Menu: {
             itemBg: "transparent",
             itemColor: "#57534e",
-            itemHoverBg: "rgba(84, 128, 199, 0.14)",
-            itemHoverColor: COLORS.extra,
+            itemHoverBg: "#fff8ea",
+            itemHoverColor: "#12161c",
             itemSelectedBg: COLORS.secondary,
-            itemSelectedColor: "#fff",
+            itemSelectedColor: "#ffffff",
+            itemHeight: 40,
           },
         },
       }}
@@ -253,65 +290,98 @@ const AppLayout: React.FC = () => {
         <Layout className="h-screen overflow-hidden bg-[#fff8ea]">
           <ScrollToTop />
 
-          {/* Desktop Sidebar */}
+          {/* Clean Flat White Architectural Sidebar */}
           {!isMobile ? (
             <Sider
               trigger={null}
               collapsible
               collapsed={collapsed}
               style={{
-                background: "linear-gradient(180deg, #fffdf8 0%, #fff8ea 100%)",
+                background: "#ffffff",
                 height: "100vh",
-                borderRight: `1px solid ${COLORS.secondary}26`,
+                borderRight: `1px solid ${COLORS.line}`,
               }}
-              width={256}
-              collapsedWidth={80}
+              width={248}
+              collapsedWidth={76}
             >
-              <div
-                className="px-4 py-4 flex items-center justify-center"
-                style={{
-                  borderBottom: `1px solid ${COLORS.secondary}20`,
-                }}
-              >
-                <Link
-                  to="/dashboard"
-                  className="flex items-center gap-3 w-full justify-center group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#c77e3b] to-[#754f2c] flex items-center justify-center text-white shadow-md shadow-[#c77e3b]/25 shrink-0 group-hover:scale-105 transition-transform">
-                    <Clapperboard className="w-5 h-5" />
+              <div className="flex flex-col h-full justify-between">
+                <div>
+                  <div
+                    className="px-5 h-16 flex items-center"
+                    style={{
+                      borderBottom: `1px solid ${COLORS.line}`,
+                    }}
+                  >
+                    <Link
+                      to="/dashboard"
+                      className="flex items-center w-full"
+                    >
+                      <BrandMark collapsed={collapsed} />
+                    </Link>
                   </div>
+
                   {!collapsed && (
-                    <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-base font-extrabold tracking-tight text-stone-900 leading-none">
-                        Cinema<span className="text-[#c77e3b]">OS</span>
-                      </span>
-                      <span className="text-[11px] font-medium text-stone-500 mt-1 truncate">
-                        Theater Management
-                      </span>
+                    <div className="px-6 pt-4 pb-1">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-stone-400">
+                        Modules
+                      </p>
                     </div>
                   )}
-                </Link>
-              </div>
 
-              <div className="py-3 overflow-y-auto hide-scrollbar h-[calc(100vh-76px)]">
-                <Menu
-                  mode="inline"
-                  selectedKeys={activeMenu ? [activeMenu] : []}
-                  openKeys={openKeys}
-                  onOpenChange={handleOpenChange}
-                  style={{
-                    backgroundColor: "transparent",
-                    borderRight: "none",
-                    fontWeight: 600,
-                    fontSize: "13.5px",
-                  }}
-                  items={renderMenuItems()}
-                  onClick={(e) => handleMenuClick(e.key)}
-                />
+                  <div className="py-2 overflow-y-auto hide-scrollbar max-h-[calc(100vh-160px)]">
+                    <Menu
+                      mode="inline"
+                      selectedKeys={activeMenu ? [activeMenu] : []}
+                      openKeys={openKeys}
+                      onOpenChange={handleOpenChange}
+                      style={{
+                        backgroundColor: "transparent",
+                        borderRight: "none",
+                        fontWeight: 500,
+                        fontSize: "13.5px",
+                      }}
+                      items={renderMenuItems()}
+                      onClick={(e) => handleMenuClick(e.key)}
+                    />
+                  </div>
+                </div>
+
+                {/* Bottom Flat Operator Card */}
+                <div className="p-3 m-3 rounded-xl bg-[#fff8ea] border border-[#e6dfd3]">
+                  <Dropdown
+                    menu={{ items: profileMenuItems }}
+                    placement="topRight"
+                    trigger={["click"]}
+                  >
+                    <div className="flex items-center gap-2.5 cursor-pointer">
+                      <Avatar
+                        size={34}
+                        src={user?.profile_image_url || undefined}
+                        className="shrink-0"
+                        style={{
+                          backgroundColor: COLORS.secondaryDark,
+                          color: "#fff8ea",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {(user?.surname?.[0] || "U").toUpperCase()}
+                      </Avatar>
+                      {!collapsed && (
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-[#12161c] truncate">
+                            {user?.surname} {user?.other_names}
+                          </p>
+                          <p className="text-[11px] text-[#754f2c] font-medium truncate">
+                            {formatUserLabel(user?.role) || "Operator"}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </Dropdown>
+                </div>
               </div>
             </Sider>
           ) : (
-            /* Mobile Drawer Sidebar */
             <Drawer
               placement="left"
               closable
@@ -320,19 +390,12 @@ const AppLayout: React.FC = () => {
               styles={{
                 body: {
                   padding: 0,
-                  background: COLORS.primary,
+                  background: "#ffffff",
                 },
               }}
             >
-              <div className="px-4 py-4 flex items-center gap-3 border-b border-[#c77e3b]/20">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#c77e3b] to-[#754f2c] flex items-center justify-center text-white shadow-sm">
-                  <Clapperboard className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-base font-extrabold text-stone-900">
-                    Cinema<span className="text-[#c77e3b]">OS</span>
-                  </span>
-                </div>
+              <div className="px-5 py-4 border-b border-[#e6dfd3]">
+                <BrandMark />
               </div>
               <Menu
                 mode="inline"
@@ -340,7 +403,7 @@ const AppLayout: React.FC = () => {
                 style={{
                   backgroundColor: "transparent",
                   borderRight: "none",
-                  fontWeight: 600,
+                  fontWeight: 500,
                 }}
                 items={renderMenuItems()}
                 onClick={(e) => {
@@ -351,63 +414,84 @@ const AppLayout: React.FC = () => {
             </Drawer>
           )}
 
-          {/* Main Layout */}
+          {/* Main Workspace */}
           <Layout className="bg-[#fff8ea] flex flex-col h-screen overflow-hidden">
             <Header
               style={{
                 padding: "0 24px",
-                background: "rgba(255, 248, 234, 0.88)",
-                backdropFilter: "blur(12px)",
+                background: "#ffffff",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                borderBottom: `1px solid ${COLORS.secondary}22`,
+                borderBottom: `1px solid ${COLORS.line}`,
                 height: 64,
                 flexShrink: 0,
                 zIndex: 10,
               }}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <Button
                   type="text"
-                  icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                  onClick={() =>
-                    isMobile ? setIsDrawerVisible(true) : setCollapsed(!collapsed)
+                  icon={
+                    collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />
                   }
-                  className="hover:bg-[#c77e3b]/10! text-[#754f2c]! rounded-xl!"
-                  style={{ fontSize: "16px", width: 38, height: 38 }}
+                  onClick={() =>
+                    isMobile
+                      ? setIsDrawerVisible(true)
+                      : setCollapsed(!collapsed)
+                  }
+                  className="hover:bg-[#fff8ea]! text-[#12161c]! border border-[#e6dfd3]! rounded-lg!"
+                  style={{ fontSize: "15px", width: 34, height: 34 }}
                 />
-                <span className="text-sm font-bold text-stone-700 hidden sm:inline">
+
+                <span className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#faf6ed] border border-[#e6dfd3] text-[10px] font-semibold uppercase tracking-[0.06em] text-[#754f2c]">
+                  <span className="w-1 h-1 rounded-full bg-[#c77e3b]" />
                   {currentNavTitle}
                 </span>
               </div>
 
-              <Dropdown overlay={profileMenu} placement="bottomRight" trigger={["click"]}>
-                <Avatar
-                  src={user?.profile_image_url || undefined}
-                  className="ring-2 ring-[#c77e3b]/30 hover:ring-[#c77e3b] transition-all shadow-sm"
-                  style={{
-                    backgroundColor: COLORS.secondary,
-                    cursor: "pointer",
-                  }}
+              <div className="flex items-center gap-3">
+                <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#fff8ea] border border-[#e6dfd3] text-xs font-semibold text-[#754f2c]">
+                  <Calendar className="w-3.5 h-3.5 text-[#c77e3b]" />
+                  <span>{todayShort}</span>
+                </div>
+
+                <Dropdown
+                  menu={{ items: profileMenuItems }}
+                  placement="bottomRight"
+                  trigger={["click"]}
                 >
-                  {(user?.surname?.[0] || "U").toUpperCase()}
-                </Avatar>
-              </Dropdown>
+                  <div className="flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-full bg-white hover:bg-[#fff8ea] border border-[#e6dfd3] cursor-pointer transition-colors">
+                    <Avatar
+                      size={30}
+                      src={user?.profile_image_url || undefined}
+                      style={{
+                        backgroundColor: COLORS.secondary,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {(user?.surname?.[0] || "U").toUpperCase()}
+                    </Avatar>
+                    <span className="hidden md:inline text-xs font-semibold text-[#12161c]">
+                      {user?.surname || "Account"}
+                    </span>
+                  </div>
+                </Dropdown>
+              </div>
             </Header>
 
             <Content
-              className="hide-scrollbar flex-1 p-4 md:p-6 overflow-y-auto"
+              className="hide-scrollbar flex-1 p-4 md:p-7 overflow-y-auto"
               style={{ background: COLORS.primary }}
             >
-              <div className="max-w-[1440px] mx-auto">
+              <div className="max-w-[1380px] mx-auto">
                 {canGoBack &&
                   !location.pathname.startsWith("/auth") &&
                   !location.pathname.includes("/dashboard") && (
                     <button
                       type="button"
                       onClick={goBack}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 hover:bg-white text-stone-700 hover:text-[#c77e3b] border border-[#c77e3b]/20 text-xs font-semibold shadow-2xs transition-all cursor-pointer mb-4"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white hover:bg-[#faf6ed] text-[#12161c] border border-[#e6dfd3] text-xs font-semibold transition-colors cursor-pointer mb-4"
                     >
                       <IoIosArrowBack className="text-sm" /> Back
                     </button>
@@ -421,14 +505,15 @@ const AppLayout: React.FC = () => {
         <DisplayModal
           open={profileOpen}
           onClose={() => setProfileOpen(false)}
-          title="My Profile"
+          title="My Operator Profile"
+          subtitle="Update your personal details and profile avatar"
         >
           <div className="space-y-4">
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#fff8ea]/70 border border-[#c77e3b]/20">
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-[#fff8ea] border border-[#e6dfd3]">
               <Avatar
-                size={64}
+                size={60}
                 src={profileForm.preview_url || undefined}
-                className="ring-2 ring-[#c77e3b]/30 shrink-0"
+                className="shrink-0"
                 style={{ backgroundColor: COLORS.secondary }}
               >
                 {(profileForm.surname?.[0] || "U").toUpperCase()}
@@ -451,12 +536,14 @@ const AppLayout: React.FC = () => {
                   />
                 </Upload>
                 <p className="text-xs text-stone-500 mt-1.5">
-                  {user?.email} · {formatUserLabel(user?.role)}
-                  {user?.cinema?.name ? ` · ${user.cinema.name}` : ""}
+                  {user?.email} ·{" "}
+                  <span className="font-semibold text-[#754f2c]">
+                    {formatUserLabel(user?.role)}
+                  </span>
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Surname"
                 value={profileForm.surname}
@@ -469,33 +556,36 @@ const AppLayout: React.FC = () => {
                 label="Other Names"
                 value={profileForm.other_names}
                 onChange={(e) =>
-                  setProfileForm((p) => ({ ...p, other_names: e.target.value }))
+                  setProfileForm((p) => ({
+                    ...p,
+                    other_names: e.target.value,
+                  }))
                 }
                 required
               />
             </div>
             <Input
-              label="Phone"
+              label="Phone Number"
               value={profileForm.phone}
               onChange={(e) =>
                 setProfileForm((p) => ({ ...p, phone: e.target.value }))
               }
               required
             />
-            <div className="flex gap-2 pt-4 border-t border-stone-100">
-              <SharedButton
-                type="button"
-                className="flex-1"
-                loading={profileSaving}
-                disabled={profileSaving || profileUploading}
-                title="Save Profile"
-                onClick={handleProfileSave}
-              />
+            <div className="flex justify-end gap-2.5 pt-4 border-t border-[#e6dfd3]">
               <SharedButton
                 type="button"
                 variant="outline"
                 title="Cancel"
                 onClick={() => setProfileOpen(false)}
+              />
+              <SharedButton
+                type="button"
+                className="min-w-[140px]"
+                loading={profileSaving}
+                disabled={profileSaving || profileUploading}
+                title="Save Profile"
+                onClick={handleProfileSave}
               />
             </div>
           </div>

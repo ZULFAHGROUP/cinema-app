@@ -96,7 +96,7 @@ const AddCustomerForm = ({ onSubmit, onCancel }: AddCustomerFormProps) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Full Name"
                 name="name"
@@ -151,7 +151,7 @@ const AddCustomerForm = ({ onSubmit, onCancel }: AddCustomerFormProps) => {
               <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2">
                 Favorite Movie Genres <span className="text-[#c77e3b]">*</span>
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {preferenceOptions.map((pref) => {
                   const selected = values.preferences.includes(pref);
                   return (

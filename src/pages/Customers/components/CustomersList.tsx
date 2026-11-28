@@ -1,7 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { Dropdown, Input, Select, Tag } from "antd";
-import { BadgeCheck, CalendarPlus, MailWarning, MoreHorizontal, Receipt, Trash2, Users } from "lucide-react";
+import {
+  BadgeCheck,
+  CalendarPlus,
+  MailWarning,
+  MoreVertical,
+  Receipt,
+  Trash2,
+  Users,
+} from "lucide-react";
 import StatCards from "../../../components/shared/StatCards";
 import { toast } from "react-toastify";
 import ReusableTable from "../../../components/shared/Table";
@@ -23,18 +31,25 @@ const STATUS_COLORS: Record<string, string> = {
   REFUNDED: "purple",
 };
 
-/** One customer's orders, loaded when the modal opens. */
 function CustomerOrders({ customer }: { customer: any }) {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({ page: 1, limit: 5, total: 0 });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 5,
+    total: 0,
+  });
 
   const load = async (page: number, limit: number) => {
     setLoading(true);
     try {
       const response = await Order.userOrders(customer.user_id, page, limit);
       setOrders(response.data.data.orders || []);
-      setPagination({ page, limit, total: response.data.data.pagination.total });
+      setPagination({
+        page,
+        limit,
+        total: response.data.data.pagination.total,
+      });
     } catch (error: any) {
       toast.error(error?.message || "Could not load orders");
     } finally {
@@ -52,11 +67,15 @@ function CustomerOrders({ customer }: { customer: any }) {
   return (
     <ReusableTable
       data={orders}
-      title={`${pagination.total} order(s)`}
+      title={`${pagination.total} Order(s)`}
       showSearch={false}
       showPagination
       paginationMode="backend"
-      paginationProps={{ current: pagination.page, pageSize: pagination.limit, total: pagination.total }}
+      paginationProps={{
+        current: pagination.page,
+        pageSize: pagination.limit,
+        total: pagination.total,
+      }}
       onTableChange={(p: any) => load(p.current, p.pageSize)}
       columns={[
         {
@@ -65,7 +84,11 @@ function CustomerOrders({ customer }: { customer: any }) {
           key: "created_at",
           render: (date: string) => humanDateAndTime(date),
         },
-        { title: "Cinema", key: "cinema", render: (_: unknown, r: any) => r.cinema?.name },
+        {
+          title: "Cinema",
+          key: "cinema",
+          render: (_: unknown, r: any) => r.cinema?.name,
+        },
         {
           title: "Tickets",
           key: "tickets",
@@ -75,14 +98,18 @@ function CustomerOrders({ customer }: { customer: any }) {
           title: "Total",
           dataIndex: "grand_total",
           key: "grand_total",
-          render: (total: number) => formatCurrency(total),
+          render: (total: number) => (
+            <span className="font-bold">{formatCurrency(total)}</span>
+          ),
         },
         {
           title: "Status",
           dataIndex: "payment_status",
           key: "payment_status",
           render: (status: string) => (
-            <Tag color={STATUS_COLORS[status] || "default"}>{status?.replace(/_/g, " ")}</Tag>
+            <Tag color={STATUS_COLORS[status] || "default"}>
+              {status?.replace(/_/g, " ")}
+            </Tag>
           ),
         },
       ]}
@@ -92,7 +119,9 @@ function CustomerOrders({ customer }: { customer: any }) {
 
 export default function CustomersList() {
   const dispatch = useAppDispatch();
-  const { customers, loading, page, limit, total, stats } = useAppSelector((state) => state.customer);
+  const { customers, loading, page, limit, total, stats } = useAppSelector(
+    (state) => state.customer
+  );
   const { user } = useAppSelector((state) => state.accounts.data);
   const canDeleteCustomer = hasPermission(user, "manage_users");
   const [searchText, setSearchText] = useState("");
@@ -102,11 +131,12 @@ export default function CustomersList() {
   const [toDelete, setToDelete] = useState<any>(null);
 
   useEffect(() => {
-    dispatch(getAllCustomers({ page: 1, limit, search, is_verified: isVerified }));
+    dispatch(
+      getAllCustomers({ page: 1, limit, search, is_verified: isVerified })
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, search, isVerified]);
 
-  // Search on the server after the user stops typing.
   useEffect(() => {
     const timer = setTimeout(() => setSearch(searchText.trim()), 400);
     return () => clearTimeout(timer);
@@ -117,7 +147,9 @@ export default function CustomersList() {
     try {
       const response = await Customer.deleteCustomer(toDelete.user_id);
       toast.success(response.data.message);
-      dispatch(getAllCustomers({ page, limit, search, is_verified: isVerified }));
+      dispatch(
+        getAllCustomers({ page, limit, search, is_verified: isVerified })
+      );
     } catch (error: any) {
       toast.error(error?.message || "Could not delete the customer");
     } finally {
@@ -127,21 +159,49 @@ export default function CustomersList() {
 
   const columns = [
     {
-      title: "Name",
+      title: "Customer",
       key: "name",
-      render: (_: unknown, record: any) => `${record.surname} ${record.other_names}`,
+      render: (_: unknown, record: any) => {
+        const initials = `${record.surname?.[0] || ""}${
+          record.other_names?.[0] || ""
+        }`.toUpperCase();
+        return (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#fff8ea] border border-[#c77e3b]/30 text-[#754f2c] text-xs font-bold flex items-center justify-center shrink-0">
+              {initials || "C"}
+            </div>
+            <div>
+              <p className="font-bold text-stone-900">
+                {record.surname} {record.other_names}
+              </p>
+              <p className="text-xs text-stone-500">{record.email}</p>
+            </div>
+          </div>
+        );
+      },
     },
-    { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Phone", dataIndex: "phone", key: "phone" },
+    {
+      title: "Phone",
+      dataIndex: "phone",
+      key: "phone",
+      render: (phone: string) => (
+        <span className="text-xs font-medium text-stone-700">
+          {phone || "—"}
+        </span>
+      ),
+    },
     {
       title: "Joined",
       dataIndex: "created_at",
       key: "created_at",
-      render: (date: string) => humanDateAndTime(date),
+      render: (date: string) => (
+        <span className="text-xs text-stone-600">{humanDateAndTime(date)}</span>
+      ),
     },
     {
-      title: "Actions",
+      title: "",
       key: "actions",
+      width: 60,
       render: (_: unknown, record: any) => (
         <Dropdown
           trigger={["click"]}
@@ -149,7 +209,7 @@ export default function CustomersList() {
             items: [
               {
                 key: "orders",
-                label: "View orders",
+                label: "View Orders",
                 icon: <Receipt className="w-4 h-4" />,
                 onClick: () => setOrdersFor(record),
               },
@@ -158,7 +218,7 @@ export default function CustomersList() {
                     { type: "divider" as const },
                     {
                       key: "delete",
-                      label: "Delete customer",
+                      label: "Delete Customer",
                       danger: true,
                       icon: <Trash2 className="w-4 h-4" />,
                       onClick: () => setToDelete(record),
@@ -168,25 +228,29 @@ export default function CustomersList() {
             ],
           }}
         >
-          <button className="p-2 hover:bg-gray-100 rounded">
-            <MoreHorizontal className="w-4 h-4" />
+          <button
+            type="button"
+            className="w-8 h-8 rounded-lg hover:bg-stone-100 flex items-center justify-center text-stone-500 hover:text-stone-900 cursor-pointer"
+          >
+            <MoreVertical className="w-4 h-4" />
           </button>
         </Dropdown>
       ),
     },
   ];
 
-  const toggleVerified = (value: boolean) => setIsVerified((current) => (current === value ? undefined : value));
+  const toggleVerified = (value: boolean) =>
+    setIsVerified((current) => (current === value ? undefined : value));
 
   const statItems = [
     {
-      label: "Customers",
+      label: "Total Customers",
       value: stats?.total_customers ?? 0,
       icon: Users,
       onClick: () => setIsVerified(undefined),
     },
     {
-      label: "Verified",
+      label: "Verified Accounts",
       value: stats?.verified_customers ?? 0,
       icon: BadgeCheck,
       tone: "good" as const,
@@ -194,7 +258,7 @@ export default function CustomersList() {
       active: isVerified === true,
     },
     {
-      label: "Not verified",
+      label: "Unverified",
       value: stats?.unverified_customers ?? 0,
       icon: MailWarning,
       tone: "warning" as const,
@@ -202,7 +266,7 @@ export default function CustomersList() {
       active: isVerified === false,
     },
     {
-      label: "New this month",
+      label: "New This Month",
       value: stats?.new_this_month ?? 0,
       icon: CalendarPlus,
       tone: "info" as const,
@@ -210,25 +274,28 @@ export default function CustomersList() {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <StatCards items={statItems} loading={loading} />
-      <div className="flex flex-wrap gap-3">
+
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-4 shadow-2xs flex flex-wrap gap-3 items-center">
         <Input.Search
           allowClear
-          placeholder="Search name, email or phone"
+          placeholder="Search name, email or phone..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          className="md:w-80!"
+          className="w-full md:w-80!"
         />
         <Select
           value={isVerified === undefined ? "all" : isVerified ? "yes" : "no"}
-          onChange={(value) => setIsVerified(value === "all" ? undefined : value === "yes")}
+          onChange={(value) =>
+            setIsVerified(value === "all" ? undefined : value === "yes")
+          }
           options={[
             { value: "all", label: "All customers" },
             { value: "yes", label: "Verified" },
             { value: "no", label: "Not verified" },
           ]}
-          className="w-40"
+          className="w-44"
         />
       </div>
 
@@ -238,14 +305,19 @@ export default function CustomersList() {
         <ReusableTable
           data={customers}
           columns={columns}
-          title={`Customers (${total})`}
+          title={`Registered Customers (${total})`}
           showSearch={false}
           showPagination
           paginationMode="backend"
           paginationProps={{ current: page, pageSize: limit, total }}
           onTableChange={(p: any) =>
             dispatch(
-              getAllCustomers({ page: p.current, limit: p.pageSize, search, is_verified: isVerified })
+              getAllCustomers({
+                page: p.current,
+                limit: p.pageSize,
+                search,
+                is_verified: isVerified,
+              })
             )
           }
         />
@@ -253,9 +325,13 @@ export default function CustomersList() {
 
       <DisplayModal
         open={Boolean(ordersFor)}
-        title={ordersFor ? `Orders: ${ordersFor.surname} ${ordersFor.other_names}` : ""}
+        title={
+          ordersFor
+            ? `Order History — ${ordersFor.surname} ${ordersFor.other_names}`
+            : ""
+        }
         onClose={() => setOrdersFor(null)}
-        width={800}
+        width={820}
       >
         {ordersFor && <CustomerOrders customer={ordersFor} />}
       </DisplayModal>

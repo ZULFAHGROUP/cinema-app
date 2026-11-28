@@ -5,7 +5,7 @@ export default function POSMode({ products, addToCart }: any) {
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-sans font-semibold">Point of Sale</h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {products
           .filter((product: any) => product.status !== "Out of Stock")
           .map((product: any) => (

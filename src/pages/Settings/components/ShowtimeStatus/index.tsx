@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Button from "../../../../components/shared/Button";
-import { MoreVertical, Edit, Trash2, Plus } from "lucide-react";
+import { MoreVertical, Edit, Trash2, Plus, Clock } from "lucide-react";
 import { Dropdown } from "antd";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../store/hook";
@@ -47,28 +47,42 @@ const ShowtimeStatus = () => {
     }
   };
 
-
   const columns = [
     {
-      title: "Name",
+      title: "Status Label",
       dataIndex: "name",
       key: "name",
+      render: (name: string) => (
+        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-xs">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          {name}
+        </span>
+      ),
     },
     {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
+      title: "Created",
+      dataIndex: "created_at",
+      key: "created_at",
+      render: (date: string) =>
+        date ? (
+          <span className="text-xs text-stone-500">
+            {new Date(date).toLocaleDateString()}
+          </span>
+        ) : (
+          <span className="text-xs text-stone-400">—</span>
+        ),
     },
     {
-      title: "Actions",
+      title: "",
       key: "actions",
+      width: 60,
       render: (_: any, record: any) => (
         <Dropdown
           menu={{
             items: [
               {
                 key: "edit",
-                label: "Edit",
+                label: "Edit Status",
                 icon: <Edit className="w-4 h-4" />,
                 onClick: () => {
                   setSelectedItem(record);
@@ -78,7 +92,7 @@ const ShowtimeStatus = () => {
               },
               {
                 key: "delete",
-                label: "Delete",
+                label: "Delete Status",
                 danger: true,
                 icon: <Trash2 className="w-4 h-4" />,
                 onClick: () => {
@@ -90,11 +104,12 @@ const ShowtimeStatus = () => {
           }}
           trigger={["click"]}
         >
-          <Button
-            size="sm"
-            className="p-0 bg-transparent w-fit shadow-none text-black!"
-            icon={<MoreVertical size={18} />}
-          />
+          <button
+            type="button"
+            className="w-8 h-8 rounded-lg hover:bg-stone-100 flex items-center justify-center text-stone-500 hover:text-stone-900 cursor-pointer"
+          >
+            <MoreVertical size={16} />
+          </button>
         </Dropdown>
       ),
     },
@@ -110,13 +125,25 @@ const ShowtimeStatus = () => {
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg font-semibold">Showtime Statuses</h2>
+    <div className="space-y-5">
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0">
+            <Clock className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-extrabold text-stone-900">
+              Showtime Lifecycle Statuses
+            </h2>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Status badges (Scheduled, Now Showing, Sold Out) used on screening
+              timetables
+            </p>
+          </div>
+        </div>
         <Button
-          className="rounded-md"
           icon={<Plus className="w-4 h-4" />}
-          title="Add New"
+          title="Add Status"
           onClick={() => {
             setEditMode(false);
             setSelectedItem(null);
@@ -131,7 +158,7 @@ const ShowtimeStatus = () => {
         <ReusableTable
           data={statuses || []}
           columns={columns}
-          title="Showtime Status"
+          title={`Showtime Statuses (${total || statuses?.length || 0})`}
           searchField={["name"]}
           excludeColumns={["showtime_status_id"]}
           showPagination={true}
@@ -145,7 +172,6 @@ const ShowtimeStatus = () => {
         />
       )}
 
-      {/* Add / Edit Modal */}
       <DisplayModal
         open={showFormModal}
         title={editMode ? "Edit Showtime Status" : "Add Showtime Status"}
@@ -158,7 +184,6 @@ const ShowtimeStatus = () => {
         />
       </DisplayModal>
 
-      {/* Delete Confirmation */}
       <ConfirmationModal
         open={showDeleteModal}
         onCancel={() => setShowDeleteModal(false)}

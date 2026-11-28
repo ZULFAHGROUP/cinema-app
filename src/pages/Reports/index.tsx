@@ -124,14 +124,15 @@ function ReportsPage() {
 
   return (
     <div className="space-y-6 pb-8">
-      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0">
-            <BarChart3 className="w-6 h-6" />
+      <div className="bg-white rounded-2xl border border-[#e6dfd3] p-6 shadow-[0_1px_2px_rgba(18,22,28,0.05)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <div className="w-11 h-11 rounded-xl bg-[#fff8ea] border border-[#e6dfd3] flex items-center justify-center text-[#c77e3b] shrink-0 mt-0.5">
+            <BarChart3 className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold text-stone-900">Reports & Analytics</h1>
-            <p className="text-sm text-stone-500 mt-0.5">
+            <span className="eyebrow-chip mb-1.5">Financial Intelligence</span>
+            <h1 className="font-display text-2xl font-bold text-[#12161c] tracking-[-0.02em]">Reports & Analytics</h1>
+            <p className="text-[13px] text-[#686259] mt-0.5">
               Completed orders only. Refunded, expired and unpaid orders are excluded.
             </p>
           </div>
@@ -160,32 +161,34 @@ function ReportsPage() {
         <p className="text-red-600">{error}</p>
       ) : report ? (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {kpis.map((kpi) => (
               <div
                 key={kpi.title}
-                className="relative overflow-hidden bg-white border border-[#c77e3b]/15 rounded-2xl p-5 shadow-[0_4px_16px_-4px_rgba(117,79,44,0.06)]"
+                className="bg-white border border-[#e6dfd3] rounded-2xl p-5 shadow-[0_1px_2px_rgba(18,22,28,0.05)] hover:border-[#c77e3b]/50 transition-colors"
               >
-                <span className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#c77e3b] to-[#5480c7]" />
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-stone-500 truncate">
-                      {kpi.title}
-                    </p>
-                    <p className="text-2xl font-extrabold text-stone-900 mt-1.5 truncate">
+                    <div className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#c77e3b]" />
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#686259] truncate">
+                        {kpi.title}
+                      </p>
+                    </div>
+                    <p className="font-display text-[24px] font-bold text-[#12161c] tracking-[-0.03em] leading-none mt-2.5 truncate">
                       {kpi.value}
                     </p>
-                    <p className="text-xs text-stone-500 mt-1 truncate">{kpi.note}</p>
+                    <p className="text-xs text-[#686259] mt-2 truncate">{kpi.note}</p>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-[#fff8ea] border border-[#c77e3b]/20 shrink-0">
-                    <kpi.icon className={`w-5 h-5 ${kpi.color}`} />
+                  <div className="w-10 h-10 rounded-xl bg-[#fff8ea] border border-[#e6dfd3] flex items-center justify-center shrink-0">
+                    <kpi.icon className={`w-4 h-4 ${kpi.color}`} />
                   </div>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="bg-white rounded-2xl border border-[#c77e3b]/15 px-6 pt-2 shadow-2xs">
+          <div className="bg-white rounded-2xl border border-[#e6dfd3] px-6 pt-2 shadow-[0_1px_2px_rgba(18,22,28,0.05)]">
             <Tabs
               activeKey={activeTab}
               onChange={setActiveTab}

@@ -137,15 +137,16 @@ const AuditTrail = () => {
 
   return (
     <div className="space-y-6 pb-8">
-      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-6 shadow-2xs flex items-center gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0">
-          <Activity className="w-6 h-6" />
+      <div className="bg-white rounded-2xl border border-[#e6dfd3] p-6 shadow-[0_1px_2px_rgba(18,22,28,0.05)] flex items-start gap-4">
+        <div className="w-11 h-11 rounded-xl bg-[#fff8ea] border border-[#e6dfd3] flex items-center justify-center text-[#c77e3b] shrink-0 mt-0.5">
+          <Activity className="w-5 h-5" />
         </div>
         <div>
-          <h1 className="text-2xl font-extrabold text-stone-900">
+          <span className="eyebrow-chip mb-1.5">Compliance & Security</span>
+          <h1 className="font-display text-2xl font-bold text-[#12161c] tracking-[-0.02em]">
             {canViewAllAudit ? "Audit Trail" : "My Activity Log"}
           </h1>
-          <p className="text-sm text-stone-500 mt-0.5">
+          <p className="text-[13px] text-[#686259] mt-0.5">
             {canViewAllAudit
               ? "Every create, update and delete made through the API, newest first."
               : "Your actions and sign-ins recorded by the API, newest first."}
@@ -186,7 +187,7 @@ const AuditTrail = () => {
         ]}
       />
 
-      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-4 shadow-2xs flex flex-wrap gap-3 items-center">
+      <div className="bg-white rounded-2xl border border-[#e6dfd3] p-4 shadow-[0_1px_2px_rgba(18,22,28,0.05)] flex flex-wrap gap-3 items-center">
         <Input.Search
           allowClear
           placeholder="Search name, email or request"

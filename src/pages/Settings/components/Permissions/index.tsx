@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import { MoreVertical, Edit, Trash2, Plus } from "lucide-react";
+import { MoreVertical, Edit, Trash2, Plus, KeyRound } from "lucide-react";
 import { Dropdown } from "antd";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../../../store/hook";
@@ -48,36 +48,51 @@ const Permissions = () => {
     }
   };
 
-
   const columns = [
     {
-      title: "Name",
+      title: "Capability Label",
       dataIndex: "permission_name",
       key: "permission_name",
-      render: (_: any, record: any) =>
-        `${formatUserLabel(record.permission_name)}`,
+      render: (_: any, record: any) => (
+        <div>
+          <p className="font-bold text-stone-900">
+            {formatUserLabel(record.permission_name)}
+          </p>
+          <code className="text-[11px] text-stone-400 font-mono">
+            {record.permission_name}
+          </code>
+        </div>
+      ),
     },
     {
       title: "Description",
       dataIndex: "description",
       key: "description",
+      render: (desc: string) => (
+        <span className="text-xs text-stone-600">{desc || "—"}</span>
+      ),
     },
     {
-      title: "Created At",
+      title: "Created",
       dataIndex: "created_at",
       key: "created_at",
-      render: (date: string) => new Date(date).toLocaleDateString(),
+      render: (date: string) => (
+        <span className="text-xs text-stone-500">
+          {date ? new Date(date).toLocaleDateString() : "—"}
+        </span>
+      ),
     },
     {
-      title: "Actions",
+      title: "",
       key: "actions",
+      width: 60,
       render: (_: any, record: any) => (
         <Dropdown
           menu={{
             items: [
               {
                 key: "edit",
-                label: "Edit",
+                label: "Edit Permission",
                 icon: <Edit className="w-4 h-4" />,
                 onClick: () => {
                   setSelectedItem(record);
@@ -87,7 +102,7 @@ const Permissions = () => {
               },
               {
                 key: "delete",
-                label: "Delete",
+                label: "Delete Permission",
                 danger: true,
                 icon: <Trash2 className="w-4 h-4" />,
                 onClick: () => {
@@ -99,11 +114,12 @@ const Permissions = () => {
           }}
           trigger={["click"]}
         >
-          <Button
-            size="sm"
-            className="p-0 bg-transparent w-fit shadow-none text-black!"
-            icon={<MoreVertical size={18} />}
-          />
+          <button
+            type="button"
+            className="w-8 h-8 rounded-lg hover:bg-stone-100 flex items-center justify-center text-stone-500 hover:text-stone-900 cursor-pointer"
+          >
+            <MoreVertical size={16} />
+          </button>
         </Dropdown>
       ),
     },
@@ -119,13 +135,24 @@ const Permissions = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-semibold">Permissions Settings</h2>
+    <div className="space-y-5">
+      <div className="bg-white rounded-2xl border border-[#c77e3b]/15 p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#fff8ea] border border-[#c77e3b]/25 flex items-center justify-center text-[#c77e3b] shrink-0">
+            <KeyRound className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-extrabold text-stone-900">
+              System Permissions
+            </h2>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Granular security capabilities that can be assigned to staff roles
+            </p>
+          </div>
+        </div>
         <Button
-          className="rounded-md"
           icon={<Plus className="w-4 h-4" />}
-          title="Add New"
+          title="Add Permission"
           onClick={() => {
             setEditMode(false);
             setSelectedItem(null);
@@ -140,7 +167,7 @@ const Permissions = () => {
         <ReusableTable
           data={permissions || []}
           columns={columns}
-          title="Permissions"
+          title={`Permissions (${total || permissions?.length || 0})`}
           showPagination={true}
           searchField={["permission_name"]}
           paginationMode="backend"
@@ -153,7 +180,6 @@ const Permissions = () => {
         />
       )}
 
-      {/* Add / Edit Modal */}
       <DisplayModal
         open={showFormModal}
         title={editMode ? "Edit Permission" : "Add Permission"}
@@ -166,12 +192,11 @@ const Permissions = () => {
         />
       </DisplayModal>
 
-      {/* Delete Confirmation */}
       <ConfirmationModal
         open={showDeleteModal}
         onCancel={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
-        content={`Are you sure that you want to delete this permission: ${selectedItem?.permission_name}`}
+        content={`Are you sure that you want to delete this permission: ${selectedItem?.permission_name}?`}
       />
     </div>
   );
